@@ -20,5 +20,6 @@ yarn-error.log
 /.vscode
 /.claude
 
-# Business documents (sensitive)
-*.pdf
+# Business documents (ignore root PDFs, allow docs/)
+/*.pdf
+!/docs/*.pdf
