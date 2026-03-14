@@ -63,12 +63,12 @@ Route::get('/deploy/init', function (\Illuminate\Http\Request $request) {
         abort(403, 'Invalid deploy token');
     }
 
-    // 安全檢查 2：若已有使用者，代表非首次部署，封鎖此路由
+    // 安全檢查 2：若已有使用者且非強制模式，封鎖此路由
     try {
-        if (\App\Models\User::count() > 0) {
+        if (\App\Models\User::count() > 0 && $request->query('force') !== '1') {
             return response()->json([
                 'success' => false,
-                'error' => '系統已初始化完成，此路由已停用。請登入後台使用「部署工具」頁面。',
+                'error' => '系統已初始化完成，此路由已停用。如需強制執行請加上 &force=1 參數。',
             ], 403);
         }
     } catch (\Throwable $e) {
