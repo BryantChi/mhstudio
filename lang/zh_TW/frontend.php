@@ -112,7 +112,7 @@ return [
     'fab_contact_us' => '聯繫我們',
 
     // About page
-    'about_page_title' => '關於孟衡 | MH Studio',
+    'about_page_title' => '關於孟衡 — 團隊理念與發展歷程 | MH Studio 台中',
     'about_label' => 'ABOUT',
     'about_title' => '關於孟衡',
     'about_slogan' => 'Balance &bull; Precision &bull; Innovation',
@@ -152,7 +152,7 @@ return [
     'about_cta_portfolio' => '瀏覽作品',
 
     // Blog page
-    'blog_page_title' => '技術部落格 | MH Studio 孟衡',
+    'blog_page_title' => '技術部落格 — 網頁開發·App開發技術分享 | MH Studio 孟衡',
     'blog_label' => 'BLOG',
     'blog_title' => '技術部落格',
     'blog_desc' => '技術深度剖析、開發心得與最新趨勢分享',
@@ -165,8 +165,8 @@ return [
     'blog_popular_tags' => '熱門標籤',
 
     // Quote page
-    'quote_page_title' => '線上報價 | MH Studio',
-    'quote_page_meta' => 'MH Studio 線上報價估算器 - 快速獲取 App 開發、網頁設計、系統架構與 UI/UX 設計的專案報價估算。',
+    'quote_page_title' => '線上報價估算 — 網頁設計·App開發費用 | MH Studio 孟衡',
+    'quote_page_meta' => 'MH Studio 線上報價估算器 — 30 秒快速獲取網頁設計、App 開發、系統架構與 UI/UX 設計的專案報價。透明定價、免費諮詢、台中在地服務。',
     'quote_label' => 'QUOTE',
     'quote_title' => '線上報價',
     'quote_desc' => '快速估算您的專案費用，開啟合作的第一步',
@@ -237,6 +237,6 @@ return [
     'loading' => '載入中...',
 
     // Meta / Layout
-    'meta_description' => 'MH Studio 孟衡 - Balance, Precision, Innovation. 專業網頁設計與開發服務。',
-    'site_title' => 'MH Studio 孟衡 | Balance &bull; Precision &bull; Innovation',
+    'meta_description' => 'MH Studio 孟衡工作室 — 台中客製化網頁設計、App 開發、系統架構與 UI/UX 設計。Balance · Precision · Innovation，為企業打造高品質數位產品，免費諮詢。',
+    'site_title' => 'MH Studio 孟衡 | 網頁設計·App開發·系統架構 | 台中',
 ];

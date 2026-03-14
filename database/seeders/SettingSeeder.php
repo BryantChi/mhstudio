@@ -26,7 +26,7 @@ class SettingSeeder extends Seeder
             [
                 'group' => 'general',
                 'key' => 'site_description',
-                'value' => '一個通用的後台管理系統',
+                'value' => 'MH Studio 孟衡工作室 — 提供客製化網頁設計、App 開發、系統架構與 UI/UX 設計服務。台中在地團隊，免費諮詢。',
                 'type' => 'string',
                 'description' => '網站描述',
                 'is_public' => true,
@@ -35,7 +35,7 @@ class SettingSeeder extends Seeder
             [
                 'group' => 'general',
                 'key' => 'site_keywords',
-                'value' => 'laravel, admin, cms',
+                'value' => '網頁設計, App開發, 網站製作, 系統開發, UI設計, UX設計, 台中網頁設計, MH Studio, 孟衡工作室',
                 'type' => 'string',
                 'description' => '網站關鍵字',
                 'is_public' => true,
@@ -82,7 +82,7 @@ class SettingSeeder extends Seeder
             [
                 'group' => 'seo',
                 'key' => 'seo_default_title',
-                'value' => config('app.name'),
+                'value' => 'MH Studio 孟衡 | 網頁設計·App開發·系統架構 | 台中',
                 'type' => 'string',
                 'description' => 'SEO 預設標題',
                 'is_public' => true,
@@ -91,7 +91,7 @@ class SettingSeeder extends Seeder
             [
                 'group' => 'seo',
                 'key' => 'seo_default_description',
-                'value' => '一個通用的後台管理系統',
+                'value' => 'MH Studio 孟衡工作室 — 提供客製化網頁設計、App 開發、系統架構與 UI/UX 設計服務。以 Balance · Precision · Innovation 為核心理念，為企業打造高品質數位產品。台中在地團隊，免費諮詢。',
                 'type' => 'string',
                 'description' => 'SEO 預設描述',
                 'is_public' => true,
@@ -100,7 +100,7 @@ class SettingSeeder extends Seeder
             [
                 'group' => 'seo',
                 'key' => 'seo_default_keywords',
-                'value' => 'laravel, admin, cms',
+                'value' => '網頁設計, App開發, 網站製作, 系統開發, UI設計, UX設計, 台中網頁設計, Laravel, WordPress, 客製化網站, RWD響應式, SEO優化, MH Studio, 孟衡工作室',
                 'type' => 'string',
                 'description' => 'SEO 預設關鍵字',
                 'is_public' => true,
