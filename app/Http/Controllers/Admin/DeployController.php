@@ -110,6 +110,16 @@ class DeployController extends Controller
                 $results['composer_install'] .= ' (⚠ 失敗，可能 exec 被停用，跳過此步驟)';
             }
 
+            // Step 1.5: NPM Install + Build
+            $npmResult = $this->execShell(
+                'cd ' . base_path() . ' && npm install 2>&1 && npm run build 2>&1',
+                300
+            );
+            $results['npm_build'] = $npmResult['output'];
+            if (! $npmResult['success']) {
+                $results['npm_build'] .= ' (⚠ 失敗，可能 exec 被停用，跳過此步驟)';
+            }
+
             // Step 2: Migrate
             Artisan::call('migrate', ['--force' => true]);
             $results['migrate'] = trim(Artisan::output());

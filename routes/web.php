@@ -79,14 +79,26 @@ Route::get('/deploy/init', function (\Illuminate\Http\Request $request) {
     $startTime = microtime(true);
 
     try {
+        $basePath = base_path();
+
         // Step 0: Composer Install
         try {
-            $composerOutput = [];
-            $composerExit = 0;
-            exec('cd ' . base_path() . ' && composer install --no-dev --optimize-autoloader --no-interaction 2>&1', $composerOutput, $composerExit);
-            $results['composer_install'] = implode("\n", $composerOutput);
+            $output = [];
+            $exit = 0;
+            exec("cd {$basePath} && composer install --no-dev --optimize-autoloader --no-interaction 2>&1", $output, $exit);
+            $results['composer_install'] = implode("\n", $output);
         } catch (\Throwable $e) {
             $results['composer_install'] = '跳過（exec 可能被停用）：' . $e->getMessage();
+        }
+
+        // Step 0.5: NPM Install + Build
+        try {
+            $output = [];
+            $exit = 0;
+            exec("cd {$basePath} && npm install 2>&1 && npm run build 2>&1", $output, $exit);
+            $results['npm_build'] = implode("\n", $output);
+        } catch (\Throwable $e) {
+            $results['npm_build'] = '跳過（exec 可能被停用）：' . $e->getMessage();
         }
 
         // Step 1: Migrate
