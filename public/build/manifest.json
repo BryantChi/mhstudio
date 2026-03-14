@@ -1,0 +1,24 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app--KdWvEry.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/css/frontend/mh-studio.scss": {
+    "file": "assets/mh-studio-BrwPBbew.css",
+    "src": "resources/css/frontend/mh-studio.scss",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-p2tFNthQ.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/frontend/mh-studio.js": {
+    "file": "assets/mh-studio-DsKoiris.js",
+    "name": "mh-studio",
+    "src": "resources/js/frontend/mh-studio.js",
+    "isEntry": true
+  }
+}
