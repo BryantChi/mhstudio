@@ -387,8 +387,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const preset = this.dataset.preset;
             const presets = {
                 'allow_all': 'User-agent: *\nAllow: /\n\nSitemap: {{ url("sitemap.xml") }}',
-                'block_admin': 'User-agent: *\nDisallow: /admin\nDisallow: /api\n\nSitemap: {{ url("sitemap.xml") }}',
-                'standard': 'User-agent: *\nDisallow: /admin\nDisallow: /api\nDisallow: /login\n\nSitemap: {{ url("sitemap.xml") }}'
+                'block_admin': 'User-agent: *\nDisallow: /{{ config('admin.prefix', 'admin') }}\nDisallow: /api\nDisallow: /deploy\n\nSitemap: {{ url("sitemap.xml") }}',
+                'standard': 'User-agent: *\nDisallow: /{{ config('admin.prefix', 'admin') }}\nDisallow: /api\nDisallow: /deploy\n\nSitemap: {{ url("sitemap.xml") }}'
             };
 
             if (presets[preset]) {

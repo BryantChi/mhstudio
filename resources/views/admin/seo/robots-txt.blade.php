@@ -242,8 +242,8 @@ Sitemap: {{ url('sitemap.xml') }}</code></pre>
         const presets = {
             'allow_all': `User-agent: *\nAllow: /\n\nSitemap: ${window.location.origin}/sitemap.xml`,
             'block_all': `User-agent: *\nDisallow: /`,
-            'standard': `User-agent: *\nDisallow: /admin\nDisallow: /api\n\nSitemap: ${window.location.origin}/sitemap.xml`,
-            'strict': `User-agent: *\nDisallow: /admin\nDisallow: /api\nDisallow: /login\nDisallow: /register\n\nCrawl-delay: 10\n\nSitemap: ${window.location.origin}/sitemap.xml`
+            'standard': `User-agent: *\nDisallow: /{{ config('admin.prefix', 'admin') }}\nDisallow: /api\nDisallow: /deploy\n\nSitemap: ${window.location.origin}/sitemap.xml`,
+            'strict': `User-agent: *\nDisallow: /{{ config('admin.prefix', 'admin') }}\nDisallow: /api\nDisallow: /deploy\n\nCrawl-delay: 10\n\nSitemap: ${window.location.origin}/sitemap.xml`
         };
 
         if (presets[preset]) {
