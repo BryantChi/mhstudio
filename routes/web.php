@@ -142,6 +142,25 @@ Route::prefix('deploy')->group(function () {
             ], 500);
         }
     })->name('deploy.optimize');
+
+    Route::get('/storage-link', function (\Illuminate\Http\Request $request) {
+        if ($request->query('token') !== config('app.deploy_token')) {
+            abort(403, 'Invalid deploy token');
+        }
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('storage:link');
+            return response()->json([
+                'success' => true,
+                'output' => \Illuminate\Support\Facades\Artisan::output(),
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    })->name('deploy.storage-link');
 });
 
 // 認證路由

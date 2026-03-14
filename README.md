@@ -526,11 +526,11 @@ function trackEvent(action, category, label) {
 
 如有問題或建議，請聯繫：
 
-- Email: your-email@example.com
-- Issues: https://github.com/your-repo/admin-system/issues
+- Email: bryantchi.work@gmail.com
+- Issues: https://github.com/BryantChi/mhstudio/issues
 
 ---
 
-**開發者**: Your Name
-**最後更新**: 2024年1月
+**開發者**: 紀孟勳 Bryant Chi
+**最後更新**: 2026年3月
 **版本**: 1.0.0
