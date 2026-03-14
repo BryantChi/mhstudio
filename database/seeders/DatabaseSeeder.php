@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             ContractTemplateSeeder::class,
             ServiceSeeder::class,
             LegalPageSeeder::class,
+            SeoMetaSeeder::class,
         ]);
 
         $this->command->info('');
