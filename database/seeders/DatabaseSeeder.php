@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             PricingSeeder::class,
             ContractTemplateSeeder::class,
             ServiceSeeder::class,
+            LegalPageSeeder::class,
         ]);
 
         $this->command->info('');

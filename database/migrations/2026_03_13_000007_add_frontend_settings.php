@@ -135,7 +135,7 @@ return new class extends Migration
             [
                 'group'       => 'frontend',
                 'key'         => 'contact_email',
-                'value'       => 'hello@mhstudio.dev',
+                'value'       => 'bryantchi.work@gmail.com',
                 'type'        => 'string',
                 'description' => '聯繫 Email',
                 'is_public'   => true,

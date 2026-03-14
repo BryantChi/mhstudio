@@ -50,118 +50,81 @@ Route::post('/subscribe', [PageController::class, 'subscribe'])
     ->name('subscribe');
 Route::get('/unsubscribe', [PageController::class, 'unsubscribe'])->name('unsubscribe');
 
+// Legal Pages (隱私權政策、服務條款等)
+Route::get('/legal/{slug}', [PageController::class, 'legalPage'])->name('legal.show');
+
 // Language switcher
 Route::get('language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 
-// ===== 部署輔助路由（需 token 驗證）=====
-Route::prefix('deploy')->group(function () {
-    Route::get('/migrate', function (\Illuminate\Http\Request $request) {
-        if ($request->query('token') !== config('app.deploy_token')) {
-            abort(403, 'Invalid deploy token');
-        }
+// ===== 首次部署專用路由（資料庫有使用者後自動失效）=====
+Route::get('/deploy/init', function (\Illuminate\Http\Request $request) {
+    // 安全檢查 1：Token 驗證
+    if ($request->query('token') !== config('app.deploy_token')) {
+        abort(403, 'Invalid deploy token');
+    }
 
-        try {
-            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-            return response()->json([
-                'success' => true,
-                'output' => \Illuminate\Support\Facades\Artisan::output(),
-            ]);
-        } catch (\Throwable $e) {
+    // 安全檢查 2：若已有使用者，代表非首次部署，封鎖此路由
+    try {
+        if (\App\Models\User::count() > 0) {
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage(),
-            ], 500);
+                'error' => '系統已初始化完成，此路由已停用。請登入後台使用「部署工具」頁面。',
+            ], 403);
         }
-    })->name('deploy.migrate');
+    } catch (\Throwable $e) {
+        // 資料表不存在，代表是全新環境，繼續執行
+    }
 
-    Route::get('/seed', function (\Illuminate\Http\Request $request) {
-        if ($request->query('token') !== config('app.deploy_token')) {
-            abort(403, 'Invalid deploy token');
-        }
+    $results = [];
+    $startTime = microtime(true);
 
-        try {
-            \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-            return response()->json([
-                'success' => true,
-                'output' => \Illuminate\Support\Facades\Artisan::output(),
-            ]);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    })->name('deploy.seed');
+    try {
+        // Step 1: Migrate
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $results['migrate'] = trim(\Illuminate\Support\Facades\Artisan::output());
 
-    Route::get('/migrate-seed', function (\Illuminate\Http\Request $request) {
-        if ($request->query('token') !== config('app.deploy_token')) {
-            abort(403, 'Invalid deploy token');
-        }
+        // Step 2: Seed
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+        $results['seed'] = trim(\Illuminate\Support\Facades\Artisan::output());
 
-        try {
-            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-            $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
-
-            \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-            $seedOutput = \Illuminate\Support\Facades\Artisan::output();
-
-            return response()->json([
-                'success' => true,
-                'migrate_output' => $migrateOutput,
-                'seed_output' => $seedOutput,
-            ]);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    })->name('deploy.migrate-seed');
-
-    Route::get('/optimize', function (\Illuminate\Http\Request $request) {
-        if ($request->query('token') !== config('app.deploy_token')) {
-            abort(403, 'Invalid deploy token');
-        }
-
-        try {
-            \Illuminate\Support\Facades\Artisan::call('optimize:clear');
-            $clearOutput = \Illuminate\Support\Facades\Artisan::output();
-
-            \Illuminate\Support\Facades\Artisan::call('optimize');
-            $optimizeOutput = \Illuminate\Support\Facades\Artisan::output();
-
-            return response()->json([
-                'success' => true,
-                'clear_output' => $clearOutput,
-                'optimize_output' => $optimizeOutput,
-            ]);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    })->name('deploy.optimize');
-
-    Route::get('/storage-link', function (\Illuminate\Http\Request $request) {
-        if ($request->query('token') !== config('app.deploy_token')) {
-            abort(403, 'Invalid deploy token');
-        }
-
+        // Step 3: Storage link
         try {
             \Illuminate\Support\Facades\Artisan::call('storage:link');
-            return response()->json([
-                'success' => true,
-                'output' => \Illuminate\Support\Facades\Artisan::output(),
-            ]);
+            $results['storage_link'] = trim(\Illuminate\Support\Facades\Artisan::output());
         } catch (\Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ], 500);
+            $results['storage_link'] = '已存在或 ' . $e->getMessage();
         }
-    })->name('deploy.storage-link');
-});
+
+        // Step 4: Optimize
+        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        $results['optimize_clear'] = trim(\Illuminate\Support\Facades\Artisan::output());
+
+        \Illuminate\Support\Facades\Artisan::call('optimize');
+        $results['optimize'] = trim(\Illuminate\Support\Facades\Artisan::output());
+
+        // Step 5: View cache
+        \Illuminate\Support\Facades\Artisan::call('view:cache');
+        $results['view_cache'] = trim(\Illuminate\Support\Facades\Artisan::output());
+
+        $elapsed = round(microtime(true) - $startTime, 2);
+
+        return response()->json([
+            'success' => true,
+            'message' => "首次部署完成，耗時 {$elapsed} 秒。請前往 /login 登入後台。",
+            'steps' => $results,
+            'elapsed_seconds' => $elapsed,
+        ]);
+    } catch (\Throwable $e) {
+        $elapsed = round(microtime(true) - $startTime, 2);
+
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'completed_steps' => $results,
+            'elapsed_seconds' => $elapsed,
+        ], 500);
+    }
+})->name('deploy.init');
 
 // 認證路由
 Route::middleware('guest')->group(function () {

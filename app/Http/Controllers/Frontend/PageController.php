@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\Client;
+use App\Models\LegalPage;
 use App\Models\ClientInteraction;
 use App\Models\ContactMessage;
 use App\Models\PricingCategory;
@@ -408,5 +409,22 @@ class PageController extends Controller
         }
 
         return view('frontend.unsubscribed');
+    }
+
+    /**
+     * 法律頁面（隱私權政策、服務條款等）
+     */
+    public function legalPage(string $slug): View
+    {
+        $legalPage = LegalPage::active()
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        $otherPages = LegalPage::active()
+            ->where('id', '!=', $legalPage->id)
+            ->ordered()
+            ->get(['id', 'title', 'slug']);
+
+        return view('frontend.legal.show', compact('legalPage', 'otherPages'));
     }
 }

@@ -24,6 +24,8 @@ use App\Http\Controllers\Admin\TaskController;
 use App\Http\Controllers\Admin\TimeEntryController;
 use App\Http\Controllers\Admin\PricingController;
 use App\Http\Controllers\Admin\ContractTemplateController;
+use App\Http\Controllers\Admin\DeployController;
+use App\Http\Controllers\Admin\LegalPageController;
 use App\Http\Controllers\Admin\QuoteRequestController;
 
 
@@ -217,8 +219,22 @@ Route::prefix(config('admin.prefix', 'admin'))
             Route::post('/features/reorder', [PricingController::class, 'reorderFeatures'])->name('features.reorder');
         });
 
+        // 法律頁面管理
+        Route::post('legal-pages/reorder', [LegalPageController::class, 'reorder'])->name('legal-pages.reorder');
+        Route::resource('legal-pages', LegalPageController::class)->except(['show']);
+
         // 報價請求管理
         Route::resource('quote-requests', QuoteRequestController::class)->only(['index', 'show']);
         Route::put('quote-requests/{quoteRequest}/status', [QuoteRequestController::class, 'updateStatus'])->name('quote-requests.update-status');
         Route::post('quote-requests/{quoteRequest}/convert', [QuoteRequestController::class, 'convertToQuote'])->name('quote-requests.convert');
+
+        // 部署工具（僅 super-admin，Controller 內有權限檢查）
+        Route::prefix('deploy')->name('deploy.')->group(function () {
+            Route::get('/', [DeployController::class, 'index'])->name('index');
+            Route::post('/migrate', [DeployController::class, 'migrate'])->name('migrate');
+            Route::post('/seed', [DeployController::class, 'seed'])->name('seed');
+            Route::post('/storage-link', [DeployController::class, 'storageLink'])->name('storage-link');
+            Route::post('/optimize', [DeployController::class, 'optimize'])->name('optimize');
+            Route::post('/init', [DeployController::class, 'init'])->name('init');
+        });
     });

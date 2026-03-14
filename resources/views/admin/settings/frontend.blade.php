@@ -165,7 +165,7 @@
                                    class="form-control @error('contact_email') is-invalid @enderror"
                                    id="contact_email"
                                    name="contact_email"
-                                   value="{{ old('contact_email', $settings['contact_email'] ?? 'hello@mhstudio.dev') }}"
+                                   value="{{ old('contact_email', $settings['contact_email'] ?? 'bryantchi.work@gmail.com') }}"
                                    required>
                             @error('contact_email')
                                 <div class="invalid-feedback">{{ $message }}</div>

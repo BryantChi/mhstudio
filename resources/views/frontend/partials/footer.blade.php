@@ -9,7 +9,7 @@
       <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 2C6.48 2 2 5.58 2 10c0 2.13 1.07 4.04 2.76 5.47L4 20l3.53-2.12C8.87 18.28 10.4 18.5 12 18.5c5.52 0 10-3.58 10-8S17.52 2 12 2z"/></svg>
       <span>LINE</span>
     </a>
-    <a href="mailto:{{ setting('contact_email', 'hello@mhstudio.dev') }}" class="fab-option" aria-label="Email">
+    <a href="mailto:{{ setting('contact_email', 'bryantchi.work@gmail.com') }}" class="fab-option" aria-label="Email">
       <svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
       <span>Email</span>
     </a>
@@ -39,6 +39,17 @@
     <a href="{{ route('about') }}">{{ __('frontend.nav_about') }}</a>
     <a href="{{ route('quote') }}">{{ __('frontend.nav_quote') }}</a>
   </div>
+  @php
+      $legalLinks = \App\Models\LegalPage::active()->ordered()->get(['title', 'slug']);
+  @endphp
+  @if($legalLinks->count() > 0)
+  <div class="footer-legal">
+    @foreach($legalLinks as $link)
+    <a href="{{ route('legal.show', $link->slug) }}">{{ $link->title }}</a>
+    @if(!$loop->last) <span class="footer-legal-sep">|</span> @endif
+    @endforeach
+  </div>
+  @endif
   @php
       $projectCount = setting('stats_projects_completed', 50);
       $ontimeRate = setting('stats_ontime_delivery', 99);

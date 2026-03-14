@@ -98,6 +98,15 @@
         </a>
     </li>
 
+    <li class="nav-item">
+        <a class="nav-link {{ active_route('admin.legal-pages') }}" href="{{ route('admin.legal-pages.index') }}">
+            <svg class="nav-icon">
+                <use xlink:href="/assets/icons/free.svg#cil-shield-alt"></use>
+            </svg>
+            法律頁面
+        </a>
+    </li>
+
     {{-- 商業管理 --}}
     <li class="nav-title">商業管理</li>
 
@@ -420,6 +429,17 @@
             系統資訊
         </a>
     </li>
+
+    @if(auth()->user()?->isSuperAdmin())
+    <li class="nav-item">
+        <a class="nav-link {{ active_route('admin.deploy') }}" href="{{ route('admin.deploy.index') }}">
+            <svg class="nav-icon">
+                <use xlink:href="/assets/icons/free.svg#cil-cloud-upload"></use>
+            </svg>
+            部署工具
+        </a>
+    </li>
+    @endif
     @endcan
 </ul>
 
