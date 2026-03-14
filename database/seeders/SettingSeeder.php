@@ -315,7 +315,10 @@ class SettingSeeder extends Seeder
         ];
 
         foreach ($settings as $setting) {
-            Setting::create($setting);
+            Setting::firstOrCreate(
+                ['key' => $setting['key']],
+                $setting
+            );
         }
 
         $this->command->info('系統設定已建立完成');

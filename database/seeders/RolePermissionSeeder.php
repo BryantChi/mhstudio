@@ -68,18 +68,18 @@ class RolePermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
         // 建立角色並分配權限
 
         // 超級管理員 - 擁有所有權限
-        $superAdmin = Role::create(['name' => 'super-admin']);
-        $superAdmin->givePermissionTo(Permission::all());
+        $superAdmin = Role::firstOrCreate(['name' => 'super-admin']);
+        $superAdmin->syncPermissions(Permission::all());
 
         // 管理員 - 大部分權限,但無法管理用戶和角色
-        $admin = Role::create(['name' => 'admin']);
-        $admin->givePermissionTo([
+        $admin = Role::firstOrCreate(['name' => 'admin']);
+        $admin->syncPermissions([
             'view articles',
             'create articles',
             'edit articles',
@@ -103,8 +103,8 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // 編輯 - 只能編輯內容
-        $editor = Role::create(['name' => 'editor']);
-        $editor->givePermissionTo([
+        $editor = Role::firstOrCreate(['name' => 'editor']);
+        $editor->syncPermissions([
             'view articles',
             'create articles',
             'edit articles',
@@ -115,8 +115,8 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // 作者 - 只能管理自己的文章
-        $author = Role::create(['name' => 'author']);
-        $author->givePermissionTo([
+        $author = Role::firstOrCreate(['name' => 'author']);
+        $author->syncPermissions([
             'view articles',
             'create articles',
             'view categories',
@@ -126,8 +126,8 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // 訪客 - 只能查看
-        $viewer = Role::create(['name' => 'viewer']);
-        $viewer->givePermissionTo([
+        $viewer = Role::firstOrCreate(['name' => 'viewer']);
+        $viewer->syncPermissions([
             'view articles',
             'view categories',
             'view tags',
