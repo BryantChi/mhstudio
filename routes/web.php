@@ -132,7 +132,7 @@ Route::get('/deploy/init', function (\Illuminate\Http\Request $request) {
 
         return response()->json([
             'success' => true,
-            'message' => "首次部署完成，耗時 {$elapsed} 秒。請前往 /login 登入後台。",
+            'message' => "首次部署完成，耗時 {$elapsed} 秒。請前往 /" . config('admin.prefix', 'admin') . "/login 登入後台。",
             'steps' => $results,
             'elapsed_seconds' => $elapsed,
         ]);
@@ -148,13 +148,14 @@ Route::get('/deploy/init', function (\Illuminate\Http\Request $request) {
     }
 })->name('deploy.init');
 
-// 認證路由
-Route::middleware('guest')->group(function () {
+// 認證路由（隱藏於後台前綴底下）
+$adminPrefix = config('admin.prefix', 'admin');
+Route::prefix($adminPrefix)->middleware('guest')->group(function () {
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('login', [LoginController::class, 'login']);
 });
 
-Route::post('logout', [LoginController::class, 'logout'])
+Route::post($adminPrefix . '/logout', [LoginController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
