@@ -10,17 +10,6 @@ use Illuminate\View\View;
 
 class DeployController extends Controller
 {
-    public function __construct()
-    {
-        // 僅 super-admin 可使用
-        $this->middleware(function ($request, $next) {
-            if (! $request->user()?->isSuperAdmin()) {
-                abort(403, '僅限超級管理員使用此功能');
-            }
-            return $next($request);
-        });
-    }
-
     /**
      * 部署工具頁面
      */

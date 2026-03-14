@@ -228,8 +228,8 @@ Route::prefix(config('admin.prefix', 'admin'))
         Route::put('quote-requests/{quoteRequest}/status', [QuoteRequestController::class, 'updateStatus'])->name('quote-requests.update-status');
         Route::post('quote-requests/{quoteRequest}/convert', [QuoteRequestController::class, 'convertToQuote'])->name('quote-requests.convert');
 
-        // 部署工具（僅 super-admin，Controller 內有權限檢查）
-        Route::prefix('deploy')->name('deploy.')->group(function () {
+        // 部署工具（僅 super-admin）
+        Route::prefix('deploy')->name('deploy.')->middleware(\App\Http\Middleware\EnsureSuperAdmin::class)->group(function () {
             Route::get('/', [DeployController::class, 'index'])->name('index');
             Route::post('/composer-install', [DeployController::class, 'composerInstall'])->name('composer-install');
             Route::post('/npm-build', [DeployController::class, 'npmBuild'])->name('npm-build');
