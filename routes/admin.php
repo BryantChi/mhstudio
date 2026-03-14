@@ -231,6 +231,8 @@ Route::prefix(config('admin.prefix', 'admin'))
         // 部署工具（僅 super-admin，Controller 內有權限檢查）
         Route::prefix('deploy')->name('deploy.')->group(function () {
             Route::get('/', [DeployController::class, 'index'])->name('index');
+            Route::post('/composer-install', [DeployController::class, 'composerInstall'])->name('composer-install');
+            Route::post('/npm-build', [DeployController::class, 'npmBuild'])->name('npm-build');
             Route::post('/migrate', [DeployController::class, 'migrate'])->name('migrate');
             Route::post('/seed', [DeployController::class, 'seed'])->name('seed');
             Route::post('/storage-link', [DeployController::class, 'storageLink'])->name('storage-link');

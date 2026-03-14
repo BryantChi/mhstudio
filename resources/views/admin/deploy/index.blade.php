@@ -26,7 +26,7 @@
         </strong>
     </div>
     <div class="card-body">
-        <p class="text-muted mb-3">依序執行：資料庫遷移 → 資料填充 → Storage 連結 → 快取最佳化 → View 快取</p>
+        <p class="text-muted mb-3">依序執行：Composer Install → 資料庫遷移 → 資料填充 → Storage 連結 → 快取最佳化 → View 快取</p>
         <button type="button" class="btn btn-primary btn-lg deploy-btn" data-action="{{ route('admin.deploy.init') }}">
             <svg class="icon me-2"><use xlink:href="/assets/icons/free.svg#cil-media-play"></use></svg>
             執行一鍵部署
@@ -36,6 +36,40 @@
 
 {{-- 個別操作 --}}
 <div class="row">
+    <div class="col-md-6 col-xl-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <svg class="icon me-2 text-primary"><use xlink:href="/assets/icons/free.svg#cil-terminal"></use></svg>
+                    Composer Install
+                </h5>
+                <p class="card-text text-muted">執行 <code>composer install --no-dev</code>，安裝或更新 PHP 套件依賴。</p>
+            </div>
+            <div class="card-footer">
+                <button type="button" class="btn btn-outline-primary btn-sm deploy-btn" data-action="{{ route('admin.deploy.composer-install') }}">
+                    執行 Composer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <svg class="icon me-2 text-secondary"><use xlink:href="/assets/icons/free.svg#cil-code"></use></svg>
+                    NPM Build
+                </h5>
+                <p class="card-text text-muted">執行 <code>npm install && npm run build</code>，編譯前端資源（CSS/JS）。</p>
+            </div>
+            <div class="card-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm deploy-btn" data-action="{{ route('admin.deploy.npm-build') }}">
+                    執行 NPM Build
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="col-md-6 col-xl-4 mb-4">
         <div class="card h-100">
             <div class="card-body">

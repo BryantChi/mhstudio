@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Process;
 use Illuminate\View\View;
 
 class DeployController extends Controller
@@ -29,11 +30,33 @@ class DeployController extends Controller
     }
 
     /**
+     * Composer Install
+     */
+    public function composerInstall(): JsonResponse
+    {
+        return $this->runShellCommand(
+            'cd ' . base_path() . ' && composer install --no-dev --optimize-autoloader --no-interaction 2>&1',
+            300 // 5 分鐘 timeout
+        );
+    }
+
+    /**
+     * NPM Install + Build
+     */
+    public function npmBuild(): JsonResponse
+    {
+        return $this->runShellCommand(
+            'cd ' . base_path() . ' && npm install --production=false 2>&1 && npm run build 2>&1',
+            300
+        );
+    }
+
+    /**
      * 執行資料庫遷移
      */
     public function migrate(): JsonResponse
     {
-        return $this->runCommand('migrate', ['--force' => true]);
+        return $this->runArtisan('migrate', ['--force' => true]);
     }
 
     /**
@@ -41,7 +64,7 @@ class DeployController extends Controller
      */
     public function seed(): JsonResponse
     {
-        return $this->runCommand('db:seed', ['--force' => true]);
+        return $this->runArtisan('db:seed', ['--force' => true]);
     }
 
     /**
@@ -49,7 +72,7 @@ class DeployController extends Controller
      */
     public function storageLink(): JsonResponse
     {
-        return $this->runCommand('storage:link');
+        return $this->runArtisan('storage:link');
     }
 
     /**
@@ -80,7 +103,7 @@ class DeployController extends Controller
     }
 
     /**
-     * 一鍵部署（migrate + seed + storage:link + optimize + view:cache）
+     * 一鍵部署（composer + migrate + seed + storage:link + optimize + view:cache）
      */
     public function init(): JsonResponse
     {
@@ -88,15 +111,25 @@ class DeployController extends Controller
         $startTime = microtime(true);
 
         try {
-            // Step 1: Migrate
+            // Step 1: Composer Install
+            $composerResult = $this->execShell(
+                'cd ' . base_path() . ' && composer install --no-dev --optimize-autoloader --no-interaction 2>&1',
+                300
+            );
+            $results['composer_install'] = $composerResult['output'];
+            if (! $composerResult['success']) {
+                $results['composer_install'] .= ' (⚠ 失敗，可能 exec 被停用，跳過此步驟)';
+            }
+
+            // Step 2: Migrate
             Artisan::call('migrate', ['--force' => true]);
             $results['migrate'] = trim(Artisan::output());
 
-            // Step 2: Seed
+            // Step 3: Seed
             Artisan::call('db:seed', ['--force' => true]);
             $results['seed'] = trim(Artisan::output());
 
-            // Step 3: Storage link
+            // Step 4: Storage link
             try {
                 Artisan::call('storage:link');
                 $results['storage_link'] = trim(Artisan::output());
@@ -104,14 +137,14 @@ class DeployController extends Controller
                 $results['storage_link'] = '已存在或 ' . $e->getMessage();
             }
 
-            // Step 4: Optimize
+            // Step 5: Optimize
             Artisan::call('optimize:clear');
             $results['optimize_clear'] = trim(Artisan::output());
 
             Artisan::call('optimize');
             $results['optimize'] = trim(Artisan::output());
 
-            // Step 5: View cache
+            // Step 6: View cache
             Artisan::call('view:cache');
             $results['view_cache'] = trim(Artisan::output());
 
@@ -136,9 +169,9 @@ class DeployController extends Controller
     }
 
     /**
-     * 執行單一 Artisan 命令
+     * 執行 Artisan 命令
      */
-    protected function runCommand(string $command, array $params = []): JsonResponse
+    protected function runArtisan(string $command, array $params = []): JsonResponse
     {
         try {
             Artisan::call($command, $params);
@@ -151,6 +184,49 @@ class DeployController extends Controller
                 'success' => false,
                 'error' => $e->getMessage(),
             ], 500);
+        }
+    }
+
+    /**
+     * 執行 Shell 命令並回傳 JSON
+     */
+    protected function runShellCommand(string $command, int $timeout = 120): JsonResponse
+    {
+        $result = $this->execShell($command, $timeout);
+
+        return response()->json($result, $result['success'] ? 200 : 500);
+    }
+
+    /**
+     * 底層 Shell 執行（支援 Process facade 或 exec fallback）
+     */
+    protected function execShell(string $command, int $timeout = 120): array
+    {
+        try {
+            // 優先使用 Laravel Process facade
+            $result = Process::timeout($timeout)->run($command);
+
+            return [
+                'success' => $result->successful(),
+                'output' => trim($result->output() . "\n" . $result->errorOutput()),
+            ];
+        } catch (\Throwable $e) {
+            // fallback: 嘗試 exec
+            try {
+                $output = [];
+                $exitCode = 0;
+                exec($command, $output, $exitCode);
+
+                return [
+                    'success' => $exitCode === 0,
+                    'output' => implode("\n", $output),
+                ];
+            } catch (\Throwable $e2) {
+                return [
+                    'success' => false,
+                    'output' => '無法執行 Shell 命令：exec() 可能被主機停用。' . "\n" . $e2->getMessage(),
+                ];
+            }
         }
     }
 }

@@ -79,6 +79,16 @@ Route::get('/deploy/init', function (\Illuminate\Http\Request $request) {
     $startTime = microtime(true);
 
     try {
+        // Step 0: Composer Install
+        try {
+            $composerOutput = [];
+            $composerExit = 0;
+            exec('cd ' . base_path() . ' && composer install --no-dev --optimize-autoloader --no-interaction 2>&1', $composerOutput, $composerExit);
+            $results['composer_install'] = implode("\n", $composerOutput);
+        } catch (\Throwable $e) {
+            $results['composer_install'] = '跳過（exec 可能被停用）：' . $e->getMessage();
+        }
+
         // Step 1: Migrate
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
         $results['migrate'] = trim(\Illuminate\Support\Facades\Artisan::output());
