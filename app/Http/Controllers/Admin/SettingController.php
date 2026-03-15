@@ -74,12 +74,41 @@ class SettingController extends Controller
     public function updateSeo(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'seo_default_title' => 'required|string|max:255',
-            'seo_default_description' => 'required|string',
-            'seo_default_keywords' => 'nullable|string',
-            'seo_sitemap_enabled' => 'boolean',
-            'seo_robots_enabled' => 'boolean',
+            // 預設 Meta Tags
+            'default_meta_title'       => 'nullable|string|max:60',
+            'default_meta_description' => 'nullable|string|max:160',
+            'default_meta_keywords'    => 'nullable|string|max:500',
+            'default_og_image'         => 'nullable|url|max:500',
+            // 社群媒體
+            'facebook_app_id'          => 'nullable|string|max:50',
+            'twitter_username'         => 'nullable|string|max:50',
+            'twitter_card_type'        => 'nullable|string|in:summary,summary_large_image',
+            // 搜尋引擎驗證
+            'google_verification'      => 'nullable|string|max:100',
+            'bing_verification'        => 'nullable|string|max:100',
+            'yandex_verification'      => 'nullable|string|max:100',
+            // Schema.org
+            'enable_schema'            => 'nullable|boolean',
+            'schema_type'              => 'nullable|string|in:Article,BlogPosting,NewsArticle',
+            'organization_name'        => 'nullable|string|max:255',
+            'organization_logo'        => 'nullable|url|max:500',
+            // 索引設定
+            'allow_indexing'           => 'nullable|boolean',
+            'auto_generate_meta'       => 'nullable|boolean',
+            'generate_canonical'       => 'nullable|boolean',
+            // Sitemap
+            'sitemap_priority'         => 'nullable|numeric|between:0,1',
+            'sitemap_changefreq'       => 'nullable|string|in:always,hourly,daily,weekly,monthly,yearly,never',
         ]);
+
+        // 處理 checkbox — 未勾選時不會出現在 request 中
+        foreach (['enable_schema', 'allow_indexing', 'auto_generate_meta', 'generate_canonical'] as $boolKey) {
+            if (!$request->has($boolKey)) {
+                $validated[$boolKey] = '0';
+            } else {
+                $validated[$boolKey] = '1';
+            }
+        }
 
         Setting::setMany($validated, 'seo');
 
@@ -177,8 +206,22 @@ class SettingController extends Controller
             'contact_email'           => 'required|email',
             'contact_location'        => 'required|string|max:255',
             'social_github'           => 'nullable|string|max:500',
+            'social_github_enabled'   => 'nullable|boolean',
             'social_linkedin'         => 'nullable|string|max:500',
+            'social_linkedin_enabled' => 'nullable|boolean',
             'social_line'             => 'nullable|string|max:500',
+            'social_line_enabled'     => 'nullable|boolean',
+            'social_facebook'         => 'nullable|string|max:500',
+            'social_facebook_enabled' => 'nullable|boolean',
+            'social_twitter'          => 'nullable|string|max:500',
+            'social_twitter_enabled'  => 'nullable|boolean',
+            'social_instagram'        => 'nullable|string|max:500',
+            'social_instagram_enabled'=> 'nullable|boolean',
+            'social_youtube'          => 'nullable|string|max:500',
+            'social_youtube_enabled'  => 'nullable|boolean',
+            'social_embed_enabled'    => 'nullable|boolean',
+            'social_youtube_embed'    => 'nullable|string|max:500',
+            'social_instagram_embed'  => 'nullable|string|max:500',
             'tech_stack_names'        => 'nullable|array',
             'tech_stack_names.*'      => 'nullable|string|max:100',
             'tech_stack_types'        => 'nullable|array',
