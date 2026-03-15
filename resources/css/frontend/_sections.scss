@@ -1480,14 +1480,45 @@ select.form-input {
   .services-grid { grid-template-columns: repeat(4, 1fr); }
   .portfolio-grid { grid-template-columns: repeat(3, 1fr); }
   .tech-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+  .service-card h3 { font-size: 18px; }
+  .service-card p { font-size: 15px; }
+  .portfolio-info h3 { font-size: 17px; }
+  .portfolio-info p { font-size: 14px; }
+  .process-content h3 { font-size: 18px; }
+  .process-content p { font-size: 15px; }
+  .tech-item-name { font-size: 14px; }
+  .tech-item-type { font-size: 12px; }
+  .contact-info h3 { font-size: 24px; }
+  .contact-detail { font-size: 15px; }
+  .contact-detail svg { width: 22px; height: 22px; }
 }
 
 @media (min-width: 1920px) {
   .services-grid,
   .portfolio-grid { gap: 32px; }
   .service-card { padding: 48px 36px; }
+  .service-card h3 { font-size: 20px; }
+  .service-card p { font-size: 16px; }
+  .service-tag { font-size: 12px; }
   .portfolio-info { padding: 28px; }
+  .portfolio-info h3 { font-size: 19px; }
+  .portfolio-info p { font-size: 15px; }
+  .portfolio-tech span { font-size: 12px; }
+  .process-number { font-size: 20px; }
+  .process-content h3 { font-size: 20px; }
+  .process-content p { font-size: 16px; }
+  .tech-item-name { font-size: 15px; }
+  .tech-item-type { font-size: 13px; }
+  .contact-info h3 { font-size: 26px; }
+  .contact-detail { font-size: 16px; }
+  .contact-detail svg { width: 24px; height: 24px; }
   .contact-wrapper { gap: 56px; }
+  .form-group input,
+  .form-group textarea,
+  .form-group select { font-size: 16px; padding: 16px 18px; }
+  .btn-submit { font-size: 14px; padding: 16px 48px; }
+  .footer-nav a { font-size: 1rem; }
+  .footer-trust { font-size: 0.95rem; }
 }
 
 @media (min-width: 2560px) {
@@ -1496,4 +1527,21 @@ select.form-input {
   .tech-grid { max-width: 1400px; }
   .contact-wrapper { max-width: 1400px; }
   .social-embed-grid { max-width: 1600px; }
+  .service-card h3 { font-size: 22px; }
+  .service-card p { font-size: 18px; }
+  .service-tag { font-size: 13px; }
+  .portfolio-info h3 { font-size: 21px; }
+  .portfolio-info p { font-size: 17px; }
+  .process-content h3 { font-size: 22px; }
+  .process-content p { font-size: 18px; }
+  .tech-item-name { font-size: 17px; }
+  .tech-item-type { font-size: 14px; }
+  .contact-info h3 { font-size: 28px; }
+  .contact-detail { font-size: 18px; }
+  .form-group input,
+  .form-group textarea,
+  .form-group select { font-size: 18px; padding: 18px 20px; }
+  .btn-submit { font-size: 15px; padding: 18px 56px; }
+  .footer-nav a { font-size: 1.1rem; }
+  .footer-trust { font-size: 1.05rem; }
 }

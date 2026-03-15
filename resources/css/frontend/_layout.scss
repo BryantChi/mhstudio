@@ -591,14 +591,44 @@
 .footer-social a:hover svg { stroke: var(--accent-cyan); }
 
 /* ===== LARGE SCREEN SCALING ===== */
+@media (min-width: 1440px) {
+  .nav-logo-text { font-size: 16px; }
+  .nav-logo-sub { font-size: 13px; }
+  .nav-links a { font-size: 13px; }
+  .nav-cta { font-size: 13px; }
+  .stat-label { font-size: 15px; }
+  .hero-badge { font-size: 12px; }
+}
+
 @media (min-width: 1920px) {
   .nav { padding: 0 clamp(40px, 5vw, 80px); }
+  .nav-logo-text { font-size: 17px; }
+  .nav-logo-sub { font-size: 14px; }
+  .nav-links a { font-size: 14px; }
+  .nav-cta { font-size: 14px; padding: 10px 28px; }
   .hero-content { max-width: 900px; }
+  .hero-badge { font-size: 13px; letter-spacing: 4px; }
+  .stat-number { font-size: 42px; }
+  .stat-label { font-size: 16px; }
   .stats-bar { max-width: 1400px; margin: 0 auto; }
   .footer { max-width: 1400px; margin: 0 auto; }
+  .footer-logo-text { font-size: 15px; }
+  .footer-right { font-size: 15px; }
+  .footer-social a { width: 42px; height: 42px; }
+  .footer-social svg { width: 20px; height: 20px; }
 }
 
 @media (min-width: 2560px) {
+  .nav-logo-text { font-size: 19px; }
+  .nav-logo-sub { font-size: 15px; }
+  .nav-links a { font-size: 16px; }
+  .nav-cta { font-size: 15px; padding: 12px 32px; }
   .hero-content { max-width: 1100px; }
+  .stat-number { font-size: 48px; }
+  .stat-label { font-size: 18px; }
   .stats-bar { max-width: 1800px; }
+  .footer-logo-text { font-size: 17px; }
+  .footer-right { font-size: 17px; }
+  .footer-social a { width: 48px; height: 48px; }
+  .footer-social svg { width: 24px; height: 24px; }
 }
