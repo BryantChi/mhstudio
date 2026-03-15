@@ -85,7 +85,7 @@
 .service-tag {
   padding: 4px 12px;
   border: 1px solid rgba(58, 139, 253, 0.2);
-  font-size: clamp(0.75rem, 0.75vw,  0.875rem);
+  font-size: clamp(0.875rem, 0.75vw,  0.875rem);
   font-family: var(--font-display);
   letter-spacing: 1px;
   color: var(--accent-blue);
@@ -152,7 +152,7 @@
   border: 1px solid var(--accent-cyan);
   color: var(--accent-cyan);
   font-family: var(--font-display);
-  font-size: clamp(0.75rem, 0.85vw,  0.938rem);
+  font-size: clamp(0.875rem, 0.85vw,  0.938rem);
   letter-spacing: 2px;
   background: none;
   cursor: pointer;
@@ -173,7 +173,7 @@
 }
 .portfolio-info p {
   color: var(--text-secondary);
-  font-size: clamp(0.813rem, 0.95vw,  1.063rem);
+  font-size: clamp(0.875rem, 0.95vw,  1.063rem);
   line-height: 1.6;
 }
 .portfolio-tech {
@@ -186,7 +186,7 @@
   padding: 3px 10px;
   background: rgba(0, 212, 255, 0.06);
   border: 1px solid rgba(0, 212, 255, 0.12);
-  font-size: clamp(0.75rem, 0.75vw,  0.875rem);
+  font-size: clamp(0.875rem, 0.75vw,  0.875rem);
   font-family: var(--font-display);
   letter-spacing: 1px;
   color: var(--accent-cyan);
@@ -269,13 +269,13 @@
 }
 .tech-item-name {
   font-family: var(--font-display);
-  font-size: clamp(0.813rem, 0.9vw,  1.063rem);
+  font-size: clamp(0.875rem, 0.9vw,  1.063rem);
   letter-spacing: 1px;
   color: var(--text-primary);
   margin-bottom: 4px;
 }
 .tech-item-type {
-  font-size: clamp(0.75rem, 0.75vw,  0.875rem);
+  font-size: clamp(0.875rem, 0.75vw,  0.875rem);
   color: var(--text-dim);
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -309,7 +309,7 @@
   align-items: center;
   gap: 8px;
   font-family: var(--font-display);
-  font-size: clamp(0.75rem, 0.9vw,  0.938rem);
+  font-size: clamp(0.875rem, 0.9vw,  0.938rem);
   font-weight: 600;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -416,7 +416,7 @@
   transform: scale(1.03);
 }
 .line-qr-text {
-  font-size: clamp(0.75rem, 1vw,  1rem);
+  font-size: clamp(0.875rem, 1vw,  1rem);
   color: var(--text-dim);
   margin-top: 10px;
   letter-spacing: 1px;
@@ -454,7 +454,7 @@
   border: none;
   color: #fff;
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 3px;
   text-transform: uppercase;
   cursor: pointer;
@@ -542,7 +542,7 @@
   top: 12px; right: -28px;
   background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
   color: #fff;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-family: var(--font-display);
   font-weight: 700;
   letter-spacing: 1px;
@@ -564,7 +564,7 @@
 }
 
 .pricing-plan-subtitle {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
 }
 
@@ -581,14 +581,14 @@
 }
 
 .pricing-plan-cycle {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--text-dim);
   letter-spacing: 1px;
   margin-bottom: 12px;
 }
 
 .pricing-plan-desc {
-  font-size: 0.813rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
   line-height: 1.6;
   margin-bottom: 16px;
@@ -605,7 +605,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
   padding: 4px 10px;
   border: 1px solid var(--border-subtle);
@@ -627,7 +627,7 @@
     display: flex;
     align-items: flex-start;
     gap: 8px;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: var(--text-secondary);
     padding: 4px 0;
     line-height: 1.5;
@@ -656,7 +656,7 @@
   border: 1px solid var(--accent-cyan);
   color: var(--accent-cyan);
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 2px;
   text-transform: uppercase;
   text-decoration: none;
@@ -743,14 +743,14 @@
   color: var(--accent-cyan);
 
   small {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: var(--text-dim);
     font-weight: 400;
   }
 }
 
 .extra-service-desc {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
   margin-bottom: 8px;
 }
@@ -761,7 +761,7 @@
   margin: 0;
 
   li {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: var(--text-secondary);
     padding: 3px 0;
 
@@ -797,7 +797,7 @@
 
   h4 {
     font-family: var(--font-display);
-    font-size: 0.813rem;
+    font-size: 0.875rem;
     font-weight: 600;
     letter-spacing: 1px;
     color: var(--text-primary);
@@ -805,7 +805,7 @@
   }
 
   p {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: var(--text-secondary);
     margin: 4px 0;
   }
@@ -820,7 +820,7 @@
 
 .addon-service-note {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--text-dim);
   margin-top: 6px;
 }
@@ -853,14 +853,14 @@
   strong {
     display: block;
     font-family: var(--font-display);
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     letter-spacing: 1px;
     color: var(--text-primary);
     margin-bottom: 4px;
   }
 
   p {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: var(--text-secondary);
     margin: 0;
     line-height: 1.5;
@@ -884,7 +884,7 @@
 
 .pricing-divider-text {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 2px;
   color: var(--text-dim);
   white-space: nowrap;
@@ -939,7 +939,7 @@
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 3px;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: rgba(255, 255, 255, 0.4);
     margin-bottom: 1.5rem;
 }
@@ -1194,7 +1194,7 @@
 
 .footer-trust {
     text-align: center;
-    font-size: clamp(0.75rem, 0.85vw, 1rem);
+    font-size: clamp(0.875rem, 0.85vw, 1rem);
     color: rgba(255, 255, 255, 0.3);
     margin-bottom: 1rem;
 }
@@ -1337,7 +1337,7 @@ select.form-input {
 }
 
 .quote-status-step-label {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: rgba(255,255,255,0.4);
     letter-spacing: 0.5px;
 }
@@ -1434,7 +1434,7 @@ select.form-input {
     padding: 2px 10px;
     margin: 2px 4px 2px 0;
     border: 1px solid rgba(0, 212, 255, 0.2);
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: var(--accent-cyan, #00d4ff);
     letter-spacing: 0.5px;
 }

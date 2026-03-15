@@ -76,7 +76,7 @@
   border: 1px solid var(--accent-blue);
   color: var(--accent-cyan);
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 2px;
   text-transform: uppercase;
   margin-bottom: 16px;
@@ -136,7 +136,7 @@
   border: none;
   color: #fff;
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 2px;
   cursor: pointer;
   transition: opacity 0.3s;
@@ -157,7 +157,7 @@
   background: transparent;
   color: var(--text-secondary);
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 1px;
   cursor: pointer;
   text-decoration: none;
@@ -237,7 +237,7 @@
   border: 1px solid var(--accent-blue);
   color: var(--accent-cyan);
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 1px;
   text-transform: uppercase;
   backdrop-filter: blur(10px);
@@ -259,7 +259,7 @@
 }
 .blog-card-excerpt {
   color: var(--text-secondary);
-  font-size: 0.813rem;
+  font-size: 0.875rem;
   line-height: 1.7;
   margin-bottom: 16px;
   flex: 1;
@@ -275,7 +275,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--text-dim);
 }
 .blog-card-date svg {
@@ -284,7 +284,7 @@
 }
 .blog-card-readmore {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 1px;
   color: var(--accent-cyan);
   transition: color 0.3s;
@@ -320,7 +320,7 @@
   background: transparent;
   color: var(--text-secondary);
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   text-decoration: none;
   transition: all 0.3s;
 }
@@ -342,7 +342,7 @@
 }
 .blog-pagination p {
   color: var(--text-secondary);
-  font-size: 0.813rem;
+  font-size: 0.875rem;
 }
 
 /* Empty state */
@@ -397,7 +397,7 @@
   padding: 6px 16px;
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
-  font-size: 0.813rem;
+  font-size: 0.875rem;
   text-decoration: none;
   transition: all 0.3s;
 }
@@ -414,7 +414,7 @@
 .blog-tag-count {
   padding: 1px 6px;
   background: rgba(0, 212, 255, 0.1);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--accent-cyan);
   font-family: var(--font-display);
 }
@@ -459,7 +459,7 @@
   align-items: center;
   gap: 6px;
   color: var(--text-secondary);
-  font-size: 0.813rem;
+  font-size: 0.875rem;
 }
 .article-meta-item svg {
   stroke: var(--accent-cyan);
@@ -599,7 +599,7 @@
   background: var(--bg-secondary);
   color: var(--text-primary);
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 1px;
 }
 
@@ -621,7 +621,7 @@
   padding: 4px 14px;
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   text-decoration: none;
   transition: all 0.3s;
 }
@@ -641,7 +641,7 @@
 }
 .article-share-label {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 2px;
   color: var(--text-dim);
   text-transform: uppercase;
@@ -777,7 +777,7 @@
   align-items: center;
   gap: 6px;
   color: var(--text-dim);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   margin-bottom: 10px;
 }
 .portfolio-listing-client svg {
@@ -847,7 +847,7 @@
 }
 .project-sidebar-label {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 2px;
   color: var(--text-dim);
   text-transform: uppercase;
@@ -867,7 +867,7 @@
   padding: 3px 10px;
   background: rgba(0, 212, 255, 0.06);
   border: 1px solid rgba(0, 212, 255, 0.12);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-family: var(--font-display);
   letter-spacing: 1px;
   color: var(--accent-cyan);
@@ -938,7 +938,7 @@
 .about-code-filename {
   margin-left: 12px;
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--text-dim);
   letter-spacing: 1px;
 }
@@ -948,7 +948,7 @@
 }
 .about-code-body code {
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 0.813rem;
+  font-size: 0.875rem;
   line-height: 1.8;
   color: var(--text-secondary);
 }
@@ -964,7 +964,7 @@
   background: var(--bg-secondary);
 }
 .timeline-year {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 1px;
 }
 
@@ -1155,7 +1155,7 @@
 .service-tech-tag {
   padding: 8px 20px;
   border: 1px solid rgba(58, 139, 253, 0.2);
-  font-size: 0.813rem;
+  font-size: 0.875rem;
   font-family: var(--font-display);
   letter-spacing: 1px;
   color: var(--accent-blue);
@@ -1193,7 +1193,7 @@
 }
 .service-price-label {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 2px;
   color: var(--text-dim);
   text-transform: uppercase;
@@ -1207,7 +1207,7 @@
   margin-bottom: 4px;
 }
 .service-price-note {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--text-dim);
 }
 
@@ -1383,19 +1383,19 @@
 }
 .testimonial-name {
   font-family: var(--font-display);
-  font-size: 0.813rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: 0.5px;
 }
 .testimonial-role {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--text-dim);
 }
 .testimonial-project-type {
   padding: 3px 10px;
   border: 1px solid rgba(0, 212, 255, 0.15);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-family: var(--font-display);
   letter-spacing: 1px;
   color: var(--accent-cyan);
@@ -1472,7 +1472,7 @@
   border: 1px solid var(--accent-blue);
   color: var(--accent-cyan);
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 1px;
   text-transform: uppercase;
   margin-bottom: 10px;
@@ -1489,7 +1489,7 @@
 }
 .blog-preview-excerpt {
   color: var(--text-secondary);
-  font-size: 0.813rem;
+  font-size: 0.875rem;
   line-height: 1.6;
   margin-bottom: 16px;
   flex: 1;
@@ -1498,7 +1498,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--text-dim);
   border-top: 1px solid var(--border-subtle);
   padding-top: 12px;
@@ -1506,7 +1506,7 @@
 .blog-preview-readmore {
   color: var(--accent-cyan);
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 1px;
 }
 
@@ -1579,7 +1579,7 @@
 }
 .newsletter-message {
   margin-top: 8px;
-  font-size: 0.813rem;
+  font-size: 0.875rem;
 }
 .newsletter-message.success {
   color: var(--accent-cyan);
@@ -1685,7 +1685,7 @@
   color: var(--text-primary);
   text-decoration: none;
   font-family: var(--font-display);
-  font-size: 0.813rem;
+  font-size: 0.875rem;
   letter-spacing: 0.5px;
   white-space: nowrap;
   backdrop-filter: blur(12px);
@@ -1841,7 +1841,7 @@
 }
 .quote-progress-label {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 1px;
   color: var(--text-dim);
   text-transform: uppercase;
@@ -1852,7 +1852,7 @@
   color: var(--accent-cyan);
 }
 @media (max-width: 480px) {
-  .quote-progress-label { font-size: 0.75rem; letter-spacing: 0.5px; }
+  .quote-progress-label { font-size: 0.875rem; letter-spacing: 0.5px; }
 }
 
 /* ===== Step Container ===== */
@@ -1883,7 +1883,7 @@
 }
 .quote-step-number {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 3px;
   color: var(--accent-cyan);
   display: block;
@@ -1982,7 +1982,7 @@
   font-size: 0.875rem;
 }
 .quote-option-desc {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--text-dim);
   line-height: 1.5;
 }
@@ -2048,7 +2048,7 @@
 .quote-form-label {
   display: block;
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 2px;
   color: var(--text-secondary);
   margin-bottom: 8px;
@@ -2059,7 +2059,7 @@
 }
 .quote-optional {
   color: var(--text-dim);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   text-transform: none;
   letter-spacing: 0;
 }
@@ -2111,7 +2111,7 @@
   gap: 8px;
   padding: 12px 28px;
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 2px;
   cursor: pointer;
   transition: all 0.3s;
@@ -2235,7 +2235,7 @@
 }
 .quote-estimate-label {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 3px;
   color: var(--text-dim);
   text-transform: uppercase;
@@ -2254,7 +2254,7 @@
   line-height: 1.2;
 }
 .quote-estimate-note {
-  font-size: 0.813rem;
+  font-size: 0.875rem;
   color: var(--text-dim);
   font-style: italic;
 }
@@ -2277,7 +2277,7 @@
 }
 .quote-summary-label {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 2px;
   color: var(--text-dim);
   text-transform: uppercase;
