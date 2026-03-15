@@ -2,6 +2,25 @@
 
 @section('title', $project->title . ' | MH Studio 孟衡')
 
+@php
+    $galleryImages = $project->images ?? collect();
+    $hasGallery = $galleryImages->isNotEmpty();
+    $coverUrl = $project->cover_image;
+    // 統一建立 lightbox 資料（gallery 或單張 cover）
+    if ($hasGallery) {
+        $lightboxData = $galleryImages->map(fn($img) => [
+            'url' => $img->image_url,
+            'alt' => $img->alt_text ?? $project->title,
+            'caption' => $img->caption ?? '',
+        ])->values()->all();
+    } elseif ($coverUrl) {
+        $lightboxData = [['url' => $coverUrl, 'alt' => $project->title, 'caption' => '']];
+    } else {
+        $lightboxData = [];
+    }
+    $hasLightbox = !empty($lightboxData);
+@endphp
+
 @section('content')
     @include('frontend.partials.navigation')
 
@@ -30,12 +49,6 @@
       <div class="project-detail-wrapper">
         {{-- Main Content --}}
         <div class="project-detail-content">
-          @php
-              $galleryImages = $project->images ?? collect();
-              $hasGallery = $galleryImages->isNotEmpty();
-              $coverUrl = $project->cover_image;
-          @endphp
-
           @if($hasGallery)
             {{-- 大圖：第一張圖片 --}}
             <div class="project-cover-image">
@@ -65,8 +78,13 @@
             </div>
             @endif
           @elseif($coverUrl)
+            {{-- 單張封面（也可點擊放大） --}}
             <div class="project-cover-image">
-              <img src="{{ $coverUrl }}" alt="{{ $project->title }}">
+              <img src="{{ $coverUrl }}"
+                   alt="{{ $project->title }}"
+                   class="project-gallery-main-img"
+                   data-gallery-index="0"
+                   style="cursor: pointer;">
             </div>
           @endif
 
@@ -74,29 +92,6 @@
             {!! $project->content !!}
           </div>
         </div>
-
-        {{-- Lightbox Overlay --}}
-        @if($hasGallery)
-        @php
-            $lightboxData = $galleryImages->map(fn($img) => [
-                'url' => $img->image_url,
-                'alt' => $img->alt_text ?? $project->title,
-                'caption' => $img->caption ?? '',
-            ])->values()->all();
-        @endphp
-        <div class="project-lightbox" id="projectLightbox">
-          <button class="project-lightbox-close" aria-label="關閉">&times;</button>
-          <button class="project-lightbox-prev" aria-label="上一張">&#10094;</button>
-          <button class="project-lightbox-next" aria-label="下一張">&#10095;</button>
-          <div class="project-lightbox-img-wrapper">
-            <img src="" alt="" id="lightboxImg">
-          </div>
-          <div class="project-lightbox-info">
-            <div class="project-lightbox-caption" id="lightboxCaption"></div>
-            <div class="project-lightbox-counter" id="lightboxCounter"></div>
-          </div>
-        </div>
-        @endif
 
         {{-- Sidebar --}}
         <aside class="project-sidebar">
@@ -169,6 +164,26 @@
       </div>
     </section>
 
+    {{-- ===== LIGHTBOX OVERLAY（放在 wrapper 外面才能正常 fixed 全螢幕） ===== --}}
+    @if($hasLightbox)
+    <div class="project-lightbox" id="projectLightbox">
+      <button class="project-lightbox-close" aria-label="關閉">&times;</button>
+      @if(count($lightboxData) > 1)
+      <button class="project-lightbox-prev" aria-label="上一張">&#10094;</button>
+      <button class="project-lightbox-next" aria-label="下一張">&#10095;</button>
+      @endif
+      <div class="project-lightbox-img-wrapper">
+        <img src="" alt="" id="lightboxImg">
+      </div>
+      <div class="project-lightbox-info">
+        <div class="project-lightbox-caption" id="lightboxCaption"></div>
+        @if(count($lightboxData) > 1)
+        <div class="project-lightbox-counter" id="lightboxCounter"></div>
+        @endif
+      </div>
+    </div>
+    @endif
+
     @if(isset($relatedProjects) && $relatedProjects->count() > 0)
     <section class="related-projects-section">
         <div class="related-projects-wrapper">
@@ -230,18 +245,18 @@
 
     @include('frontend.partials.footer')
 
-    @if(isset($hasGallery) && $hasGallery)
+    @if($hasLightbox)
     @push('scripts')
     <script>
     (function() {
-        const images = @json($lightboxData);
+        var images = @json($lightboxData);
         if (!images || images.length === 0) return;
 
-        const lightbox = document.getElementById('projectLightbox');
-        const lightboxImg = document.getElementById('lightboxImg');
-        const lightboxCaption = document.getElementById('lightboxCaption');
-        const lightboxCounter = document.getElementById('lightboxCounter');
-        let currentIndex = 0;
+        var lightbox = document.getElementById('projectLightbox');
+        var lightboxImg = document.getElementById('lightboxImg');
+        var lightboxCaption = document.getElementById('lightboxCaption');
+        var lightboxCounter = document.getElementById('lightboxCounter');
+        var currentIndex = 0;
 
         function openLightbox(index) {
             currentIndex = index;
@@ -256,11 +271,11 @@
         }
 
         function updateLightbox() {
-            const img = images[currentIndex];
+            var img = images[currentIndex];
             lightboxImg.src = img.url;
             lightboxImg.alt = img.alt;
-            lightboxCaption.textContent = img.caption || '';
-            lightboxCounter.textContent = (currentIndex + 1) + ' / ' + images.length;
+            if (lightboxCaption) lightboxCaption.textContent = img.caption || '';
+            if (lightboxCounter) lightboxCounter.textContent = (currentIndex + 1) + ' / ' + images.length;
         }
 
         function prevImage() {
@@ -273,31 +288,34 @@
             updateLightbox();
         }
 
-        // Click handlers for gallery images
+        // 點擊圖片開啟 lightbox
         document.querySelectorAll('[data-gallery-index]').forEach(function(el) {
             el.addEventListener('click', function() {
                 openLightbox(parseInt(this.dataset.galleryIndex));
             });
         });
 
-        // Lightbox controls
-        lightbox.querySelector('.project-lightbox-close').addEventListener('click', closeLightbox);
-        lightbox.querySelector('.project-lightbox-prev').addEventListener('click', prevImage);
-        lightbox.querySelector('.project-lightbox-next').addEventListener('click', nextImage);
+        // Lightbox 控制按鈕
+        var closeBtn = lightbox.querySelector('.project-lightbox-close');
+        var prevBtn = lightbox.querySelector('.project-lightbox-prev');
+        var nextBtn = lightbox.querySelector('.project-lightbox-next');
+        if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
+        if (prevBtn) prevBtn.addEventListener('click', prevImage);
+        if (nextBtn) nextBtn.addEventListener('click', nextImage);
 
-        // Close on backdrop click
+        // 點擊背景關閉
         lightbox.addEventListener('click', function(e) {
             if (e.target === lightbox || e.target.classList.contains('project-lightbox-img-wrapper')) {
                 closeLightbox();
             }
         });
 
-        // Keyboard navigation
+        // 鍵盤操作
         document.addEventListener('keydown', function(e) {
             if (!lightbox.classList.contains('active')) return;
             if (e.key === 'Escape') closeLightbox();
-            if (e.key === 'ArrowLeft') prevImage();
-            if (e.key === 'ArrowRight') nextImage();
+            if (e.key === 'ArrowLeft' && images.length > 1) prevImage();
+            if (e.key === 'ArrowRight' && images.length > 1) nextImage();
         });
     })();
     </script>
