@@ -1507,69 +1507,31 @@ select.form-input {
 }
 
 /* ===== LARGE SCREEN SCALING ===== */
+/* 字體由 html 根字體放大自動處理（rem 級聯），這裡只處理佈局 */
 @media (min-width: 1440px) {
   .services-grid { grid-template-columns: repeat(4, 1fr); }
   .portfolio-grid { grid-template-columns: repeat(3, 1fr); }
   .tech-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
-  .service-card h3 { font-size: 1.125rem; }
-  .service-card p { font-size: 0.938rem; }
-  .portfolio-info h3 { font-size: 1.063rem; }
-  .portfolio-info p { font-size: 0.875rem; }
-  .process-content h3 { font-size: 1.125rem; }
-  .process-content p { font-size: 0.938rem; }
-  .tech-item-name { font-size: 0.875rem; }
-  .tech-item-type { font-size: 0.75rem; }
-  .contact-info h3 { font-size: 1.5rem; }
-  .contact-detail { font-size: 0.938rem; }
-  .contact-detail svg { width: 22px; height: 22px; }
 }
 
 @media (min-width: 1920px) {
   .services-grid,
-  .portfolio-grid { gap: 32px; }
+  .portfolio-grid { max-width: min(1600px, 92vw); gap: 32px; }
+  .tech-grid { max-width: min(1300px, 88vw); }
+  .contact-wrapper { max-width: min(1200px, 88vw); gap: 56px; }
+  .social-embed-grid { max-width: min(1400px, 90vw); }
+  .process-timeline { max-width: 900px; }
   .service-card { padding: 48px 36px; }
-  .service-card h3 { font-size: 1.375rem; }
-  .service-card p { font-size: 1.063rem; }
-  .service-tag { font-size: 0.813rem; }
   .portfolio-info { padding: 28px; }
-  .portfolio-info h3 { font-size: 1.25rem; }
-  .portfolio-info p { font-size: 1rem; }
-  .portfolio-tech span { font-size: 0.813rem; }
-  .process-number { font-size: 1.375rem; }
-  .process-content h3 { font-size: 1.375rem; }
-  .process-content p { font-size: 1.063rem; }
-  .tech-item-name { font-size: 1rem; }
-  .tech-item-type { font-size: 0.875rem; }
-  .contact-info h3 { font-size: 1.75rem; }
-  .contact-detail { font-size: 1.063rem; }
-  .contact-detail svg { width: 26px; height: 26px; }
-  .contact-wrapper { gap: 56px; }
-  .form-group input,
-  .form-group textarea,
-  .form-group select { font-size: 1.063rem; padding: 16px 18px; }
-  .btn-submit { font-size: 0.938rem; padding: 16px 48px; }
-  .footer-nav a { font-size: 1.05rem; }
-  .footer-trust { font-size: 1rem; }
   .line-qr-img { width: 200px; height: 200px; }
 }
 
 @media (min-width: 2560px) {
-  .service-card h3 { font-size: 1.5rem; }
-  .service-card p { font-size: 1.188rem; }
-  .service-tag { font-size: 0.875rem; }
-  .portfolio-info h3 { font-size: 1.438rem; }
-  .portfolio-info p { font-size: 1.125rem; }
-  .process-content h3 { font-size: 1.5rem; }
-  .process-content p { font-size: 1.188rem; }
-  .tech-item-name { font-size: 1.125rem; }
-  .tech-item-type { font-size: 0.938rem; }
-  .contact-info h3 { font-size: 2rem; }
-  .contact-detail { font-size: 1.188rem; }
-  .form-group input,
-  .form-group textarea,
-  .form-group select { font-size: 1.188rem; padding: 18px 20px; }
-  .btn-submit { font-size: 1rem; padding: 18px 56px; }
-  .footer-nav a { font-size: 1.15rem; }
-  .footer-trust { font-size: 1.1rem; }
-  .line-qr-img { width: 240px; height: 240px; }
+  .services-grid,
+  .portfolio-grid { max-width: min(2000px, 90vw); }
+  .tech-grid { max-width: min(1600px, 85vw); }
+  .contact-wrapper { max-width: min(1500px, 85vw); }
+  .social-embed-grid { max-width: min(1800px, 88vw); }
+  .process-timeline { max-width: 1100px; }
+  .line-qr-img { width: 220px; height: 220px; }
 }

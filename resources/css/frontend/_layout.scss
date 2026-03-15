@@ -591,41 +591,16 @@
 .footer-social a:hover svg { stroke: var(--accent-cyan); }
 
 /* ===== LARGE SCREEN SCALING ===== */
-@media (min-width: 1440px) {
-  .nav-logo-text { font-size: 1rem; }
-  .nav-logo-sub { font-size: 0.875rem; }
-  .nav-links a { font-size: 0.875rem; }
-  .nav-cta { font-size: 0.875rem; }
-  .stat-label { font-size: 1rem; }
-  .hero-badge { font-size: 0.813rem; }
-}
-
+/* 字體由 html 根字體放大自動處理（rem 級聯），這裡只處理佈局與間距 */
 @media (min-width: 1920px) {
-  .nav { padding: 0 clamp(40px, 5vw, 80px); }
-  .nav-logo-text { font-size: 1.063rem; }
-  .nav-logo-sub { font-size: 0.875rem; }
-  .nav-links a { font-size: 0.875rem; }
-  .nav-cta { font-size: 0.875rem; padding: 10px 28px; }
-  .hero-content { max-width: 900px; }
-  .hero-badge { font-size: 0.875rem; letter-spacing: 4px; }
-  .stat-number { font-size: 2.625rem; }
-  .stat-label { font-size: 1rem; }
-  .footer-logo-text { font-size: 0.938rem; }
-  .footer-right { font-size: 0.938rem; }
-  .footer-social a { width: 42px; height: 42px; }
-  .footer-social svg { width: 20px; height: 20px; }
+  .nav { padding: 0 clamp(2.5rem, 5vw, 5rem); }
+  .hero-content { max-width: 1000px; }
+  .footer-social a { width: 2.625rem; height: 2.625rem; }
+  .footer-social svg { width: 1.25rem; height: 1.25rem; }
 }
 
 @media (min-width: 2560px) {
-  .nav-logo-text { font-size: 1.188rem; }
-  .nav-logo-sub { font-size: 0.938rem; }
-  .nav-links a { font-size: 1rem; }
-  .nav-cta { font-size: 0.938rem; padding: 12px 32px; }
-  .hero-content { max-width: 1100px; }
-  .stat-number { font-size: 3rem; }
-  .stat-label { font-size: 1.125rem; }
-  .footer-logo-text { font-size: 1.063rem; }
-  .footer-right { font-size: 1.063rem; }
-  .footer-social a { width: 48px; height: 48px; }
-  .footer-social svg { width: 24px; height: 24px; }
+  .hero-content { max-width: 1200px; }
+  .footer-social a { width: 3rem; height: 3rem; }
+  .footer-social svg { width: 1.5rem; height: 1.5rem; }
 }

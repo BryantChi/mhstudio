@@ -2290,3 +2290,18 @@ body.light-theme {
   --border-glow: rgba(0, 212, 255, 0.25);
   --gradient-hero: linear-gradient(135deg, #e8edf5 0%, #d1d9e8 40%, #e4e7ec 100%);
 }
+
+/* ===== LARGE SCREEN — 內頁容器放寬 ===== */
+@media (min-width: 1920px) {
+  .page-header-content { max-width: 1000px; }
+  .blog-section { max-width: min(1500px, 90vw); }
+  .portfolio-section { max-width: min(1500px, 90vw); }
+  .article-container { max-width: 900px; }
+}
+
+@media (min-width: 2560px) {
+  .page-header-content { max-width: 1200px; }
+  .blog-section { max-width: min(1800px, 88vw); }
+  .portfolio-section { max-width: min(1800px, 88vw); }
+  .article-container { max-width: 1000px; }
+}
