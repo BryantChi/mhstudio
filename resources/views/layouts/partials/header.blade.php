@@ -3,15 +3,8 @@
         {{-- 左側區域 --}}
         <div class="header-left">
             <button class="header-toggler" type="button" id="header-sidebar-toggle">
-                <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" style="width:28px;height:28px;">
-                    <defs>
-                        <linearGradient id="hdr-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#3a8bfd"/>
-                            <stop offset="100%" style="stop-color:#00d4ff"/>
-                        </linearGradient>
-                    </defs>
-                    <circle cx="24" cy="24" r="22" fill="none" stroke="url(#hdr-grad)" stroke-width="1.2" opacity="0.4"/>
-                    <text x="24" y="28" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="800" fill="url(#hdr-grad)">MH</text>
+                <svg class="icon icon-lg">
+                    <use xlink:href="/assets/icons/free.svg#cil-menu"></use>
                 </svg>
             </button>
         </div>
