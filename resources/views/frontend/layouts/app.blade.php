@@ -40,6 +40,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     @vite(['resources/css/frontend/mh-studio.scss', 'resources/js/frontend/mh-studio.js'])
 
+    {{-- Fancybox 5 (Lightbox) --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5/dist/fancybox/fancybox.css">
+
     {{-- Schema.org 結構化資料 --}}
     @php
         $sameAsLinks = collect([
@@ -99,6 +102,25 @@
 <body>
     @yield('content')
 
+    {{-- Fancybox 5 JS --}}
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5/dist/fancybox/fancybox.umd.js"></script>
+    <script>
+      Fancybox.bind('[data-fancybox]', {
+        animated: true,
+        showClass: 'fancybox-fadeIn',
+        hideClass: 'fancybox-fadeOut',
+        Toolbar: {
+          display: {
+            left: ['infobar'],
+            middle: [],
+            right: ['iterateZoom', 'slideshow', 'fullscreen', 'download', 'thumbs', 'close'],
+          },
+        },
+        Images: {
+          zoom: true,
+        },
+      });
+    </script>
     @stack('scripts')
 </body>
 </html>

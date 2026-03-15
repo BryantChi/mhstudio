@@ -6,19 +6,6 @@
     $galleryImages = $project->images ?? collect();
     $hasGallery = $galleryImages->isNotEmpty();
     $coverUrl = $project->cover_image;
-    // 統一建立 lightbox 資料（gallery 或單張 cover）
-    if ($hasGallery) {
-        $lightboxData = $galleryImages->map(fn($img) => [
-            'url' => $img->image_url,
-            'alt' => $img->alt_text ?? $project->title,
-            'caption' => $img->caption ?? '',
-        ])->values()->all();
-    } elseif ($coverUrl) {
-        $lightboxData = [['url' => $coverUrl, 'alt' => $project->title, 'caption' => '']];
-    } else {
-        $lightboxData = [];
-    }
-    $hasLightbox = !empty($lightboxData);
 @endphp
 
 @section('content')
@@ -50,13 +37,15 @@
         {{-- Main Content --}}
         <div class="project-detail-content">
           @if($hasGallery)
-            {{-- 大圖：第一張圖片 --}}
+            {{-- 大圖：第一張圖片（Fancybox） --}}
             <div class="project-cover-image">
-              <img src="{{ $galleryImages->first()->image_url }}"
-                   alt="{{ $galleryImages->first()->alt_text ?? $project->title }}"
-                   class="project-gallery-main-img"
-                   data-gallery-index="0"
-                   style="cursor: pointer;">
+              <a href="{{ $galleryImages->first()->image_url }}"
+                 data-fancybox="project-gallery"
+                 data-caption="{{ $galleryImages->first()->caption ?? '' }}">
+                <img src="{{ $galleryImages->first()->image_url }}"
+                     alt="{{ $galleryImages->first()->alt_text ?? $project->title }}"
+                     class="project-gallery-main-img">
+              </a>
               @if($galleryImages->first()->caption)
                 <div class="project-gallery-main-caption">{{ $galleryImages->first()->caption }}</div>
               @endif
@@ -65,26 +54,31 @@
             {{-- 縮圖 Grid（第 2 張起） --}}
             @if($galleryImages->count() > 1)
             <div class="project-gallery-grid">
-              @foreach($galleryImages->slice(1) as $idx => $image)
-                <div class="project-gallery-thumb" data-gallery-index="{{ $idx + 1 }}">
+              @foreach($galleryImages->slice(1) as $image)
+                <a href="{{ $image->image_url }}"
+                   data-fancybox="project-gallery"
+                   data-caption="{{ $image->caption ?? '' }}"
+                   class="project-gallery-thumb">
                   <img src="{{ $image->image_url }}"
                        alt="{{ $image->alt_text ?? $project->title }}"
                        loading="lazy">
                   @if($image->caption)
                     <div class="project-gallery-caption">{{ $image->caption }}</div>
                   @endif
-                </div>
+                </a>
               @endforeach
             </div>
             @endif
           @elseif($coverUrl)
             {{-- 單張封面（也可點擊放大） --}}
             <div class="project-cover-image">
-              <img src="{{ $coverUrl }}"
-                   alt="{{ $project->title }}"
-                   class="project-gallery-main-img"
-                   data-gallery-index="0"
-                   style="cursor: pointer;">
+              <a href="{{ $coverUrl }}"
+                 data-fancybox="project-gallery"
+                 data-caption="{{ $project->title }}">
+                <img src="{{ $coverUrl }}"
+                     alt="{{ $project->title }}"
+                     class="project-gallery-main-img">
+              </a>
             </div>
           @endif
 
@@ -164,30 +158,6 @@
       </div>
     </section>
 
-    {{-- ===== LIGHTBOX OVERLAY（放在 wrapper 外面才能正常 fixed 全螢幕） ===== --}}
-    @if($hasLightbox)
-    <div class="project-lightbox" id="projectLightbox">
-      <button class="project-lightbox-close" aria-label="關閉">&times;</button>
-      @if(count($lightboxData) > 1)
-      <button class="project-lightbox-prev" aria-label="上一張">&#10094;</button>
-      <button class="project-lightbox-next" aria-label="下一張">&#10095;</button>
-      @endif
-      <div class="project-lightbox-img-wrapper" id="lightboxImgWrapper">
-        <img src="" alt="" id="lightboxImg">
-      </div>
-      <button class="project-lightbox-zoom" id="lightboxZoomBtn" aria-label="放大">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-        <span id="lightboxZoomText">放大</span>
-      </button>
-      <div class="project-lightbox-info">
-        <div class="project-lightbox-caption" id="lightboxCaption"></div>
-        @if(count($lightboxData) > 1)
-        <div class="project-lightbox-counter" id="lightboxCounter"></div>
-        @endif
-      </div>
-    </div>
-    @endif
-
     @if(isset($relatedProjects) && $relatedProjects->count() > 0)
     <section class="related-projects-section">
         <div class="related-projects-wrapper">
@@ -248,147 +218,4 @@
     </section>
 
     @include('frontend.partials.footer')
-
-    @if($hasLightbox)
-    @push('scripts')
-    <script>
-    (function() {
-        var images = @json($lightboxData);
-        if (!images || images.length === 0) return;
-
-        var lightbox = document.getElementById('projectLightbox');
-        var lightboxImg = document.getElementById('lightboxImg');
-        var lightboxImgWrapper = document.getElementById('lightboxImgWrapper');
-        var lightboxCaption = document.getElementById('lightboxCaption');
-        var lightboxCounter = document.getElementById('lightboxCounter');
-        var lightboxZoomBtn = document.getElementById('lightboxZoomBtn');
-        var lightboxZoomText = document.getElementById('lightboxZoomText');
-        var currentIndex = 0;
-
-        function openLightbox(index) {
-            currentIndex = index;
-            exitZoom(); // 每次打開都重置 zoom
-            updateLightbox();
-            lightbox.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeLightbox() {
-            exitZoom();
-            lightbox.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        function updateLightbox() {
-            var img = images[currentIndex];
-            lightboxImg.src = img.url;
-            lightboxImg.alt = img.alt;
-            if (lightboxCaption) lightboxCaption.textContent = img.caption || '';
-            if (lightboxCounter) lightboxCounter.textContent = (currentIndex + 1) + ' / ' + images.length;
-        }
-
-        function prevImage() {
-            exitZoom();
-            currentIndex = (currentIndex - 1 + images.length) % images.length;
-            updateLightbox();
-        }
-
-        function nextImage() {
-            exitZoom();
-            currentIndex = (currentIndex + 1) % images.length;
-            updateLightbox();
-        }
-
-        // ===== Zoom 放大/還原 =====
-        function toggleZoom() {
-            if (lightbox.classList.contains('zoomed')) {
-                exitZoom();
-            } else {
-                enterZoom();
-            }
-        }
-
-        function enterZoom() {
-            lightbox.classList.add('zoomed');
-            if (lightboxZoomText) lightboxZoomText.textContent = '還原';
-            // 更新 zoom 按鈕 SVG（放大鏡 → 縮小）
-            var svg = lightboxZoomBtn ? lightboxZoomBtn.querySelector('svg') : null;
-            if (svg) {
-                svg.innerHTML = '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/>';
-            }
-        }
-
-        function exitZoom() {
-            lightbox.classList.remove('zoomed');
-            if (lightboxZoomText) lightboxZoomText.textContent = '放大';
-            var svg = lightboxZoomBtn ? lightboxZoomBtn.querySelector('svg') : null;
-            if (svg) {
-                svg.innerHTML = '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>';
-            }
-            // 重置滾動位置
-            if (lightboxImgWrapper) {
-                lightboxImgWrapper.scrollTop = 0;
-                lightboxImgWrapper.scrollLeft = 0;
-            }
-        }
-
-        // 點擊圖片開啟 lightbox
-        document.querySelectorAll('[data-gallery-index]').forEach(function(el) {
-            el.addEventListener('click', function() {
-                openLightbox(parseInt(this.dataset.galleryIndex));
-            });
-        });
-
-        // 點擊圖片區域 toggle zoom
-        if (lightboxImgWrapper) {
-            lightboxImgWrapper.addEventListener('click', function(e) {
-                // 只在點擊圖片或 wrapper 時觸發（非 zoom 狀態下不關閉 lightbox）
-                if (e.target === lightboxImg || e.target === lightboxImgWrapper) {
-                    e.stopPropagation();
-                    toggleZoom();
-                }
-            });
-        }
-
-        // Zoom 按鈕
-        if (lightboxZoomBtn) {
-            lightboxZoomBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                toggleZoom();
-            });
-        }
-
-        // Lightbox 控制按鈕
-        var closeBtn = lightbox.querySelector('.project-lightbox-close');
-        var prevBtn = lightbox.querySelector('.project-lightbox-prev');
-        var nextBtn = lightbox.querySelector('.project-lightbox-next');
-        if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
-        if (prevBtn) prevBtn.addEventListener('click', function(e) { e.stopPropagation(); prevImage(); });
-        if (nextBtn) nextBtn.addEventListener('click', function(e) { e.stopPropagation(); nextImage(); });
-
-        // 點擊背景關閉（非 zoom 狀態才關）
-        lightbox.addEventListener('click', function(e) {
-            if (lightbox.classList.contains('zoomed')) return;
-            if (e.target === lightbox) {
-                closeLightbox();
-            }
-        });
-
-        // 鍵盤操作
-        document.addEventListener('keydown', function(e) {
-            if (!lightbox.classList.contains('active')) return;
-            if (e.key === 'Escape') {
-                if (lightbox.classList.contains('zoomed')) {
-                    exitZoom();
-                } else {
-                    closeLightbox();
-                }
-            }
-            if (e.key === 'ArrowLeft' && images.length > 1) prevImage();
-            if (e.key === 'ArrowRight' && images.length > 1) nextImage();
-        });
-    })();
-    </script>
-    @endpush
-    @endif
 @endsection
