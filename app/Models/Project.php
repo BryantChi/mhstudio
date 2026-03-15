@@ -51,6 +51,11 @@ class Project extends Model
 
     /* ===== Relations ===== */
 
+    public function images(): HasMany
+    {
+        return $this->hasMany(ProjectImage::class)->orderBy('order');
+    }
+
     public function seoMeta(): MorphOne
     {
         return $this->morphOne(SeoMeta::class, 'model');
@@ -121,6 +126,23 @@ class Project extends Model
     }
 
     /* ===== Accessors ===== */
+
+    /**
+     * 封面圖片：優先使用原欄位值，fallback 到圖片庫第一張
+     */
+    public function getCoverImageAttribute($value): ?string
+    {
+        if (!empty($value)) {
+            return $value;
+        }
+
+        // Fallback 到圖片庫第一張
+        $firstImage = $this->relationLoaded('images')
+            ? $this->images->first()
+            : $this->images()->first();
+
+        return $firstImage?->image_url;
+    }
 
     public function getStatusColorAttribute(): string
     {
