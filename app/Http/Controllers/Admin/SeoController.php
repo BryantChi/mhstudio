@@ -17,13 +17,59 @@ class SeoController extends Controller
      */
     public function index(): View
     {
+        $totalMeta = SeoMeta::count();
+        $articlesWithSeo = Article::has('seoMeta')->count();
+        $articlesWithoutSeo = Article::doesntHave('seoMeta')->count();
+        $totalArticles = $articlesWithSeo + $articlesWithoutSeo;
+
+        // 計算 robots.txt 規則數
+        $robotsPath = public_path('robots.txt');
+        $robotsRules = 0;
+        if (file_exists($robotsPath)) {
+            $lines = file($robotsPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            $robotsRules = count(array_filter($lines, fn ($l) => !str_starts_with(trim($l), '#')));
+        }
+
+        // 計算 sitemap URL 數
+        $sitemapPath = public_path('sitemap.xml');
+        $sitemapUrls = 0;
+        if (file_exists($sitemapPath)) {
+            $sitemapUrls = substr_count(file_get_contents($sitemapPath), '<url>');
+            if ($sitemapUrls === 0) {
+                $sitemapUrls = substr_count(file_get_contents($sitemapPath), '<loc>');
+            }
+        }
+
+        // Meta 覆蓋率
+        $metaCoverage = $totalArticles > 0
+            ? round($articlesWithSeo / $totalArticles * 100)
+            : 0;
+
+        // SEO 評分（簡易計算）
+        $seoScore = min(100, (int) (
+            ($metaCoverage * 0.4) +
+            ($sitemapUrls > 0 ? 20 : 0) +
+            ($robotsRules > 0 ? 20 : 0) +
+            ($totalMeta > 0 ? 20 : 0)
+        ));
+
         $stats = [
-            'total_seo_meta' => SeoMeta::count(),
-            'articles_with_seo' => Article::has('seoMeta')->count(),
-            'articles_without_seo' => Article::doesntHave('seoMeta')->count(),
+            'total_meta' => $totalMeta,
+            'sitemap_urls' => $sitemapUrls,
+            'robots_rules' => $robotsRules,
+            'seo_score' => $seoScore,
+            'articles_with_seo' => $articlesWithSeo,
+            'articles_without_seo' => $articlesWithoutSeo,
         ];
 
-        return view('admin.seo.index', compact('stats'));
+        $health = [
+            'meta_coverage' => $metaCoverage,
+            'image_alt' => 0,       // 未來實作
+            'internal_links' => 0,  // 未來實作
+            'page_speed' => 0,      // 未來實作
+        ];
+
+        return view('admin.seo.index', compact('stats', 'health'));
     }
 
     /**

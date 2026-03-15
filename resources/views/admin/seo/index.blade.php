@@ -318,21 +318,25 @@
 <script>
     function generateSitemap() {
         if (confirm('確定要重新生成 Sitemap 嗎？')) {
-            // 實作 Sitemap 生成邏輯
-            alert('Sitemap 生成功能待實作');
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route("admin.seo.generate-sitemap") }}';
+            form.innerHTML = '@csrf';
+            document.body.appendChild(form);
+            form.submit();
         }
     }
 
     function submitSitemap() {
-        if (confirm('確定要提交 Sitemap 到搜尋引擎嗎？')) {
-            // 實作提交邏輯
-            alert('Sitemap 提交功能待實作');
+        // 開啟 Google Search Console ping URL
+        if (confirm('確定要提交 Sitemap 到 Google 嗎？')) {
+            window.open('https://www.google.com/ping?sitemap=' + encodeURIComponent('{{ url("sitemap.xml") }}'), '_blank');
         }
     }
 
     function checkIndexing() {
-        // 實作索引檢查邏輯
-        alert('索引檢查功能待實作');
+        // 在 Google 搜尋中檢查索引狀態
+        window.open('https://www.google.com/search?q=site:{{ parse_url(config("app.url"), PHP_URL_HOST) }}', '_blank');
     }
 
     function analyzeSeo() {

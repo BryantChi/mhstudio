@@ -33,6 +33,7 @@
 
 <form method="POST" action="{{ route('admin.seo.sitemap-settings.update') }}">
     @csrf
+    @method('PUT')
 
     <div class="row">
         <div class="col-lg-8">
@@ -306,8 +307,12 @@
 <script>
     function generateNow() {
         if (confirm('確定要立即生成 Sitemap 嗎？')) {
-            // 實作立即生成邏輯
-            alert('Sitemap 生成功能待實作');
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route("admin.seo.generate-sitemap") }}';
+            form.innerHTML = '@csrf';
+            document.body.appendChild(form);
+            form.submit();
         }
     }
 </script>

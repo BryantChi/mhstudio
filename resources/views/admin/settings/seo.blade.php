@@ -19,6 +19,7 @@
 
 <form method="POST" action="{{ route('admin.settings.seo.update') }}">
     @csrf
+    @method('PUT')
 
     <div class="row">
         <div class="col-lg-8">
@@ -183,12 +184,13 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <div class="form-check form-switch">
+                            <input type="hidden" name="enable_schema" value="0">
                             <input class="form-check-input"
                                    type="checkbox"
                                    id="enable_schema"
                                    name="enable_schema"
                                    value="1"
-                                   {{ old('enable_schema', setting('enable_schema', true)) ? 'checked' : '' }}>
+                                   {{ old('enable_schema', setting('enable_schema', '1')) == '1' ? 'checked' : '' }}>
                             <label class="form-check-label" for="enable_schema">
                                 啟用 Schema.org 標記
                             </label>
@@ -245,12 +247,13 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <div class="form-check form-switch">
+                            <input type="hidden" name="allow_indexing" value="0">
                             <input class="form-check-input"
                                    type="checkbox"
                                    id="allow_indexing"
                                    name="allow_indexing"
                                    value="1"
-                                   {{ old('allow_indexing', setting('allow_indexing', true)) ? 'checked' : '' }}>
+                                   {{ old('allow_indexing', setting('allow_indexing', '1')) == '1' ? 'checked' : '' }}>
                             <label class="form-check-label" for="allow_indexing">
                                 <strong>允許搜尋引擎索引</strong>
                             </label>
@@ -260,12 +263,13 @@
 
                     <div class="mb-3">
                         <div class="form-check form-switch">
+                            <input type="hidden" name="auto_generate_meta" value="0">
                             <input class="form-check-input"
                                    type="checkbox"
                                    id="auto_generate_meta"
                                    name="auto_generate_meta"
                                    value="1"
-                                   {{ old('auto_generate_meta', setting('auto_generate_meta', true)) ? 'checked' : '' }}>
+                                   {{ old('auto_generate_meta', setting('auto_generate_meta', '1')) == '1' ? 'checked' : '' }}>
                             <label class="form-check-label" for="auto_generate_meta">
                                 自動生成 Meta Tags
                             </label>
@@ -275,12 +279,13 @@
 
                     <div class="mb-3">
                         <div class="form-check form-switch">
+                            <input type="hidden" name="generate_canonical" value="0">
                             <input class="form-check-input"
                                    type="checkbox"
                                    id="generate_canonical"
                                    name="generate_canonical"
                                    value="1"
-                                   {{ old('generate_canonical', setting('generate_canonical', true)) ? 'checked' : '' }}>
+                                   {{ old('generate_canonical', setting('generate_canonical', '1')) == '1' ? 'checked' : '' }}>
                             <label class="form-check-label" for="generate_canonical">
                                 自動生成 Canonical URL
                             </label>
