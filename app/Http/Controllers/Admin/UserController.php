@@ -60,10 +60,11 @@ class UserController extends Controller
             'roles' => 'array',
         ]);
 
+        // User model 的 'password' => 'hashed' cast 會自動 Hash，不要手動 Hash::make
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            'password' => $validated['password'],
         ]);
 
         if (!empty($validated['roles'])) {
@@ -112,8 +113,9 @@ class UserController extends Controller
         ]);
 
         if (!empty($validated['password'])) {
+            // User model 的 'password' => 'hashed' cast 會自動 Hash
             $user->update([
-                'password' => Hash::make($validated['password']),
+                'password' => $validated['password'],
             ]);
         }
 

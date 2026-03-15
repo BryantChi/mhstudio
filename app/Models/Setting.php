@@ -47,17 +47,18 @@ class Setting extends Model
      */
     public static function get(string $key, $default = null)
     {
+        // 同時快取 value 和 type，避免每次呼叫都查 DB
         $settings = Cache::rememberForever('settings', function () {
-            return static::all()->pluck('value', 'key')->toArray();
+            return static::all()->mapWithKeys(function ($item) {
+                return [$item->key => ['value' => $item->value, 'type' => $item->type ?? 'string']];
+            })->toArray();
         });
 
         if (!isset($settings[$key])) {
             return $default;
         }
 
-        $setting = static::where('key', $key)->first();
-
-        return static::castValue($settings[$key], $setting->type ?? 'string');
+        return static::castValue($settings[$key]['value'], $settings[$key]['type']);
     }
 
     /**

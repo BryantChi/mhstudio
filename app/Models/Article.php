@@ -190,7 +190,7 @@ class Article extends Model implements HasMedia
                 'og_title' => $this->title,
                 'og_description' => $this->generateMetaDescription(),
                 'og_image' => $this->featured_image,
-                'canonical_url' => route('articles.show', $this),
+                'canonical_url' => route('blog.show', $this->slug),
             ]);
         }
     }

@@ -46,11 +46,26 @@ class SubscriberController extends Controller
 
         $csv = "Email,Name,Subscribed At\n";
         foreach ($subscribers as $sub) {
-            $csv .= "\"{$sub->email}\",\"{$sub->name}\",\"{$sub->subscribed_at}\"\n";
+            // 防止 CSV injection：移除開頭的 =, +, -, @, \t, \r
+            $email = $this->sanitizeCsvValue($sub->email);
+            $name = $this->sanitizeCsvValue($sub->name ?? '');
+            $csv .= "\"{$email}\",\"{$name}\",\"{$sub->subscribed_at}\"\n";
         }
 
         return response($csv)
             ->header('Content-Type', 'text/csv')
             ->header('Content-Disposition', 'attachment; filename="subscribers_' . date('Y-m-d') . '.csv"');
+    }
+
+    /**
+     * 防止 CSV injection — 在危險開頭字元前加單引號
+     */
+    private function sanitizeCsvValue(string $value): string
+    {
+        $value = str_replace('"', '""', $value);
+        if (preg_match('/^[=+\-@\t\r]/', $value)) {
+            $value = "'" . $value;
+        }
+        return $value;
     }
 }

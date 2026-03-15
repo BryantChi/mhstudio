@@ -126,7 +126,7 @@ class Quote extends Model
     public function recalculate(): void
     {
         $this->subtotal = $this->items()->sum('amount');
-        $taxable = $this->subtotal - $this->discount;
+        $taxable = max(0, $this->subtotal - $this->discount);
         $this->tax_amount = round($taxable * ($this->tax_rate / 100), 2);
         $this->total = $taxable + $this->tax_amount;
         $this->save();

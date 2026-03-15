@@ -13,10 +13,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ClientPortalController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
+    // auth middleware 已在 routes/web.php 路由群組中定義
 
     /**
      * 客戶專區儀表板 - 列出客戶的專案

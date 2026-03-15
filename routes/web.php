@@ -167,5 +167,4 @@ Route::middleware('auth')->prefix('client')->name('client.')->group(function () 
     Route::get('/projects/{project}/files/{file}/download', [ClientPortalController::class, 'downloadFile'])->name('project.file.download');
 });
 
-// 載入後台路由
-require __DIR__.'/admin.php';
+// 後台路由已由 bootstrap/app.php 的 then 回呼載入，此處不重複 require

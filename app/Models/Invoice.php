@@ -129,7 +129,7 @@ class Invoice extends Model
     public function recalculate(): void
     {
         $this->subtotal = $this->items()->sum('amount');
-        $taxable = $this->subtotal - $this->discount;
+        $taxable = max(0, $this->subtotal - $this->discount);
         $this->tax_amount = round($taxable * ($this->tax_rate / 100), 2);
         $this->total = $taxable + $this->tax_amount;
         $this->save();
@@ -140,7 +140,7 @@ class Invoice extends Model
      */
     public function recordPayment(float $amount, ?string $method = null): void
     {
-        $this->paid_amount += $amount;
+        $this->paid_amount = round((float) $this->paid_amount + $amount, 2);
         $this->payment_method = $method ?? $this->payment_method;
 
         if ($this->paid_amount >= $this->total) {
