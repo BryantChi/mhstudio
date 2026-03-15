@@ -35,6 +35,11 @@ class MediaItem extends Model
 
     public function getUrlAttribute(): string
     {
+        // 優先使用相對路徑 /storage/...，避免 APP_URL 不匹配導致 404
+        if ($this->disk === 'public') {
+            return '/storage/' . $this->path;
+        }
+
         return Storage::disk($this->disk)->url($this->path);
     }
 

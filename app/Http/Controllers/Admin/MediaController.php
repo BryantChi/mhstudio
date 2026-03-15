@@ -64,6 +64,14 @@ class MediaController extends Controller
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs('uploads/' . date('Y/m'), $filename, 'public');
 
+        // 驗證檔案確實寫入成功
+        if (!$path || !Storage::disk('public')->exists($path)) {
+            return response()->json([
+                'success' => false,
+                'message' => '檔案寫入失敗，請檢查 storage 目錄權限',
+            ], 500);
+        }
+
         $mediaItem = MediaItem::create([
             'filename' => $filename,
             'original_name' => $file->getClientOriginalName(),
