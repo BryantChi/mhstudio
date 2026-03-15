@@ -551,9 +551,9 @@
           @if(setting('line_qrcode_url'))
           <div class="contact-line-qr animate-on-scroll" style="margin-top: 20px; text-align: center;">
             <a href="{{ $lineHref }}" target="_blank" rel="noopener" aria-label="LINE QR Code">
-              <img src="{{ setting('line_qrcode_url') }}" alt="LINE 官方帳號 {{ setting('line_id') }} QR Code" loading="lazy" style="width: 140px; height: 140px; border: 2px solid var(--border-subtle); border-radius: 8px; transition: border-color 0.3s;">
+              <img src="{{ setting('line_qrcode_url') }}" alt="LINE 官方帳號 {{ setting('line_id') }} QR Code" loading="lazy" class="line-qr-img">
             </a>
-            <p style="font-size: clamp(11px, 0.9vw, 14px); color: var(--text-dim); margin-top: 8px; letter-spacing: 1px;">掃碼加入 LINE 諮詢</p>
+            <p class="line-qr-text">掃碼加入 LINE 諮詢</p>
           </div>
           @endif
           @endif

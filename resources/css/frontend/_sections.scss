@@ -65,7 +65,7 @@
 }
 .service-card h3 {
   font-family: var(--font-display);
-  font-size: clamp(15px, 1.1vw, 20px);
+  font-size: clamp(16px, 1.1vw, 22px);
   font-weight: 600;
   letter-spacing: 1px;
   margin-bottom: 12px;
@@ -73,7 +73,7 @@
 }
 .service-card p {
   color: var(--text-secondary);
-  font-size: clamp(13px, 1vw, 17px);
+  font-size: clamp(14px, 1vw, 18px);
   line-height: 1.7;
 }
 .service-tags {
@@ -85,7 +85,7 @@
 .service-tag {
   padding: 4px 12px;
   border: 1px solid rgba(58, 139, 253, 0.2);
-  font-size: clamp(10px, 0.75vw, 13px);
+  font-size: clamp(11px, 0.75vw, 14px);
   font-family: var(--font-display);
   letter-spacing: 1px;
   color: var(--accent-blue);
@@ -166,14 +166,14 @@
 }
 .portfolio-info h3 {
   font-family: var(--font-display);
-  font-size: clamp(14px, 1.05vw, 19px);
+  font-size: clamp(15px, 1.05vw, 21px);
   font-weight: 600;
   margin-bottom: 6px;
   letter-spacing: 1px;
 }
 .portfolio-info p {
   color: var(--text-secondary);
-  font-size: clamp(12px, 0.95vw, 16px);
+  font-size: clamp(13px, 0.95vw, 17px);
   line-height: 1.6;
 }
 .portfolio-tech {
@@ -186,7 +186,7 @@
   padding: 3px 10px;
   background: rgba(0, 212, 255, 0.06);
   border: 1px solid rgba(0, 212, 255, 0.12);
-  font-size: clamp(10px, 0.75vw, 13px);
+  font-size: clamp(11px, 0.75vw, 14px);
   font-family: var(--font-display);
   letter-spacing: 1px;
   color: var(--accent-cyan);
@@ -231,14 +231,14 @@
 }
 .process-content h3 {
   font-family: var(--font-display);
-  font-size: clamp(15px, 1.1vw, 20px);
+  font-size: clamp(16px, 1.1vw, 22px);
   font-weight: 600;
   letter-spacing: 1px;
   margin-bottom: 8px;
 }
 .process-content p {
   color: var(--text-secondary);
-  font-size: clamp(13px, 1vw, 17px);
+  font-size: clamp(14px, 1vw, 18px);
   line-height: 1.7;
 }
 
@@ -269,13 +269,13 @@
 }
 .tech-item-name {
   font-family: var(--font-display);
-  font-size: clamp(12px, 0.9vw, 15px);
+  font-size: clamp(13px, 0.9vw, 17px);
   letter-spacing: 1px;
   color: var(--text-primary);
   margin-bottom: 4px;
 }
 .tech-item-type {
-  font-size: clamp(10px, 0.75vw, 13px);
+  font-size: clamp(11px, 0.75vw, 14px);
   color: var(--text-dim);
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -372,7 +372,7 @@
 }
 .contact-info h3 {
   font-family: var(--font-display);
-  font-size: clamp(18px, 1.5vw, 26px);
+  font-size: clamp(20px, 1.5vw, 28px);
   font-weight: 600;
   margin-bottom: 20px;
   letter-spacing: 1px;
@@ -388,14 +388,38 @@
   gap: 12px;
   margin-bottom: 16px;
   color: var(--text-secondary);
-  font-size: clamp(13px, 1vw, 17px);
+  font-size: clamp(14px, 1vw, 18px);
 }
 .contact-detail svg {
-  width: clamp(18px, 1.4vw, 24px); height: clamp(18px, 1.4vw, 24px);
+  width: clamp(20px, 1.4vw, 26px); height: clamp(20px, 1.4vw, 26px);
   stroke: var(--accent-cyan);
   fill: none;
   stroke-width: 1.5;
   min-width: 18px;
+}
+
+/* LINE QR Code in Contact */
+.contact-line-qr {
+  margin-top: 24px;
+  text-align: center;
+}
+.line-qr-img {
+  width: clamp(160px, 15vw, 240px);
+  height: clamp(160px, 15vw, 240px);
+  border: 2px solid var(--border-subtle);
+  border-radius: 8px;
+  transition: border-color 0.3s, transform 0.3s;
+  object-fit: contain;
+}
+.line-qr-img:hover {
+  border-color: var(--accent-cyan);
+  transform: scale(1.03);
+}
+.line-qr-text {
+  font-size: clamp(12px, 1vw, 16px);
+  color: var(--text-dim);
+  margin-top: 10px;
+  letter-spacing: 1px;
 }
 
 .contact-form { display: flex; flex-direction: column; gap: 16px; }
@@ -409,7 +433,7 @@
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
   font-family: var(--font-body);
-  font-size: clamp(13px, 1vw, 17px);
+  font-size: clamp(15px, 1vw, 18px);
   outline: none;
   transition: border-color 0.3s;
   resize: none;
@@ -1504,46 +1528,48 @@ select.form-input {
   .services-grid,
   .portfolio-grid { gap: 32px; }
   .service-card { padding: 48px 36px; }
-  .service-card h3 { font-size: 20px; }
-  .service-card p { font-size: 16px; }
-  .service-tag { font-size: 12px; }
+  .service-card h3 { font-size: 22px; }
+  .service-card p { font-size: 17px; }
+  .service-tag { font-size: 13px; }
   .portfolio-info { padding: 28px; }
-  .portfolio-info h3 { font-size: 19px; }
-  .portfolio-info p { font-size: 15px; }
-  .portfolio-tech span { font-size: 12px; }
-  .process-number { font-size: 20px; }
-  .process-content h3 { font-size: 20px; }
-  .process-content p { font-size: 16px; }
-  .tech-item-name { font-size: 15px; }
-  .tech-item-type { font-size: 13px; }
-  .contact-info h3 { font-size: 26px; }
-  .contact-detail { font-size: 16px; }
-  .contact-detail svg { width: 24px; height: 24px; }
+  .portfolio-info h3 { font-size: 20px; }
+  .portfolio-info p { font-size: 16px; }
+  .portfolio-tech span { font-size: 13px; }
+  .process-number { font-size: 22px; }
+  .process-content h3 { font-size: 22px; }
+  .process-content p { font-size: 17px; }
+  .tech-item-name { font-size: 16px; }
+  .tech-item-type { font-size: 14px; }
+  .contact-info h3 { font-size: 28px; }
+  .contact-detail { font-size: 17px; }
+  .contact-detail svg { width: 26px; height: 26px; }
   .contact-wrapper { gap: 56px; }
   .form-group input,
   .form-group textarea,
-  .form-group select { font-size: 16px; padding: 16px 18px; }
-  .btn-submit { font-size: 14px; padding: 16px 48px; }
-  .footer-nav a { font-size: 1rem; }
-  .footer-trust { font-size: 0.95rem; }
+  .form-group select { font-size: 17px; padding: 16px 18px; }
+  .btn-submit { font-size: 15px; padding: 16px 48px; }
+  .footer-nav a { font-size: 1.05rem; }
+  .footer-trust { font-size: 1rem; }
+  .line-qr-img { width: 200px; height: 200px; }
 }
 
 @media (min-width: 2560px) {
-  .service-card h3 { font-size: 22px; }
-  .service-card p { font-size: 18px; }
-  .service-tag { font-size: 13px; }
-  .portfolio-info h3 { font-size: 21px; }
-  .portfolio-info p { font-size: 17px; }
-  .process-content h3 { font-size: 22px; }
-  .process-content p { font-size: 18px; }
-  .tech-item-name { font-size: 17px; }
-  .tech-item-type { font-size: 14px; }
-  .contact-info h3 { font-size: 28px; }
-  .contact-detail { font-size: 18px; }
+  .service-card h3 { font-size: 24px; }
+  .service-card p { font-size: 19px; }
+  .service-tag { font-size: 14px; }
+  .portfolio-info h3 { font-size: 23px; }
+  .portfolio-info p { font-size: 18px; }
+  .process-content h3 { font-size: 24px; }
+  .process-content p { font-size: 19px; }
+  .tech-item-name { font-size: 18px; }
+  .tech-item-type { font-size: 15px; }
+  .contact-info h3 { font-size: 32px; }
+  .contact-detail { font-size: 19px; }
   .form-group input,
   .form-group textarea,
-  .form-group select { font-size: 18px; padding: 18px 20px; }
-  .btn-submit { font-size: 15px; padding: 18px 56px; }
-  .footer-nav a { font-size: 1.1rem; }
-  .footer-trust { font-size: 1.05rem; }
+  .form-group select { font-size: 19px; padding: 18px 20px; }
+  .btn-submit { font-size: 16px; padding: 18px 56px; }
+  .footer-nav a { font-size: 1.15rem; }
+  .footer-trust { font-size: 1.1rem; }
+  .line-qr-img { width: 240px; height: 240px; }
 }

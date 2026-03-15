@@ -33,14 +33,14 @@
 }
 .nav-logo-text {
   font-family: var(--font-display);
-  font-size: clamp(13px, 1vw, 17px);
+  font-size: clamp(14px, 1vw, 19px);
   font-weight: 600;
   letter-spacing: 3px;
   color: var(--text-primary);
 }
 .nav-logo-sub {
   font-family: var(--font-chinese);
-  font-size: clamp(10px, 0.8vw, 14px);
+  font-size: clamp(11px, 0.8vw, 15px);
   color: var(--text-secondary);
   letter-spacing: 2px;
 }
@@ -53,7 +53,7 @@
   text-decoration: none;
   color: var(--text-secondary);
   font-family: var(--font-display);
-  font-size: clamp(11px, 0.85vw, 14px);
+  font-size: clamp(12px, 0.85vw, 16px);
   letter-spacing: 2px;
   text-transform: uppercase;
   position: relative;
@@ -80,7 +80,7 @@
   border: 1px solid var(--accent-blue);
   color: var(--accent-cyan);
   font-family: var(--font-display);
-  font-size: clamp(11px, 0.85vw, 14px);
+  font-size: clamp(12px, 0.85vw, 16px);
   letter-spacing: 2px;
   cursor: pointer;
   position: relative;
@@ -529,7 +529,7 @@
   background-clip: text;
 }
 .stat-label {
-  font-size: clamp(12px, 0.95vw, 16px);
+  font-size: clamp(13px, 0.95vw, 18px);
   color: var(--text-secondary);
   letter-spacing: 1px;
   margin-top: 6px;
