@@ -2168,7 +2168,7 @@
 .quote-btn-prev:hover {
   color: var(--accent-cyan);
   &::before { background: var(--accent-cyan); }
-  &::after { background: rgba(0, 212, 255, 0.05); }
+  &::after { background: #0a1230; }
 }
 .quote-btn-prev svg {
   stroke: currentColor;
