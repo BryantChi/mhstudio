@@ -10,9 +10,11 @@ class PricingSeeder extends Seeder
 {
     public function run(): void
     {
-        // 先清空既有資料避免重複
-        PricingFeature::query()->delete();
-        PricingCategory::query()->delete();
+        // 若已有資料則跳過，避免覆蓋已修改的定價
+        if (PricingCategory::count() > 0) {
+            $this->command->info('定價資料已存在，跳過填充（避免覆蓋已修改的資料）');
+            return;
+        }
 
         $categories = [
             // ===== 網頁設計（核心業務，對齊服務方案 8K~48.6K）=====

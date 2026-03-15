@@ -41,7 +41,7 @@ class LegalPageSeeder extends Seeder
         ];
 
         foreach ($pages as $page) {
-            LegalPage::updateOrCreate(
+            LegalPage::firstOrCreate(
                 ['slug' => $page['slug']],
                 array_merge($page, ['is_active' => true, 'published_at' => now()])
             );

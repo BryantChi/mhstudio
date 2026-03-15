@@ -247,7 +247,7 @@ EOT,
         ];
 
         foreach ($templates as $template) {
-            ContractTemplate::updateOrCreate(
+            ContractTemplate::firstOrCreate(
                 ['name' => $template['name']],
                 $template
             );

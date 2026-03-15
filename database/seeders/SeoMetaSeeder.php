@@ -16,7 +16,7 @@ class SeoMetaSeeder extends Seeder
         // ===== 為所有服務建立 SEO Meta =====
         $services = Service::all();
         foreach ($services as $service) {
-            SeoMeta::updateOrCreate(
+            SeoMeta::firstOrCreate(
                 ['model_type' => Service::class, 'model_id' => $service->id],
                 [
                     'meta_title' => $this->serviceTitle($service),
@@ -53,7 +53,7 @@ class SeoMetaSeeder extends Seeder
         // ===== 為所有作品建立 SEO Meta =====
         $projects = Project::all();
         foreach ($projects as $project) {
-            SeoMeta::updateOrCreate(
+            SeoMeta::firstOrCreate(
                 ['model_type' => Project::class, 'model_id' => $project->id],
                 [
                     'meta_title' => $project->title . ' — 作品案例 | MH Studio 孟衡',

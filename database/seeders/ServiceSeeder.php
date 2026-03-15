@@ -419,21 +419,22 @@ class ServiceSeeder extends Seeder
             $items = $data['items'] ?? [];
             unset($data['items']);
 
-            $service = Service::updateOrCreate(
+            $service = Service::firstOrCreate(
                 ['slug' => $data['slug']],
                 $data
             );
 
-            // 清除舊 items 並重建
-            $service->items()->delete();
-            foreach ($items as $index => $item) {
-                $service->items()->create([
-                    'name' => $item['name'],
-                    'description' => $item['description'] ?? null,
-                    'type' => $item['type'] ?? 'included',
-                    'order' => $index,
-                    'is_active' => true,
-                ]);
+            // 只在新建立時才建立子項目，避免覆蓋已修改的資料
+            if ($service->wasRecentlyCreated && count($items) > 0) {
+                foreach ($items as $index => $item) {
+                    $service->items()->create([
+                        'name' => $item['name'],
+                        'description' => $item['description'] ?? null,
+                        'type' => $item['type'] ?? 'included',
+                        'order' => $index,
+                        'is_active' => true,
+                    ]);
+                }
             }
         }
 
