@@ -11,7 +11,7 @@
   justify-content: center;
   background: var(--gradient-hero);
   overflow: hidden;
-  padding-top: 72px;
+  padding-top: 80px;
 }
 .page-header-bg-grid {
   position: absolute;
@@ -430,7 +430,7 @@
   justify-content: center;
   background: var(--gradient-hero);
   overflow: hidden;
-  padding-top: 72px;
+  padding-top: 80px;
 }
 .article-header-content {
   position: relative;
@@ -2292,46 +2292,27 @@ body.light-theme {
 }
 
 /* ===== LARGE SCREEN — 內頁容器放寬 ===== */
+/* 只放寬內層 wrapper 的 max-width，不動外層 section */
 @media (min-width: 1920px) {
-  /* 共用 */
   .page-header-content { max-width: 1000px; }
   .article-container { max-width: 900px; }
-
-  /* Blog / Portfolio listing */
   .blog-section { max-width: min(1500px, 90vw); }
   .portfolio-section { max-width: min(1500px, 90vw); }
-
-  /* About 頁面 */
-  .about-story { max-width: min(1400px, 90vw); }
-  .about-story-wrapper { max-width: min(1400px, 90vw); }
-  .about-timeline-section .process-timeline { max-width: 1000px; }
-  .about-skills-section { & > .section-header, .about-skills-grid { max-width: min(1400px, 90vw); margin-left: auto; margin-right: auto; } }
-  .about-values-section { & > .section-header, .about-values-grid { max-width: min(1400px, 90vw); margin-left: auto; margin-right: auto; } }
-  .about-cta-section .about-cta-wrapper { max-width: min(1200px, 90vw); }
-
-  /* Quote 頁面 */
+  .about-story-wrapper { max-width: 1400px; }
+  .about-skills-grid { max-width: 1400px; }
+  .about-values-grid { max-width: 1400px; }
+  .about-cta-wrapper { max-width: 1200px; }
   .quote-pricing-section { max-width: min(1500px, 90vw); margin-left: auto; margin-right: auto; }
-  .quote-steps-container { max-width: min(1200px, 90vw); margin-left: auto; margin-right: auto; }
 }
 
 @media (min-width: 2560px) {
-  /* 共用 */
   .page-header-content { max-width: 1200px; }
   .article-container { max-width: 1100px; }
-
-  /* Blog / Portfolio listing */
   .blog-section { max-width: min(1800px, 88vw); }
   .portfolio-section { max-width: min(1800px, 88vw); }
-
-  /* About 頁面 */
-  .about-story { max-width: min(1800px, 88vw); }
-  .about-story-wrapper { max-width: min(1800px, 88vw); }
-  .about-timeline-section .process-timeline { max-width: 1200px; }
-  .about-skills-section { & > .section-header, .about-skills-grid { max-width: min(1800px, 88vw); } }
-  .about-values-section { & > .section-header, .about-values-grid { max-width: min(1800px, 88vw); } }
-  .about-cta-section .about-cta-wrapper { max-width: min(1500px, 88vw); }
-
-  /* Quote 頁面 */
+  .about-story-wrapper { max-width: 1700px; }
+  .about-skills-grid { max-width: 1700px; }
+  .about-values-grid { max-width: 1700px; }
+  .about-cta-wrapper { max-width: 1400px; }
   .quote-pricing-section { max-width: min(1800px, 88vw); }
-  .quote-steps-container { max-width: min(1500px, 88vw); }
 }
