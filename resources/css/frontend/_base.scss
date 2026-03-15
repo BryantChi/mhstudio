@@ -1,10 +1,13 @@
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  font-size: 16px; /* 1rem = 16px 基準 */
+}
 
 body {
   font-family: var(--font-body);
-  font-size: clamp(16px, 1.1vw, 20px);
+  font-size: clamp(1rem, 1.1vw, 1.25rem);
   line-height: 1.7;
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -69,37 +72,37 @@ body {
 }
 
 /* ===== SECTIONS COMMON ===== */
-section { padding: clamp(60px, 10vw, 120px) clamp(20px, 5vw, 60px); }
+section { padding: clamp(3.75rem, 10vw, 7.5rem) clamp(1.25rem, 5vw, 3.75rem); }
 
 .section-header {
   text-align: center;
-  margin-bottom: 64px;
+  margin-bottom: 4rem;
 }
 .section-label {
   font-family: var(--font-display);
-  font-size: clamp(11px, 0.9vw, 16px);
+  font-size: clamp(0.75rem, 0.9vw, 1rem);
   letter-spacing: 4px;
   color: var(--accent-cyan);
   text-transform: uppercase;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 .section-title {
   font-family: var(--font-display);
-  font-size: clamp(26px, 4vw, 48px);
+  font-size: clamp(1.625rem, 4vw, 3rem);
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 .section-divider {
   width: 60px;
   height: 2px;
   background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
-  margin: 0 auto 20px;
+  margin: 0 auto 1.25rem;
 }
 .section-desc {
   max-width: 600px;
   margin: 0 auto;
   color: var(--text-secondary);
-  font-size: clamp(15px, 1.15vw, 22px);
+  font-size: clamp(0.938rem, 1.15vw, 1.375rem);
   line-height: 1.7;
 }
