@@ -142,6 +142,12 @@ Route::prefix(config('admin.prefix', 'admin'))
         Route::delete('files/{file}', [ProjectController::class, 'destroyFile'])->name('projects.files.destroy');
         Route::post('projects/{project}/comments', [ProjectController::class, 'addComment'])->name('projects.comments.store');
 
+        // 作品圖片庫
+        Route::post('projects/{project}/gallery', [ProjectController::class, 'galleryStore'])->name('projects.gallery.store');
+        Route::delete('gallery/{projectImage}', [ProjectController::class, 'galleryDestroy'])->name('projects.gallery.destroy');
+        Route::post('projects/{project}/gallery/reorder', [ProjectController::class, 'galleryReorder'])->name('projects.gallery.reorder');
+        Route::put('gallery/{projectImage}', [ProjectController::class, 'galleryUpdateMeta'])->name('projects.gallery.update-meta');
+
         // 客戶評價
         Route::post('testimonials/reorder', [TestimonialController::class, 'reorder'])->name('testimonials.reorder');
         Route::resource('testimonials', TestimonialController::class)->except(['show']);

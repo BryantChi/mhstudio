@@ -139,6 +139,60 @@
                 </div>
             </div>
 
+            {{-- ===== 作品圖片庫 ===== --}}
+            <div class="card mt-3" id="galleryCard">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>
+                        <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-image"></use></svg>
+                        作品圖片庫
+                    </strong>
+                    <span class="badge bg-secondary" id="galleryCount">{{ $project->images->count() }} 張</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">拖曳圖片可調整排序，第一張將自動作為封面圖片。</p>
+
+                    {{-- 圖片 Grid --}}
+                    <div class="row g-3 mb-3" id="galleryGrid">
+                        @foreach($project->images as $image)
+                        <div class="col-6 col-sm-4 col-md-3 gallery-item" data-id="{{ $image->id }}">
+                            <div class="position-relative border rounded overflow-hidden" style="aspect-ratio: 4/3;">
+                                <img src="{{ $image->image_url }}"
+                                     alt="{{ $image->alt_text ?? $project->title }}"
+                                     class="w-100 h-100"
+                                     style="object-fit: cover;">
+                                @if($loop->first)
+                                <span class="badge bg-primary position-absolute top-0 start-0 m-1" style="font-size: 0.7rem;">封面</span>
+                                @endif
+                                <button type="button"
+                                        class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 gallery-delete-btn"
+                                        data-id="{{ $image->id }}"
+                                        style="padding: 2px 6px; font-size: 0.7rem; line-height: 1;"
+                                        title="刪除圖片">
+                                    &times;
+                                </button>
+                            </div>
+                            <div class="mt-1">
+                                <input type="text"
+                                       class="form-control form-control-sm gallery-caption-input"
+                                       data-id="{{ $image->id }}"
+                                       value="{{ $image->caption ?? '' }}"
+                                       placeholder="圖片說明 (選填)">
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+
+                    {{-- 隱藏的暫存 input 給 media picker --}}
+                    <input type="hidden" id="galleryTempInput" value="">
+
+                    {{-- 新增圖片按鈕 --}}
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="openMediaPicker('galleryTempInput')">
+                        <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-library-add"></use></svg>
+                        從媒體庫新增圖片
+                    </button>
+                </div>
+            </div>
+
             <div class="card mt-3">
                 <div class="card-header">
                     <strong>統計資訊</strong>
@@ -309,6 +363,8 @@
 @include('admin.media.partials.picker-modal')
 
 @push('scripts')
+{{-- SortableJS CDN for gallery drag-and-drop --}}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script>
     // 自動生成 Slug（僅在 slug 為空時）
     document.getElementById('title').addEventListener('blur', function() {
@@ -340,6 +396,175 @@
             if (container) container.style.display = 'none';
         }
     });
+
+    /* ===== Gallery Management ===== */
+    (function() {
+        const projectId = {{ $project->id }};
+        const csrfToken = '{{ csrf_token() }}';
+        const galleryGrid = document.getElementById('galleryGrid');
+        const galleryCount = document.getElementById('galleryCount');
+        const galleryTempInput = document.getElementById('galleryTempInput');
+
+        // Initialize SortableJS
+        if (galleryGrid) {
+            new Sortable(galleryGrid, {
+                animation: 150,
+                ghostClass: 'opacity-50',
+                handle: '.gallery-item',
+                onEnd: function() {
+                    saveGalleryOrder();
+                    updateCoverBadge();
+                }
+            });
+        }
+
+        // 監聽 media picker 選擇完成 → 新增圖片
+        if (galleryTempInput) {
+            galleryTempInput.addEventListener('change', function() {
+                const url = this.value.trim();
+                if (!url) return;
+                this.value = '';
+                addGalleryImage(url);
+            });
+
+            // 也監聽 input 事件（media picker 可能觸發 input 而非 change）
+            galleryTempInput.addEventListener('input', function() {
+                const url = this.value.trim();
+                if (!url) return;
+                this.value = '';
+                addGalleryImage(url);
+            });
+        }
+
+        // 刪除圖片 — 事件委派
+        galleryGrid?.addEventListener('click', function(e) {
+            const deleteBtn = e.target.closest('.gallery-delete-btn');
+            if (!deleteBtn) return;
+            if (!confirm('確定要刪除此圖片嗎？')) return;
+
+            const imageId = deleteBtn.dataset.id;
+            fetch(`{{ url(config('admin.prefix', 'admin')) }}/gallery/${imageId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    deleteBtn.closest('.gallery-item').remove();
+                    updateGalleryCount();
+                    updateCoverBadge();
+                }
+            })
+            .catch(err => console.error('刪除圖片失敗:', err));
+        });
+
+        // Caption 更新 — 失焦時儲存
+        galleryGrid?.addEventListener('focusout', function(e) {
+            if (!e.target.classList.contains('gallery-caption-input')) return;
+
+            const imageId = e.target.dataset.id;
+            const caption = e.target.value.trim();
+
+            fetch(`{{ url(config('admin.prefix', 'admin')) }}/gallery/${imageId}`, {
+                method: 'PUT',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ caption: caption })
+            })
+            .catch(err => console.error('更新 caption 失敗:', err));
+        });
+
+        function addGalleryImage(url) {
+            fetch(`{{ url(config('admin.prefix', 'admin')) }}/projects/${projectId}/gallery`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ image_url: url })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.image) {
+                    appendGalleryItem(data.image);
+                    updateGalleryCount();
+                    updateCoverBadge();
+                }
+            })
+            .catch(err => console.error('新增圖片失敗:', err));
+        }
+
+        function appendGalleryItem(image) {
+            const col = document.createElement('div');
+            col.className = 'col-6 col-sm-4 col-md-3 gallery-item';
+            col.dataset.id = image.id;
+            col.innerHTML = `
+                <div class="position-relative border rounded overflow-hidden" style="aspect-ratio: 4/3;">
+                    <img src="${image.image_url}" alt="${image.alt_text || ''}" class="w-100 h-100" style="object-fit: cover;">
+                    <button type="button"
+                            class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 gallery-delete-btn"
+                            data-id="${image.id}"
+                            style="padding: 2px 6px; font-size: 0.7rem; line-height: 1;"
+                            title="刪除圖片">
+                        &times;
+                    </button>
+                </div>
+                <div class="mt-1">
+                    <input type="text"
+                           class="form-control form-control-sm gallery-caption-input"
+                           data-id="${image.id}"
+                           value=""
+                           placeholder="圖片說明 (選填)">
+                </div>
+            `;
+            galleryGrid.appendChild(col);
+        }
+
+        function saveGalleryOrder() {
+            const items = galleryGrid.querySelectorAll('.gallery-item');
+            const ids = Array.from(items).map(el => parseInt(el.dataset.id));
+
+            fetch(`{{ url(config('admin.prefix', 'admin')) }}/projects/${projectId}/gallery/reorder`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ ids: ids })
+            })
+            .catch(err => console.error('排序失敗:', err));
+        }
+
+        function updateGalleryCount() {
+            const count = galleryGrid.querySelectorAll('.gallery-item').length;
+            if (galleryCount) galleryCount.textContent = count + ' 張';
+        }
+
+        function updateCoverBadge() {
+            // 移除所有「封面」badge
+            galleryGrid.querySelectorAll('.badge.bg-primary').forEach(b => b.remove());
+            // 在第一張加上「封面」badge
+            const firstItem = galleryGrid.querySelector('.gallery-item');
+            if (firstItem) {
+                const imgContainer = firstItem.querySelector('.position-relative');
+                if (imgContainer && !imgContainer.querySelector('.badge.bg-primary')) {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-primary position-absolute top-0 start-0 m-1';
+                    badge.style.fontSize = '0.7rem';
+                    badge.textContent = '封面';
+                    imgContainer.appendChild(badge);
+                }
+            }
+        }
+    })();
 </script>
 @endpush
 @endsection

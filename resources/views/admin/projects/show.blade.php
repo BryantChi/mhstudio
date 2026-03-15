@@ -47,9 +47,31 @@
                 </div>
             </div>
             <div class="card-body">
-                @if($project->cover_image)
+                {{-- 圖片庫 Grid --}}
+                @if($project->images->isNotEmpty())
                 <div class="mb-4">
-                    <img src="{{ $project->cover_image }}"
+                    <div class="row g-2">
+                        @foreach($project->images as $image)
+                        <div class="col-4 col-md-3">
+                            <div class="position-relative border rounded overflow-hidden" style="aspect-ratio: 4/3;">
+                                <img src="{{ $image->image_url }}"
+                                     alt="{{ $image->alt_text ?? $project->title }}"
+                                     class="w-100 h-100"
+                                     style="object-fit: cover;">
+                                @if($loop->first)
+                                <span class="badge bg-primary position-absolute top-0 start-0 m-1" style="font-size: 0.65rem;">封面</span>
+                                @endif
+                            </div>
+                            @if($image->caption)
+                            <small class="text-muted d-block mt-1">{{ $image->caption }}</small>
+                            @endif
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @elseif($project->getRawOriginal('cover_image'))
+                <div class="mb-4">
+                    <img src="{{ $project->getRawOriginal('cover_image') }}"
                          class="img-fluid rounded"
                          alt="{{ $project->title }}">
                 </div>

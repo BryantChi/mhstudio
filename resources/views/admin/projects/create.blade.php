@@ -110,6 +110,11 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+
+                    <div class="alert alert-info small mb-0">
+                        <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-info"></use></svg>
+                        建立作品後，可在編輯頁面管理多張圖片庫（支援拖曳排序、圖片說明等功能）。
+                    </div>
                 </div>
             </div>
         </div>

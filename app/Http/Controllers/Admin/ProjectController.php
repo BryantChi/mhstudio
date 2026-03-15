@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\ProjectFile;
+use App\Models\ProjectImage;
 use App\Models\ProjectMilestone;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
@@ -81,6 +83,7 @@ class ProjectController extends Controller
     public function show(Project $project): View
     {
         $project->load([
+            'images' => fn ($q) => $q->orderBy('order'),
             'milestones' => fn ($q) => $q->orderBy('order'),
             'files' => fn ($q) => $q->with('uploader')->latest(),
             'comments' => fn ($q) => $q->with('user')->latest(),
@@ -92,6 +95,8 @@ class ProjectController extends Controller
 
     public function edit(Project $project): View
     {
+        $project->load(['images' => fn ($q) => $q->orderBy('order')]);
+
         return view('admin.projects.edit', compact('project'));
     }
 
@@ -131,6 +136,101 @@ class ProjectController extends Controller
         flash_success('作品已刪除');
 
         return redirect()->route('admin.projects.index');
+    }
+
+    /* ===== 圖片庫管理 ===== */
+
+    /**
+     * 新增圖片到圖片庫 (AJAX)
+     */
+    public function galleryStore(Request $request, Project $project): JsonResponse
+    {
+        $validated = $request->validate([
+            'image_url' => 'required|string|max:500',
+            'media_item_id' => 'nullable|integer|exists:media_items,id',
+            'alt_text' => 'nullable|string|max:255',
+            'caption' => 'nullable|string|max:255',
+        ]);
+
+        $maxOrder = $project->images()->max('order') ?? -1;
+
+        $image = $project->images()->create([
+            'image_url' => $validated['image_url'],
+            'media_item_id' => $validated['media_item_id'] ?? null,
+            'alt_text' => $validated['alt_text'] ?? null,
+            'caption' => $validated['caption'] ?? null,
+            'order' => $maxOrder + 1,
+        ]);
+
+        // 同步更新 cover_image（以排序第一張為準）
+        $this->syncCoverImage($project);
+
+        return response()->json([
+            'success' => true,
+            'image' => $image,
+        ]);
+    }
+
+    /**
+     * 刪除圖片庫中的圖片 (AJAX)
+     */
+    public function galleryDestroy(ProjectImage $projectImage): JsonResponse
+    {
+        $project = $projectImage->project;
+        $projectImage->delete();
+
+        // 同步更新 cover_image
+        $this->syncCoverImage($project);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * 圖片庫排序 (AJAX)
+     */
+    public function galleryReorder(Request $request, Project $project): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:project_images,id',
+        ]);
+
+        foreach ($validated['ids'] as $index => $id) {
+            ProjectImage::where('id', $id)
+                ->where('project_id', $project->id)
+                ->update(['order' => $index]);
+        }
+
+        // 同步更新 cover_image
+        $this->syncCoverImage($project);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * 更新圖片 alt_text / caption (AJAX)
+     */
+    public function galleryUpdateMeta(Request $request, ProjectImage $projectImage): JsonResponse
+    {
+        $validated = $request->validate([
+            'alt_text' => 'nullable|string|max:255',
+            'caption' => 'nullable|string|max:255',
+        ]);
+
+        $projectImage->update($validated);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * 同步 cover_image 欄位：以圖片庫排序第一張為準
+     */
+    private function syncCoverImage(Project $project): void
+    {
+        $firstImage = $project->images()->orderBy('order')->first();
+        $project->updateQuietly([
+            'cover_image' => $firstImage?->image_url,
+        ]);
     }
 
     /* ===== 客戶專案管理 ===== */
