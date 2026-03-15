@@ -2321,7 +2321,8 @@ body.light-theme {
   .about-skills-grid { max-width: 1400px; }
   .about-values-grid { max-width: 1400px; }
   .about-cta-wrapper { max-width: 1200px; }
-  .quote-pricing-section { max-width: min(1500px, 90vw); margin-left: auto; margin-right: auto; }
+  .quote-wrapper { max-width: 1000px; }
+  .pricing-plans-section .container { max-width: 1500px; }
 }
 
 @media (min-width: 2560px) {
@@ -2333,5 +2334,6 @@ body.light-theme {
   .about-skills-grid { max-width: 1700px; }
   .about-values-grid { max-width: 1700px; }
   .about-cta-wrapper { max-width: 1400px; }
-  .quote-pricing-section { max-width: min(1800px, 88vw); }
+  .quote-wrapper { max-width: 1200px; }
+  .pricing-plans-section .container { max-width: 1800px; }
 }

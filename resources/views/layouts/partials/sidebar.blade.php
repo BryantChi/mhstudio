@@ -1,4 +1,8 @@
 {{-- Logo 品牌區 --}}
+{{-- 舊 icon（CoreUI cil-layers）：
+    <svg class="brand-icon"><use xlink:href="/assets/icons/free.svg#cil-layers"></use></svg>
+    <svg class="brand-icon-narrow"><use xlink:href="/assets/icons/free.svg#cil-layers"></use></svg>
+--}}
 <div class="sidebar-brand">
     <a href="{{ route('admin.dashboard') }}" class="sidebar-brand-full">
         <div class="brand-logo">
