@@ -2,8 +2,16 @@
 <div class="sidebar-brand">
     <a href="{{ route('admin.dashboard') }}" class="sidebar-brand-full">
         <div class="brand-logo">
-            <svg class="brand-icon">
-                <use xlink:href="/assets/icons/free.svg#cil-layers"></use>
+            <svg class="brand-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="brand-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#3a8bfd"/>
+                        <stop offset="100%" style="stop-color:#00d4ff"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="24" cy="24" r="22" fill="none" stroke="url(#brand-grad)" stroke-width="1.2" opacity="0.4"/>
+                <circle cx="24" cy="24" r="18" fill="none" stroke="url(#brand-grad)" stroke-width="0.6" opacity="0.2"/>
+                <text x="24" y="28" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="800" fill="url(#brand-grad)">MH</text>
             </svg>
         </div>
         <div class="brand-text">
@@ -12,8 +20,15 @@
         </div>
     </a>
     <a href="{{ route('admin.dashboard') }}" class="sidebar-brand-narrow">
-        <svg class="brand-icon-narrow">
-            <use xlink:href="/assets/icons/free.svg#cil-layers"></use>
+        <svg class="brand-icon-narrow" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="brand-grad-n" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#3a8bfd"/>
+                    <stop offset="100%" style="stop-color:#00d4ff"/>
+                </linearGradient>
+            </defs>
+            <circle cx="24" cy="24" r="22" fill="none" stroke="url(#brand-grad-n)" stroke-width="1.2" opacity="0.4"/>
+            <text x="24" y="28" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="800" fill="url(#brand-grad-n)">MH</text>
         </svg>
     </a>
 </div>
