@@ -364,15 +364,18 @@
   position: relative;
   z-index: 2;
   text-align: center;
-  padding: 0 24px;
+  padding: 100px 24px 0;
   max-width: 900px;
+}
+@media (min-width: 769px) {
+  .hero-content { padding-top: 0; }
 }
 
 /* MH Logo SVG */
 .hero-logo {
-  width: clamp(120px, 20vw, 180px);
-  height: clamp(120px, 20vw, 180px);
-  margin: 0 auto 32px;
+  width: clamp(100px, 20vw, 180px);
+  height: clamp(100px, 20vw, 180px);
+  margin: 0 auto 24px;
   animation: fadeInUp 1s ease both, float 6s ease-in-out 1s infinite;
   filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.3));
 }
