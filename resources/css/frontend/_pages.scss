@@ -2144,12 +2144,11 @@
   background: transparent;
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
-  clip-path: polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0 50%);
-  padding-left: 36px;
 }
 .quote-btn-prev:hover {
   border-color: var(--accent-cyan);
   color: var(--accent-cyan);
+  background: rgba(0, 212, 255, 0.05);
 }
 .quote-btn-prev svg {
   stroke: currentColor;
