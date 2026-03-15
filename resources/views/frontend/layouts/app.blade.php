@@ -10,6 +10,10 @@
     <meta name="robots" content="@yield('meta_robots', 'index, follow')">
     <title>@yield('title', __('frontend.site_title'))</title>
 
+    {{-- Favicon --}}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ setting('site_favicon', '/favicon.svg') }}">
+
     {{-- Open Graph --}}
     <meta property="og:type" content="@yield('og_type', 'website')">
     <meta property="og:site_name" content="MH Studio 孟衡">
