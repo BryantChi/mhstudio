@@ -274,22 +274,29 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="line_qrcode_url" class="form-label">LINE QR Code 圖片網址</label>
-                        <input type="text"
-                               class="form-control @error('line_qrcode_url') is-invalid @enderror"
-                               id="line_qrcode_url"
-                               name="line_qrcode_url"
-                               value="{{ old('line_qrcode_url', $settings['line_qrcode_url'] ?? '') }}"
-                               placeholder="https://qr-official.line.me/... 或 /images/line-qr.png">
-                        <div class="form-text">LINE 官方帳號 QR Code 圖片（支援外部 URL 或本站路徑）。前台 Contact 區域與 Footer 會顯示。</div>
+                        <label for="line_qrcode_url" class="form-label">LINE QR Code 圖片</label>
+                        <div class="media-picker-preview-container mb-2" id="line_qrcode_preview_container" style="{{ setting('line_qrcode_url') ? '' : 'display: none;' }}">
+                            <img id="media-picker-preview-line_qrcode_url"
+                                 src="{{ setting('line_qrcode_url', '') }}"
+                                 alt="LINE QR Code Preview"
+                                 style="max-height: 120px; border: 1px solid #dee2e6; border-radius: 4px; {{ setting('line_qrcode_url') ? '' : 'display: none;' }}">
+                        </div>
+                        <div class="input-group">
+                            <input type="text"
+                                   class="form-control @error('line_qrcode_url') is-invalid @enderror"
+                                   id="line_qrcode_url"
+                                   name="line_qrcode_url"
+                                   value="{{ old('line_qrcode_url', $settings['line_qrcode_url'] ?? '') }}"
+                                   placeholder="選擇或輸入 QR Code 圖片路徑">
+                            <button type="button" class="btn btn-outline-secondary" onclick="openMediaPicker('line_qrcode_url')">
+                                <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-image"></use></svg>
+                                媒體庫
+                            </button>
+                        </div>
+                        <div class="form-text">從媒體庫選擇或直接輸入 LINE 官方帳號 QR Code 圖片網址。前台 Contact 區域會顯示此 QR Code。</div>
                         @error('line_qrcode_url')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                        @if(setting('line_qrcode_url'))
-                        <div class="mt-2">
-                            <img src="{{ setting('line_qrcode_url') }}" alt="LINE QR Code Preview" style="max-width: 120px; border: 1px solid #dee2e6; border-radius: 4px;">
-                        </div>
-                        @endif
                     </div>
 
                     {{-- Facebook --}}
@@ -532,6 +539,25 @@
         const btn = e.target.closest('.remove-tech-stack');
         if (btn) btn.closest('.tech-stack-item').remove();
     });
+
+    // LINE QR Code 預覽即時更新
+    const qrInput = document.getElementById('line_qrcode_url');
+    if (qrInput) {
+        qrInput.addEventListener('input', function() {
+            const preview = document.getElementById('media-picker-preview-line_qrcode_url');
+            const container = document.getElementById('line_qrcode_preview_container');
+            if (this.value) {
+                preview.src = this.value;
+                preview.style.display = '';
+                container.style.display = '';
+            } else {
+                preview.style.display = 'none';
+                container.style.display = 'none';
+            }
+        });
+    }
 </script>
 @endpush
+
+@include('admin.media.partials.picker-modal')
 @endsection
