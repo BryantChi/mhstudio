@@ -211,6 +211,8 @@ class SettingController extends Controller
             'social_linkedin_enabled' => 'nullable|boolean',
             'social_line'             => 'nullable|string|max:500',
             'social_line_enabled'     => 'nullable|boolean',
+            'line_id'                 => 'nullable|string|max:100',
+            'line_qrcode_url'         => 'nullable|string|max:500',
             'social_facebook'         => 'nullable|string|max:500',
             'social_facebook_enabled' => 'nullable|boolean',
             'social_twitter'          => 'nullable|string|max:500',

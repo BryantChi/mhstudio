@@ -259,6 +259,39 @@
                         @enderror
                     </div>
 
+                    <div class="mb-3">
+                        <label for="line_id" class="form-label">LINE 官方帳號 ID</label>
+                        <input type="text"
+                               class="form-control @error('line_id') is-invalid @enderror"
+                               id="line_id"
+                               name="line_id"
+                               value="{{ old('line_id', $settings['line_id'] ?? '') }}"
+                               placeholder="@mengheng.io">
+                        <div class="form-text">顯示在前台聯繫區域的 LINE ID 文字</div>
+                        @error('line_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="line_qrcode_url" class="form-label">LINE QR Code 圖片網址</label>
+                        <input type="text"
+                               class="form-control @error('line_qrcode_url') is-invalid @enderror"
+                               id="line_qrcode_url"
+                               name="line_qrcode_url"
+                               value="{{ old('line_qrcode_url', $settings['line_qrcode_url'] ?? '') }}"
+                               placeholder="https://qr-official.line.me/... 或 /images/line-qr.png">
+                        <div class="form-text">LINE 官方帳號 QR Code 圖片（支援外部 URL 或本站路徑）。前台 Contact 區域與 Footer 會顯示。</div>
+                        @error('line_qrcode_url')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        @if(setting('line_qrcode_url'))
+                        <div class="mt-2">
+                            <img src="{{ setting('line_qrcode_url') }}" alt="LINE QR Code Preview" style="max-width: 120px; border: 1px solid #dee2e6; border-radius: 4px;">
+                        </div>
+                        @endif
+                    </div>
+
                     {{-- Facebook --}}
                     <div class="mb-3">
                         <label for="social_facebook" class="form-label">Facebook 連結</label>
