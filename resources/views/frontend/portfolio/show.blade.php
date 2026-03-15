@@ -30,9 +30,43 @@
       <div class="project-detail-wrapper">
         {{-- Main Content --}}
         <div class="project-detail-content">
-          @if($project->cover_image)
+          @php
+              $galleryImages = $project->images ?? collect();
+              $hasGallery = $galleryImages->isNotEmpty();
+              $coverUrl = $project->cover_image;
+          @endphp
+
+          @if($hasGallery)
+            {{-- 大圖：第一張圖片 --}}
             <div class="project-cover-image">
-              <img src="{{ $project->cover_image }}" alt="{{ $project->title }}">
+              <img src="{{ $galleryImages->first()->image_url }}"
+                   alt="{{ $galleryImages->first()->alt_text ?? $project->title }}"
+                   class="project-gallery-main-img"
+                   data-gallery-index="0"
+                   style="cursor: pointer;">
+              @if($galleryImages->first()->caption)
+                <div class="project-gallery-main-caption">{{ $galleryImages->first()->caption }}</div>
+              @endif
+            </div>
+
+            {{-- 縮圖 Grid（第 2 張起） --}}
+            @if($galleryImages->count() > 1)
+            <div class="project-gallery-grid">
+              @foreach($galleryImages->slice(1) as $idx => $image)
+                <div class="project-gallery-thumb" data-gallery-index="{{ $idx + 1 }}">
+                  <img src="{{ $image->image_url }}"
+                       alt="{{ $image->alt_text ?? $project->title }}"
+                       loading="lazy">
+                  @if($image->caption)
+                    <div class="project-gallery-caption">{{ $image->caption }}</div>
+                  @endif
+                </div>
+              @endforeach
+            </div>
+            @endif
+          @elseif($coverUrl)
+            <div class="project-cover-image">
+              <img src="{{ $coverUrl }}" alt="{{ $project->title }}">
             </div>
           @endif
 
@@ -40,6 +74,29 @@
             {!! $project->content !!}
           </div>
         </div>
+
+        {{-- Lightbox Overlay --}}
+        @if($hasGallery)
+        @php
+            $lightboxData = $galleryImages->map(fn($img) => [
+                'url' => $img->image_url,
+                'alt' => $img->alt_text ?? $project->title,
+                'caption' => $img->caption ?? '',
+            ])->values()->all();
+        @endphp
+        <div class="project-lightbox" id="projectLightbox">
+          <button class="project-lightbox-close" aria-label="關閉">&times;</button>
+          <button class="project-lightbox-prev" aria-label="上一張">&#10094;</button>
+          <button class="project-lightbox-next" aria-label="下一張">&#10095;</button>
+          <div class="project-lightbox-img-wrapper">
+            <img src="" alt="" id="lightboxImg">
+          </div>
+          <div class="project-lightbox-info">
+            <div class="project-lightbox-caption" id="lightboxCaption"></div>
+            <div class="project-lightbox-counter" id="lightboxCounter"></div>
+          </div>
+        </div>
+        @endif
 
         {{-- Sidebar --}}
         <aside class="project-sidebar">
@@ -155,4 +212,78 @@
     </section>
 
     @include('frontend.partials.footer')
+
+    @if(isset($hasGallery) && $hasGallery)
+    @push('scripts')
+    <script>
+    (function() {
+        const images = @json($lightboxData);
+        if (!images || images.length === 0) return;
+
+        const lightbox = document.getElementById('projectLightbox');
+        const lightboxImg = document.getElementById('lightboxImg');
+        const lightboxCaption = document.getElementById('lightboxCaption');
+        const lightboxCounter = document.getElementById('lightboxCounter');
+        let currentIndex = 0;
+
+        function openLightbox(index) {
+            currentIndex = index;
+            updateLightbox();
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function updateLightbox() {
+            const img = images[currentIndex];
+            lightboxImg.src = img.url;
+            lightboxImg.alt = img.alt;
+            lightboxCaption.textContent = img.caption || '';
+            lightboxCounter.textContent = (currentIndex + 1) + ' / ' + images.length;
+        }
+
+        function prevImage() {
+            currentIndex = (currentIndex - 1 + images.length) % images.length;
+            updateLightbox();
+        }
+
+        function nextImage() {
+            currentIndex = (currentIndex + 1) % images.length;
+            updateLightbox();
+        }
+
+        // Click handlers for gallery images
+        document.querySelectorAll('[data-gallery-index]').forEach(function(el) {
+            el.addEventListener('click', function() {
+                openLightbox(parseInt(this.dataset.galleryIndex));
+            });
+        });
+
+        // Lightbox controls
+        lightbox.querySelector('.project-lightbox-close').addEventListener('click', closeLightbox);
+        lightbox.querySelector('.project-lightbox-prev').addEventListener('click', prevImage);
+        lightbox.querySelector('.project-lightbox-next').addEventListener('click', nextImage);
+
+        // Close on backdrop click
+        lightbox.addEventListener('click', function(e) {
+            if (e.target === lightbox || e.target.classList.contains('project-lightbox-img-wrapper')) {
+                closeLightbox();
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (!lightbox.classList.contains('active')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') prevImage();
+            if (e.key === 'ArrowRight') nextImage();
+        });
+    })();
+    </script>
+    @endpush
+    @endif
 @endsection

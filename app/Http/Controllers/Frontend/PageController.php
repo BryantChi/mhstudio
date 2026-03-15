@@ -138,6 +138,7 @@ class PageController extends Controller
     public function portfolioShow(string $slug): View
     {
         $project = Project::published()
+            ->with(['images' => fn ($q) => $q->orderBy('order')])
             ->where('slug', $slug)
             ->firstOrFail();
 
