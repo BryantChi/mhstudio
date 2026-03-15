@@ -951,12 +951,18 @@
 
 // ===== Portfolio CTA Section =====
 .portfolio-cta-section {
-    padding: 4rem 0;
+    padding: 4rem clamp(20px, 5vw, 60px);
     margin-top: 3rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
 
     h3 {
-        font-size: 1.8rem;
+        font-size: clamp(1.5rem, 2.5vw, 2rem);
         margin-bottom: 0.5rem;
         color: var(--text-primary, #fff);
     }
@@ -964,6 +970,7 @@
     p {
         color: rgba(255, 255, 255, 0.6);
         margin-bottom: 1.5rem;
+        font-size: clamp(14px, 1.1vw, 18px);
     }
 }
 
@@ -1522,11 +1529,6 @@ select.form-input {
 }
 
 @media (min-width: 2560px) {
-  .services-grid,
-  .portfolio-grid { max-width: 1800px; }
-  .tech-grid { max-width: 1400px; }
-  .contact-wrapper { max-width: 1400px; }
-  .social-embed-grid { max-width: 1600px; }
   .service-card h3 { font-size: 22px; }
   .service-card p { font-size: 18px; }
   .service-tag { font-size: 13px; }
