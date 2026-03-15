@@ -15,33 +15,35 @@ document.addEventListener('DOMContentLoaded', function () {
         return new coreui.Popover(popoverTriggerEl);
     });
 
-    // 側邊欄切換 - 監聽 CoreUI 的側邊欄狀態變化
+    // 側邊欄切換
     const sidebar = document.querySelector('.sidebar');
     const wrapper = document.querySelector('.wrapper');
+    const MOBILE_BP = 992;
 
     if (sidebar && wrapper) {
-        // 監聽側邊欄的 class 變化
+        // 監聽側邊欄 class 變化 → 同步 wrapper margin（僅桌面版）
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
                 if (mutation.attributeName === 'class') {
+                    if (window.innerWidth < MOBILE_BP) return;
                     const isNarrow = sidebar.classList.contains('sidebar-narrow') ||
                                    sidebar.classList.contains('sidebar-narrow-unfoldable');
-
-                    if (isNarrow) {
-                        wrapper.style.marginLeft = '4rem';
-                    } else {
-                        wrapper.style.marginLeft = '16rem';
-                    }
+                    wrapper.style.marginLeft = isNarrow ? '4rem' : '16rem';
                 }
             });
         });
-
         observer.observe(sidebar, { attributes: true });
     }
 
-    // 側邊欄切換按鈕事件處理
+    // 側邊欄切換（桌面：收合/展開；手機：CoreUI Sidebar show/hide）
     const toggleSidebar = function() {
-        if (sidebar) {
+        if (!sidebar) return;
+        if (window.innerWidth < MOBILE_BP) {
+            // 手機版：用 CoreUI Sidebar API 滑出/收回
+            const instance = coreui.Sidebar.getOrCreateInstance(sidebar);
+            instance.toggle();
+        } else {
+            // 桌面版：收合為窄條
             sidebar.classList.toggle('sidebar-narrow-unfoldable');
         }
     };
