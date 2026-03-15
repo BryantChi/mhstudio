@@ -2142,13 +2142,33 @@
 }
 .quote-btn-prev {
   background: transparent;
-  border: 1px solid var(--border-subtle);
+  border: none;
   color: var(--text-secondary);
+  clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%);
+  padding-left: 36px;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%);
+    background: var(--border-subtle);
+    z-index: -1;
+  }
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%);
+    background: var(--bg-primary, #060b18);
+    z-index: -1;
+  }
 }
 .quote-btn-prev:hover {
-  border-color: var(--accent-cyan);
   color: var(--accent-cyan);
-  background: rgba(0, 212, 255, 0.05);
+  &::before { background: var(--accent-cyan); }
+  &::after { background: rgba(0, 212, 255, 0.05); }
 }
 .quote-btn-prev svg {
   stroke: currentColor;
