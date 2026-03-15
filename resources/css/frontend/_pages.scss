@@ -90,6 +90,9 @@
   text-align: center;
   padding: 0 24px;
   max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 /* HUD 裝飾角線 */
 .page-header-content::before,
@@ -554,6 +557,9 @@
   text-align: center;
   padding: 0 24px;
   max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 /* HUD 角線 */
 .article-header-content::before,
