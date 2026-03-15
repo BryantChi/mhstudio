@@ -41,6 +41,12 @@
                     <span>{{ strtoupper($project->category ?? 'PROJECT') }}</span>
                   </div>
                 @endif
+                @if($project->is_featured)
+                  <span class="portfolio-featured-badge">
+                    <svg viewBox="0 0 24 24" width="12" height="12"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" stroke="none"/></svg>
+                    精選
+                  </span>
+                @endif
                 <div class="portfolio-listing-overlay">
                   <span class="portfolio-overlay-btn">查看詳情</span>
                 </div>
