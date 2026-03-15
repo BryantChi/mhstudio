@@ -167,4 +167,22 @@ Route::middleware('auth')->prefix('client')->name('client.')->group(function () 
     Route::get('/projects/{project}/files/{file}/download', [ClientPortalController::class, 'downloadFile'])->name('project.file.download');
 });
 
+// Storage 檔案服務（共享主機 symlink fallback）
+// 當 public/storage symlink 不存在或無法正常運作時，透過此路由直接提供檔案
+Route::get('/storage/{path}', function (string $path) {
+    $fullPath = storage_path('app/public/' . $path);
+
+    if (!file_exists($fullPath)) {
+        abort(404);
+    }
+
+    $mime = mime_content_type($fullPath);
+    $cacheSeconds = 86400 * 30; // 30 天快取
+
+    return response()->file($fullPath, [
+        'Content-Type' => $mime,
+        'Cache-Control' => "public, max-age={$cacheSeconds}",
+    ]);
+})->where('path', '.*')->name('storage.serve');
+
 // 後台路由已由 bootstrap/app.php 的 then 回呼載入，此處不重複 require
