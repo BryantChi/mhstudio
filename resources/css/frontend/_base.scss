@@ -75,7 +75,7 @@ section { padding: clamp(60px, 10vw, 120px) clamp(20px, 5vw, 60px); }
 }
 .section-label {
   font-family: var(--font-display);
-  font-size: 10px;
+  font-size: clamp(10px, 0.85vw, 14px);
   letter-spacing: 4px;
   color: var(--accent-cyan);
   text-transform: uppercase;
@@ -98,6 +98,6 @@ section { padding: clamp(60px, 10vw, 120px) clamp(20px, 5vw, 60px); }
   max-width: 600px;
   margin: 0 auto;
   color: var(--text-secondary);
-  font-size: 16px;
+  font-size: clamp(15px, 1.1vw, 20px);
   line-height: 1.7;
 }
