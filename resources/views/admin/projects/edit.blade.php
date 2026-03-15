@@ -182,11 +182,8 @@
                         @endforeach
                     </div>
 
-                    {{-- 隱藏的暫存 input 給 media picker --}}
-                    <input type="hidden" id="galleryTempInput" value="">
-
-                    {{-- 新增圖片按鈕 --}}
-                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="openMediaPicker('galleryTempInput')">
+                    {{-- 新增圖片按鈕（多選模式） --}}
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="galleryAddBtn">
                         <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-library-add"></use></svg>
                         從媒體庫新增圖片
                     </button>
@@ -403,7 +400,7 @@
         const csrfToken = '{{ csrf_token() }}';
         const galleryGrid = document.getElementById('galleryGrid');
         const galleryCount = document.getElementById('galleryCount');
-        const galleryTempInput = document.getElementById('galleryTempInput');
+        const galleryAddBtn = document.getElementById('galleryAddBtn');
 
         // Initialize SortableJS
         if (galleryGrid) {
@@ -418,21 +415,15 @@
             });
         }
 
-        // 監聽 media picker 選擇完成 → 新增圖片
-        if (galleryTempInput) {
-            galleryTempInput.addEventListener('change', function() {
-                const url = this.value.trim();
-                if (!url) return;
-                this.value = '';
-                addGalleryImage(url);
-            });
-
-            // 也監聽 input 事件（media picker 可能觸發 input 而非 change）
-            galleryTempInput.addEventListener('input', function() {
-                const url = this.value.trim();
-                if (!url) return;
-                this.value = '';
-                addGalleryImage(url);
+        // 「從媒體庫新增圖片」按鈕 → 開啟多選模式
+        if (galleryAddBtn) {
+            galleryAddBtn.addEventListener('click', function() {
+                openMediaPickerMulti(function(urls) {
+                    // 依序 AJAX 新增每張圖片
+                    urls.forEach(function(url) {
+                        addGalleryImage(url);
+                    });
+                });
             });
         }
 

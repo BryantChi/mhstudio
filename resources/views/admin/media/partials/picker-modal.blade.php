@@ -57,7 +57,7 @@
                     <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">取消</button>
                     <button type="button" class="btn btn-primary" id="mediaPickerConfirmBtn" disabled>
                         <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-check"></use></svg>
-                        確認選取
+                        <span id="mediaPickerConfirmText">確認選取</span>
                     </button>
                 </div>
             </div>
@@ -130,6 +130,25 @@
         padding: 3rem 0;
         color: #8a93a2;
     }
+    /* 多選模式序號 badge */
+    .media-picker-item.selected .media-picker-order-badge {
+        position: absolute;
+        top: 4px; right: 4px;
+        width: 22px; height: 22px;
+        background: #3399ff;
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: bold;
+        z-index: 2;
+    }
+    /* 多選模式隱藏預設勾勾 */
+    .media-picker-grid.multi-select .media-picker-item.selected::after {
+        display: none;
+    }
 </style>
 @endpush
 
@@ -138,10 +157,14 @@
 document.addEventListener('DOMContentLoaded', function() {
     // ===== Media Picker State =====
     var _mpTargetInput = null;
-    var _mpSelectedUrl = null;
+    var _mpSelectedUrl = null;       // 單選模式
+    var _mpSelectedUrls = [];        // 多選模式
+    var _mpMultiMode = false;        // 是否為多選模式
+    var _mpMultiCallback = null;     // 多選確認後的 callback
     var _mpModalInstance = null;
 
     var mpModalEl = document.getElementById('mediaPickerModal');
+    var mpGrid = document.getElementById('mediaPickerGrid');
     var mpAdminPrefix = '{{ config("admin.prefix", "admin") }}';
     var mpCsrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
@@ -150,12 +173,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (_mpModalInstance) return _mpModalInstance;
         if (!mpModalEl) return null;
 
-        // 嘗試 CoreUI（此專案使用 CoreUI 5）
         if (window.coreui && window.coreui.Modal) {
             _mpModalInstance = window.coreui.Modal.getOrCreateInstance(mpModalEl);
             return _mpModalInstance;
         }
-        // Fallback: Bootstrap 5
         if (window.bootstrap && window.bootstrap.Modal) {
             _mpModalInstance = window.bootstrap.Modal.getOrCreateInstance(mpModalEl);
             return _mpModalInstance;
@@ -163,7 +184,14 @@ document.addEventListener('DOMContentLoaded', function() {
         return null;
     }
 
-    // ===== 全域開啟函式 =====
+    // ===== 重置選取狀態 =====
+    function resetPickerState() {
+        _mpSelectedUrl = null;
+        _mpSelectedUrls = [];
+        if (mpGrid) mpGrid.classList.remove('multi-select');
+    }
+
+    // ===== 單選開啟函式（向後相容） =====
     window.openMediaPicker = function(targetInputId) {
         _mpTargetInput = document.getElementById(targetInputId);
         if (!_mpTargetInput) {
@@ -171,22 +199,54 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        _mpSelectedUrl = null;
+        _mpMultiMode = false;
+        _mpMultiCallback = null;
+        resetPickerState();
         updatePickerSelection();
 
-        // 清空搜尋
+        var confirmText = document.getElementById('mediaPickerConfirmText');
+        if (confirmText) confirmText.textContent = '確認選取';
+
         var searchInput = document.getElementById('mediaPickerSearch');
         if (searchInput) searchInput.value = '';
 
-        // 載入媒體
         loadPickerMedia(1);
 
-        // 開啟 modal
         var modal = getPickerModal();
         if (modal) {
             modal.show();
         } else {
-            console.error('Media Picker: 無法初始化 modal，請確認 CoreUI JS 已載入');
+            console.error('Media Picker: 無法初始化 modal');
+        }
+    };
+
+    // ===== 多選開啟函式 =====
+    window.openMediaPickerMulti = function(callback) {
+        if (typeof callback !== 'function') {
+            console.error('Media Picker Multi: callback is required');
+            return;
+        }
+
+        _mpTargetInput = null;
+        _mpMultiMode = true;
+        _mpMultiCallback = callback;
+        resetPickerState();
+        if (mpGrid) mpGrid.classList.add('multi-select');
+        updatePickerSelection();
+
+        var confirmText = document.getElementById('mediaPickerConfirmText');
+        if (confirmText) confirmText.textContent = '確認選取';
+
+        var searchInput = document.getElementById('mediaPickerSearch');
+        if (searchInput) searchInput.value = '';
+
+        loadPickerMedia(1);
+
+        var modal = getPickerModal();
+        if (modal) {
+            modal.show();
+        } else {
+            console.error('Media Picker: 無法初始化 modal');
         }
     };
 
@@ -224,32 +284,92 @@ document.addEventListener('DOMContentLoaded', function() {
         var grid = document.getElementById('mediaPickerGrid');
         if (!grid) return;
 
+        // 保留多選模式的 class
+        var extraClass = _mpMultiMode ? ' multi-select' : '';
+
         if (!items || items.length === 0) {
             grid.innerHTML = '<div class="media-picker-empty">沒有找到圖片。請先到<a href="/' + mpAdminPrefix + '/media">媒體庫</a>上傳圖片，或使用上方「上傳新圖片」按鈕。</div>';
+            if (_mpMultiMode) grid.classList.add('multi-select');
             return;
         }
 
         var html = '';
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
-            var isSelected = (_mpSelectedUrl && _mpSelectedUrl === item.url) ? ' selected' : '';
+            // 檢查是否已選取（單選或多選）
+            var isSelected = false;
+            var orderNum = 0;
+            if (_mpMultiMode) {
+                var idx = _mpSelectedUrls.indexOf(item.url);
+                if (idx !== -1) { isSelected = true; orderNum = idx + 1; }
+            } else {
+                isSelected = (_mpSelectedUrl && _mpSelectedUrl === item.url);
+            }
+
             var altText = (item.alt_text || item.original_name || '').replace(/"/g, '&quot;');
             var fileName = (item.original_name || '').replace(/</g, '&lt;');
-            html += '<div class="media-picker-item' + isSelected + '" data-url="' + item.url + '" data-name="' + altText + '">'
-                  + '<img src="' + item.url + '" alt="' + altText + '" loading="lazy">'
-                  + '<div class="media-picker-item-name">' + fileName + '</div>'
+            html += '<div class="media-picker-item' + (isSelected ? ' selected' : '') + '" data-url="' + item.url + '" data-name="' + altText + '">'
+                  + '<img src="' + item.url + '" alt="' + altText + '" loading="lazy">';
+            // 多選模式顯示序號 badge
+            if (_mpMultiMode && isSelected) {
+                html += '<span class="media-picker-order-badge">' + orderNum + '</span>';
+            }
+            html += '<div class="media-picker-item-name">' + fileName + '</div>'
                   + '</div>';
         }
         grid.innerHTML = html;
+        if (_mpMultiMode) grid.classList.add('multi-select');
 
         // 綁定點擊事件（事件委派）
         grid.querySelectorAll('.media-picker-item').forEach(function(el) {
             el.addEventListener('click', function() {
-                grid.querySelectorAll('.media-picker-item.selected').forEach(function(s) { s.classList.remove('selected'); });
-                el.classList.add('selected');
-                _mpSelectedUrl = el.getAttribute('data-url');
+                var url = el.getAttribute('data-url');
+
+                if (_mpMultiMode) {
+                    // 多選：toggle 選取
+                    var idx = _mpSelectedUrls.indexOf(url);
+                    if (idx !== -1) {
+                        _mpSelectedUrls.splice(idx, 1);
+                        el.classList.remove('selected');
+                        var badge = el.querySelector('.media-picker-order-badge');
+                        if (badge) badge.remove();
+                    } else {
+                        _mpSelectedUrls.push(url);
+                        el.classList.add('selected');
+                        var newBadge = document.createElement('span');
+                        newBadge.className = 'media-picker-order-badge';
+                        newBadge.textContent = _mpSelectedUrls.length;
+                        el.appendChild(newBadge);
+                    }
+                    // 重新更新所有序號
+                    refreshMultiOrderBadges(grid);
+                } else {
+                    // 單選：取代
+                    grid.querySelectorAll('.media-picker-item.selected').forEach(function(s) { s.classList.remove('selected'); });
+                    el.classList.add('selected');
+                    _mpSelectedUrl = url;
+                }
                 updatePickerSelection();
             });
+        });
+    }
+
+    // ===== 重新整理多選序號 =====
+    function refreshMultiOrderBadges(grid) {
+        grid.querySelectorAll('.media-picker-item').forEach(function(el) {
+            var url = el.getAttribute('data-url');
+            var badge = el.querySelector('.media-picker-order-badge');
+            var idx = _mpSelectedUrls.indexOf(url);
+            if (idx !== -1) {
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'media-picker-order-badge';
+                    el.appendChild(badge);
+                }
+                badge.textContent = idx + 1;
+            } else {
+                if (badge) badge.remove();
+            }
         });
     }
 
@@ -268,7 +388,6 @@ document.addEventListener('DOMContentLoaded', function() {
         html += '</ul></nav>';
         container.innerHTML = html;
 
-        // 綁定分頁按鈕
         container.querySelectorAll('[data-picker-page]').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 loadPickerMedia(parseInt(this.getAttribute('data-picker-page'), 10));
@@ -280,16 +399,33 @@ document.addEventListener('DOMContentLoaded', function() {
     function updatePickerSelection() {
         var btn = document.getElementById('mediaPickerConfirmBtn');
         var info = document.getElementById('mediaPickerSelected');
+        var confirmText = document.getElementById('mediaPickerConfirmText');
         if (!btn || !info) return;
 
-        if (_mpSelectedUrl) {
-            btn.disabled = false;
-            var selectedEl = document.querySelector('.media-picker-item.selected');
-            var name = selectedEl ? (selectedEl.getAttribute('data-name') || '') : '';
-            info.innerHTML = '<img src="' + _mpSelectedUrl + '" style="width:24px;height:24px;object-fit:cover;border-radius:3px;" class="me-1"> 已選取：' + name;
+        if (_mpMultiMode) {
+            // 多選模式
+            var count = _mpSelectedUrls.length;
+            if (count > 0) {
+                btn.disabled = false;
+                info.textContent = '已選取 ' + count + ' 張圖片';
+                if (confirmText) confirmText.textContent = '確認選取 (' + count + ')';
+            } else {
+                btn.disabled = true;
+                info.textContent = '點擊圖片可多選（再次點擊取消）';
+                if (confirmText) confirmText.textContent = '確認選取';
+            }
         } else {
-            btn.disabled = true;
-            info.textContent = '尚未選取圖片';
+            // 單選模式
+            if (_mpSelectedUrl) {
+                btn.disabled = false;
+                var selectedEl = document.querySelector('.media-picker-item.selected');
+                var name = selectedEl ? (selectedEl.getAttribute('data-name') || '') : '';
+                info.innerHTML = '<img src="' + _mpSelectedUrl + '" style="width:24px;height:24px;object-fit:cover;border-radius:3px;" class="me-1"> 已選取：' + name;
+            } else {
+                btn.disabled = true;
+                info.textContent = '尚未選取圖片';
+            }
+            if (confirmText) confirmText.textContent = '確認選取';
         }
     }
 
@@ -297,26 +433,33 @@ document.addEventListener('DOMContentLoaded', function() {
     var confirmBtn = document.getElementById('mediaPickerConfirmBtn');
     if (confirmBtn) {
         confirmBtn.addEventListener('click', function() {
-            if (!_mpSelectedUrl || !_mpTargetInput) return;
+            if (_mpMultiMode) {
+                // 多選模式：呼叫 callback
+                if (_mpSelectedUrls.length === 0 || typeof _mpMultiCallback !== 'function') return;
+                var urls = _mpSelectedUrls.slice(); // 複製
+                var modal = getPickerModal();
+                if (modal) modal.hide();
+                _mpMultiCallback(urls);
+            } else {
+                // 單選模式：寫入 input
+                if (!_mpSelectedUrl || !_mpTargetInput) return;
 
-            _mpTargetInput.value = _mpSelectedUrl;
-            // 觸發事件讓其他 JS 能偵測到變化
-            _mpTargetInput.dispatchEvent(new Event('input', { bubbles: true }));
-            _mpTargetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                _mpTargetInput.value = _mpSelectedUrl;
+                _mpTargetInput.dispatchEvent(new Event('input', { bubbles: true }));
+                _mpTargetInput.dispatchEvent(new Event('change', { bubbles: true }));
 
-            // 更新預覽圖
-            var previewId = 'media-picker-preview-' + _mpTargetInput.id;
-            var preview = document.getElementById(previewId);
-            if (preview) {
-                preview.src = _mpSelectedUrl;
-                preview.style.display = 'block';
-                var container = preview.closest('.media-picker-preview-container');
-                if (container) container.style.display = 'block';
+                var previewId = 'media-picker-preview-' + _mpTargetInput.id;
+                var preview = document.getElementById(previewId);
+                if (preview) {
+                    preview.src = _mpSelectedUrl;
+                    preview.style.display = 'block';
+                    var container = preview.closest('.media-picker-preview-container');
+                    if (container) container.style.display = 'block';
+                }
+
+                var modal = getPickerModal();
+                if (modal) modal.hide();
             }
-
-            // 關閉 modal
-            var modal = getPickerModal();
-            if (modal) modal.hide();
         });
     }
 
@@ -363,14 +506,20 @@ document.addEventListener('DOMContentLoaded', function() {
             xhr.onload = function() {
                 if (progressContainer) progressContainer.classList.add('d-none');
                 if (progressBar) progressBar.style.width = '0%';
-                uploadInput.value = ''; // reset
+                uploadInput.value = '';
 
                 if (xhr.status === 200) {
                     try {
                         var resp = JSON.parse(xhr.responseText);
                         if (resp.success && resp.media) {
-                            _mpSelectedUrl = resp.media.url;
-                            updatePickerSelection();
+                            if (_mpMultiMode) {
+                                // 多選模式：自動加入已選取清單
+                                _mpSelectedUrls.push(resp.media.url);
+                                updatePickerSelection();
+                            } else {
+                                _mpSelectedUrl = resp.media.url;
+                                updatePickerSelection();
+                            }
                             loadPickerMedia(1);
                         }
                     } catch(ex) {
