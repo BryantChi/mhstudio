@@ -2652,14 +2652,13 @@
 /* — 桌面版 — */
 .fe-pagination-desktop {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
+  gap: 16px;
 }
 .fe-page-summary {
   color: var(--text-dim);
   font-size: 0.8125rem;
-  white-space: nowrap;
 }
 .fe-page-list {
   display: flex;
