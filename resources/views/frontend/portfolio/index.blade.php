@@ -77,8 +77,8 @@
 
         {{-- Pagination --}}
         @if($projects->hasPages())
-        <div class="portfolio-pagination">
-          {{ $projects->links() }}
+        <div class="fe-pagination-wrap">
+          {{ $projects->links('frontend.partials.pagination') }}
         </div>
         @endif
       @else

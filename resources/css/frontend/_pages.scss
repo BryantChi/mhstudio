@@ -384,46 +384,7 @@
   color: var(--accent-blue);
 }
 
-/* Pagination */
-.blog-pagination {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 48px;
-}
-.blog-pagination .pagination-wrapper {
-  width: auto;
-}
-.blog-pagination .pagination {
-  gap: 4px;
-}
-.blog-pagination .pagination .page-item .page-link {
-  min-width: 40px;
-  height: 40px;
-  border-radius: 0;
-  border-color: var(--border-subtle);
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: var(--font-display);
-  font-size: 0.875rem;
-  transition: all 0.3s;
-}
-.blog-pagination .pagination .page-item .page-link:hover {
-  border-color: var(--accent-cyan);
-  color: var(--accent-cyan);
-  background: rgba(0, 212, 255, 0.06);
-}
-.blog-pagination .pagination .page-item.active .page-link {
-  border-color: var(--accent-cyan);
-  background: rgba(0, 212, 255, 0.1);
-  color: var(--accent-cyan);
-}
-.blog-pagination .pagination .page-item.disabled .page-link {
-  color: var(--text-dim);
-  opacity: 0.4;
-}
-.blog-pagination .text-muted {
-  color: var(--text-secondary) !important;
-}
+/* (Blog pagination → 統一使用 .fe-pagination，見 _pages.scss 底部) */
 
 /* Empty state */
 .blog-empty {
@@ -844,46 +805,7 @@
 @media (max-width: 600px) {
   .portfolio-listing-grid { grid-template-columns: 1fr; }
 }
-/* Portfolio Pagination */
-.portfolio-pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 48px;
-}
-.portfolio-pagination .pagination-wrapper {
-  width: auto;
-}
-.portfolio-pagination .pagination {
-  gap: 4px;
-}
-.portfolio-pagination .pagination .page-item .page-link {
-  min-width: 40px;
-  height: 40px;
-  border-radius: 0;
-  border-color: var(--border-subtle);
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: var(--font-display);
-  font-size: 0.875rem;
-  transition: all 0.3s;
-}
-.portfolio-pagination .pagination .page-item .page-link:hover {
-  border-color: var(--accent-cyan);
-  color: var(--accent-cyan);
-  background: rgba(0, 212, 255, 0.06);
-}
-.portfolio-pagination .pagination .page-item.active .page-link {
-  border-color: var(--accent-cyan);
-  background: rgba(0, 212, 255, 0.1);
-  color: var(--accent-cyan);
-}
-.portfolio-pagination .pagination .page-item.disabled .page-link {
-  color: var(--text-dim);
-  opacity: 0.4;
-}
-.portfolio-pagination .text-muted {
-  color: var(--text-secondary) !important;
-}
+/* (Portfolio pagination → 統一使用 .fe-pagination，見 _pages.scss 底部) */
 .portfolio-listing-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -2676,6 +2598,115 @@
   justify-content: center;
   gap: 16px;
   flex-wrap: wrap;
+}
+
+/* =============================================================
+   FRONTEND PAGINATION (shared by portfolio & blog)
+   ============================================================= */
+.fe-pagination-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 48px;
+  margin-bottom: 16px;
+}
+.fe-pagination {
+  width: 100%;
+  max-width: 600px;
+}
+
+/* — 手機版 — */
+.fe-pagination-mobile {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.fe-page-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  letter-spacing: 1px;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+.fe-page-btn:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+.fe-page-btn.disabled {
+  color: var(--text-dim);
+  opacity: 0.4;
+  pointer-events: none;
+}
+.fe-page-info {
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  letter-spacing: 2px;
+}
+
+/* — 桌面版 — */
+.fe-pagination-desktop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.fe-page-summary {
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+.fe-page-list {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 4px;
+}
+.fe-page-item span,
+.fe-page-item a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: border-color 0.3s, color 0.3s, background 0.3s;
+}
+.fe-page-item a:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  background: rgba(0, 212, 255, 0.06);
+}
+.fe-page-item.active span {
+  border-color: var(--accent-cyan);
+  background: rgba(0, 212, 255, 0.12);
+  color: var(--accent-cyan);
+}
+.fe-page-item.disabled span {
+  color: var(--text-dim);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* — RWD — */
+@media (max-width: 640px) {
+  .fe-pagination-mobile {
+    display: flex;
+  }
+  .fe-pagination-desktop {
+    display: none;
+  }
 }
 
 /* Light theme overrides */

@@ -90,8 +90,8 @@
         </div>
 
         {{-- Pagination --}}
-        <div class="blog-pagination">
-          {{ $articles->links() }}
+        <div class="fe-pagination-wrap">
+          {{ $articles->links('frontend.partials.pagination') }}
         </div>
       @else
         <div class="blog-empty animate-on-scroll">
