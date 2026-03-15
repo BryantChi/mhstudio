@@ -385,6 +385,54 @@
                 </div>
             </div>
 
+            {{-- 首頁區塊開關 --}}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <strong>首頁區塊顯示</strong>
+                    <small class="text-muted ms-2">控制首頁各區塊的顯示/隱藏</small>
+                </div>
+                <div class="card-body">
+                    @php
+                        $sections = [
+                            ['key' => 'section_stats_enabled', 'label' => '數據統計（Stats Bar）', 'default' => '1'],
+                            ['key' => 'section_services_enabled', 'label' => '專業服務（Services）', 'default' => '1'],
+                            ['key' => 'section_portfolio_enabled', 'label' => '精選作品（Portfolio）', 'default' => '1'],
+                            ['key' => 'section_process_enabled', 'label' => '合作流程（Process）', 'default' => '1'],
+                            ['key' => 'section_techstack_enabled', 'label' => '技術棧（Tech Stack）', 'default' => '1'],
+                        ];
+                    @endphp
+                    @foreach($sections as $sec)
+                    <div class="mb-2">
+                        <div class="form-check form-switch">
+                            <input type="hidden" name="{{ $sec['key'] }}" value="0">
+                            <input class="form-check-input" type="checkbox" id="{{ $sec['key'] }}" name="{{ $sec['key'] }}" value="1"
+                                   {{ old($sec['key'], $settings[$sec['key']] ?? $sec['default']) == '1' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="{{ $sec['key'] }}">{{ $sec['label'] }}</label>
+                        </div>
+                    </div>
+                    @endforeach
+                    <div class="form-text mt-2">Testimonials 和 Blog Preview 依據資料自動顯示/隱藏，不需手動開關。</div>
+                </div>
+            </div>
+
+            {{-- 電子報 --}}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <strong>電子報訂閱</strong>
+                </div>
+                <div class="card-body">
+                    <div class="mb-0">
+                        <div class="form-check form-switch">
+                            <input type="hidden" name="newsletter_enabled" value="0">
+                            <input class="form-check-input" type="checkbox" id="newsletter_enabled" name="newsletter_enabled" value="1"
+                                   {{ old('newsletter_enabled', $settings['newsletter_enabled'] ?? '1') == '1' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="newsletter_enabled">啟用首頁電子報訂閱區塊</label>
+                        </div>
+                        <div class="form-text">關閉後，首頁底部的電子報訂閱區塊將隱藏。</div>
+                    </div>
+                </div>
+            </div>
+
             {{-- 社群嵌入 --}}
             <div class="card mt-3">
                 <div class="card-header">

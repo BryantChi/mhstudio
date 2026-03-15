@@ -82,6 +82,7 @@
     </section>
 
     {{-- ===== STATS ===== --}}
+    @if(setting('section_stats_enabled', '1') == '1')
     <div class="stats-bar">
       <div class="stat-item animate-on-scroll">
         <div class="stat-number" data-target="{{ setting('stats_years_experience', 7) }}">0</div>
@@ -100,6 +101,7 @@
         <div class="stat-label">{{ __('frontend.stats_ontime') }}</div>
       </div>
     </div>
+    @endif
 
     {{-- 信賴夥伴 --}}
     @if(isset($trustedClients) && $trustedClients->count() > 0)
@@ -118,6 +120,7 @@
     @endif
 
     {{-- ===== SERVICES ===== --}}
+    @if(setting('section_services_enabled', '1') == '1')
     <section id="services">
       <div class="section-header animate-on-scroll">
         <div class="section-label">{{ __('frontend.services_label') }}</div>
@@ -204,8 +207,10 @@
         @endif
       </div>
     </section>
+    @endif
 
     {{-- ===== PORTFOLIO ===== --}}
+    @if(setting('section_portfolio_enabled', '1') == '1')
     <section id="portfolio">
       <div class="section-header animate-on-scroll">
         <div class="section-label">{{ __('frontend.portfolio_label') }}</div>
@@ -291,8 +296,10 @@
         <a href="{{ route('portfolio') }}" class="btn-secondary">{{ __('frontend.portfolio_view_all') }}</a>
       </div>
     </section>
+    @endif
 
     {{-- ===== PROCESS ===== --}}
+    @if(setting('section_process_enabled', '1') == '1')
     <section id="process">
       <div class="section-header animate-on-scroll">
         <div class="section-label">{{ __('frontend.process_label') }}</div>
@@ -332,8 +339,10 @@
         </div>
       </div>
     </section>
+    @endif
 
     {{-- ===== TECH STACK ===== --}}
+    @if(setting('section_techstack_enabled', '1') == '1')
     <section id="tech">
       <div class="section-header animate-on-scroll">
         <div class="section-label">{{ __('frontend.tech_label') }}</div>
@@ -365,6 +374,7 @@
         @endif
       </div>
     </section>
+    @endif
 
     {{-- ===== TESTIMONIALS ===== --}}
     @if($testimonials->isNotEmpty())
@@ -624,6 +634,7 @@
     </section>
 
     {{-- ===== NEWSLETTER ===== --}}
+    @if(setting('newsletter_enabled', '1') == '1')
     <section id="newsletter" class="newsletter-section">
       <div class="newsletter-wrapper animate-on-scroll">
         <div class="newsletter-content">
@@ -646,6 +657,7 @@
         </form>
       </div>
     </section>
+    @endif
 
     @include('frontend.partials.footer')
 @endsection

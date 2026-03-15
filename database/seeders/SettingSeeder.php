@@ -505,6 +505,14 @@ class SettingSeeder extends Seeder
                 'is_public' => true,
                 'is_editable' => true,
             ],
+            // 首頁區塊開關
+            ['group' => 'frontend', 'key' => 'section_stats_enabled', 'value' => '1', 'type' => 'boolean', 'description' => '首頁數據統計區塊開關', 'is_public' => true, 'is_editable' => true],
+            ['group' => 'frontend', 'key' => 'section_services_enabled', 'value' => '1', 'type' => 'boolean', 'description' => '首頁專業服務區塊開關', 'is_public' => true, 'is_editable' => true],
+            ['group' => 'frontend', 'key' => 'section_portfolio_enabled', 'value' => '1', 'type' => 'boolean', 'description' => '首頁精選作品區塊開關', 'is_public' => true, 'is_editable' => true],
+            ['group' => 'frontend', 'key' => 'section_process_enabled', 'value' => '1', 'type' => 'boolean', 'description' => '首頁合作流程區塊開關', 'is_public' => true, 'is_editable' => true],
+            ['group' => 'frontend', 'key' => 'section_techstack_enabled', 'value' => '1', 'type' => 'boolean', 'description' => '首頁技術棧區塊開關', 'is_public' => true, 'is_editable' => true],
+            ['group' => 'frontend', 'key' => 'newsletter_enabled', 'value' => '1', 'type' => 'boolean', 'description' => '首頁電子報訂閱區塊開關', 'is_public' => true, 'is_editable' => true],
+
             [
                 'group' => 'frontend',
                 'key' => 'social_youtube_embed',
