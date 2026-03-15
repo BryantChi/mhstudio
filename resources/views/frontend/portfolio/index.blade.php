@@ -29,14 +29,14 @@
           <div class="portfolio-filters animate-on-scroll">
             <button class="category-pill active" data-filter="all">全部</button>
             @foreach($projectCategories as $cat)
-              <button class="category-pill" data-filter="{{ Str::slug($cat) }}">{{ $cat }}</button>
+              <button class="category-pill" data-filter="{{ $cat }}">{{ $cat }}</button>
             @endforeach
           </div>
         @endif
 
         <div class="portfolio-listing-grid">
           @foreach($projects as $project)
-            <a href="{{ route('portfolio.show', $project->slug) }}" class="portfolio-listing-card animate-on-scroll" data-category="{{ Str::slug($project->category ?? 'other') }}">
+            <a href="{{ route('portfolio.show', $project->slug) }}" class="portfolio-listing-card animate-on-scroll" data-category="{{ $project->category ?? 'other' }}">
               <div class="portfolio-listing-thumb">
                 @if($project->cover_image)
                   <img src="{{ $project->cover_image }}" alt="{{ $project->title }}" loading="lazy">
