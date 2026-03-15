@@ -19,24 +19,20 @@
 
     {{-- ===== PORTFOLIO LISTING ===== --}}
     <section class="portfolio-section">
+      {{-- Category filters（後端篩選） --}}
+      @if($categories->isNotEmpty())
+        <div class="portfolio-filters animate-on-scroll">
+          <a href="{{ route('portfolio') }}" class="category-pill {{ !request('category') ? 'active' : '' }}">全部</a>
+          @foreach($categories as $cat)
+            <a href="{{ route('portfolio', ['category' => $cat]) }}" class="category-pill {{ request('category') == $cat ? 'active' : '' }}">{{ $cat }}</a>
+          @endforeach
+        </div>
+      @endif
+
       @if($projects->isNotEmpty())
-        @php
-          $projectCategories = $projects->pluck('category')->filter()->unique()->values();
-        @endphp
-
-        {{-- Category filters --}}
-        @if($projectCategories->isNotEmpty())
-          <div class="portfolio-filters animate-on-scroll">
-            <button class="category-pill active" data-filter="all">全部</button>
-            @foreach($projectCategories as $cat)
-              <button class="category-pill" data-filter="{{ $cat }}">{{ $cat }}</button>
-            @endforeach
-          </div>
-        @endif
-
         <div class="portfolio-listing-grid">
           @foreach($projects as $project)
-            <a href="{{ route('portfolio.show', $project->slug) }}" class="portfolio-listing-card animate-on-scroll" data-category="{{ $project->category ?? 'other' }}">
+            <a href="{{ route('portfolio.show', $project->slug) }}" class="portfolio-listing-card animate-on-scroll">
               <div class="portfolio-listing-thumb">
                 @if($project->cover_image)
                   <img src="{{ $project->cover_image }}" alt="{{ $project->title }}" loading="lazy">
@@ -78,6 +74,13 @@
             </a>
           @endforeach
         </div>
+
+        {{-- Pagination --}}
+        @if($projects->hasPages())
+        <div class="portfolio-pagination">
+          {{ $projects->links() }}
+        </div>
+        @endif
       @else
         <div class="blog-empty animate-on-scroll">
           <svg viewBox="0 0 24 24" width="64" height="64">

@@ -92,7 +92,7 @@ class PageController extends Controller
             });
         }
 
-        $articles = $query->paginate(9)->withQueryString();
+        $articles = $query->paginate(16)->withQueryString();
         $categories = Category::active()->orderBy('order')->get();
         $popularTags = Tag::popular(15)->get();
 
@@ -125,11 +125,26 @@ class PageController extends Controller
     /**
      * 作品集列表
      */
-    public function portfolio(): View
+    public function portfolio(Request $request): View
     {
-        $projects = Project::published()->ordered()->get();
+        $query = Project::published()->ordered();
 
-        return view('frontend.portfolio.index', compact('projects'));
+        // 後端分類篩選
+        if ($request->filled('category')) {
+            $query->where('category', $request->input('category'));
+        }
+
+        $projects = $query->paginate(15)->withQueryString();
+
+        // 分類清單（從所有已發布作品取得，不受篩選影響）
+        $categories = Project::published()
+            ->whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
+
+        return view('frontend.portfolio.index', compact('projects', 'categories'));
     }
 
     /**

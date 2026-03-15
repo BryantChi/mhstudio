@@ -201,39 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ===== Portfolio Category Filter =====
-  const portfolioFilterBtns = document.querySelectorAll('.portfolio-filters .category-pill');
-  if (portfolioFilterBtns.length > 0) {
-    portfolioFilterBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const filter = btn.dataset.filter;
-
-        // Update active state
-        portfolioFilterBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        // Filter cards（直接用原始分類名稱比對，支援中文）
-        const cards = document.querySelectorAll('.portfolio-listing-card');
-        cards.forEach(card => {
-          const match = (filter === 'all' || card.dataset.category === filter);
-          if (match) {
-            card.style.display = '';
-            // 先關閉 transition 設定初始狀態
-            card.style.transition = 'none';
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            // 強制 reflow 後再啟動動畫
-            void card.offsetHeight;
-            card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-          } else {
-            card.style.display = 'none';
-          }
-        });
-      });
-    });
-  }
+  // Portfolio category filter 已改為後端篩選（<a> 連結），不需 JS
 
   // ===== Floating Action Button (FAB) =====
   const fabContainer = document.getElementById('fabContainer');
