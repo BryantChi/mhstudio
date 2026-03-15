@@ -170,20 +170,37 @@
     </section>
 
     @if(isset($relatedProjects) && $relatedProjects->count() > 0)
-    <section class="related-projects">
-        <div class="container">
-            <h3>相關作品</h3>
-            <div class="portfolio-grid">
+    <section class="related-projects-section">
+        <div class="related-projects-wrapper">
+            <div class="related-projects-header">
+                <div class="section-label">MORE WORK</div>
+                <h3>相關作品</h3>
+            </div>
+            <div class="related-projects-grid">
                 @foreach($relatedProjects as $relatedProject)
-                <a href="{{ route('portfolio.show', $relatedProject->slug) }}" class="portfolio-card">
-                    @if($relatedProject->cover_image)
-                    <div class="portfolio-image">
-                        <img src="{{ $relatedProject->cover_image }}" alt="{{ $relatedProject->title }}" loading="lazy">
+                <a href="{{ route('portfolio.show', $relatedProject->slug) }}" class="related-project-card">
+                    <div class="related-project-thumb">
+                        @if($relatedProject->cover_image)
+                          <img src="{{ $relatedProject->cover_image }}" alt="{{ $relatedProject->title }}" loading="lazy">
+                        @else
+                          <div class="related-project-placeholder">
+                            <span>{{ strtoupper(Str::limit($relatedProject->title, 2, '')) }}</span>
+                          </div>
+                        @endif
                     </div>
-                    @endif
-                    <div class="portfolio-info">
-                        <h4>{{ $relatedProject->title }}</h4>
-                        <p>{{ Str::limit($relatedProject->excerpt, 80) }}</p>
+                    <div class="related-project-info">
+                        @if($relatedProject->category)
+                          <span class="related-project-category">{{ $relatedProject->category }}</span>
+                        @endif
+                        <h4 class="related-project-title">{{ $relatedProject->title }}</h4>
+                        <p class="related-project-excerpt">{{ Str::limit($relatedProject->excerpt, 80) }}</p>
+                        @if($relatedProject->tech_stack)
+                          <div class="related-project-techs">
+                            @foreach(array_slice($relatedProject->tech_stack, 0, 3) as $tech)
+                              <span>{{ $tech }}</span>
+                            @endforeach
+                          </div>
+                        @endif
                     </div>
                 </a>
                 @endforeach
