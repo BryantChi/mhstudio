@@ -538,6 +538,12 @@
             <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
             <span>{{ __('frontend.contact_free_consult') }}</span>
           </div>
+          @if(setting('social_line_enabled', '1') == '1' && setting('social_line', '#') !== '#' && setting('social_line') !== '')
+          <div class="contact-detail">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 5.58 2 10c0 2.13 1.07 4.04 2.76 5.47L4 20l3.53-2.12C8.87 18.28 10.4 18.5 12 18.5c5.52 0 10-3.58 10-8S17.52 2 12 2z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            <a href="{{ setting('social_line') }}" target="_blank" rel="noopener" style="color: var(--accent-cyan); text-decoration: none;">LINE 官方帳號 @mengheng.io</a>
+          </div>
+          @endif
         </div>
 
         <form action="{{ route('contact.submit') }}" method="POST" class="contact-form animate-on-scroll">
@@ -549,6 +555,13 @@
           @if(session('success'))
             <div style="padding: 12px 16px; background: rgba(0, 212, 255, 0.1); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); font-size: 14px;">
               {{ session('success') }}
+            </div>
+          @endif
+          @if($errors->any())
+            <div style="padding: 12px 16px; background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.5); color: #dc3545; font-size: 13px; margin-bottom: 8px;">
+              @foreach($errors->all() as $error)
+                <div>{{ $error }}</div>
+              @endforeach
             </div>
           @endif
           <div class="form-group">
@@ -585,6 +598,9 @@
                 <option value="3_6months">3-6 個月</option>
                 <option value="flexible">彈性</option>
             </select>
+          </div>
+          <div class="form-group">
+            <input type="text" name="line_id" placeholder="LINE ID（選填，方便即時聯繫）" value="{{ old('line_id') }}">
           </div>
           <div class="form-group">
             <textarea name="message" placeholder="{{ __('frontend.contact_message_placeholder') }}">{{ old('message') }}</textarea>
