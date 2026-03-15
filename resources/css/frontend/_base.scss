@@ -3,6 +3,11 @@
 html {
   scroll-behavior: smooth;
   font-size: 16px; /* 1rem = 16px 基準 */
+
+  /* 大螢幕：放大根字體，所有 rem 值自動等比放大 */
+  @media (min-width: 1440px) { font-size: 17px; }
+  @media (min-width: 1920px) { font-size: 19px; }
+  @media (min-width: 2560px) { font-size: 22px; }
 }
 
 body {
