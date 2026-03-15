@@ -38,13 +38,24 @@ class ProjectController extends Controller
         }
 
         $projects = $query->latest()->paginate(15);
+        $categories = Project::whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
 
-        return view('admin.projects.index', compact('projects'));
+        return view('admin.projects.index', compact('projects', 'categories'));
     }
 
     public function create(): View
     {
-        return view('admin.projects.create');
+        $categories = Project::whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
+
+        return view('admin.projects.create', compact('categories'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -96,8 +107,13 @@ class ProjectController extends Controller
     public function edit(Project $project): View
     {
         $project->load(['images' => fn ($q) => $q->orderBy('order')]);
+        $categories = Project::whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
 
-        return view('admin.projects.edit', compact('project'));
+        return view('admin.projects.edit', compact('project', 'categories'));
     }
 
     public function update(Request $request, Project $project): RedirectResponse

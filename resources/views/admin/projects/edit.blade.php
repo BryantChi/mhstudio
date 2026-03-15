@@ -233,14 +233,27 @@
                         @enderror
                     </div>
 
+                    @php
+                        $currentCat = old('category', $project->category);
+                        $isCustomCat = $currentCat && !$categories->contains($currentCat);
+                    @endphp
                     <div class="mb-3">
-                        <label for="category" class="form-label">分類</label>
+                        <label for="categorySelect" class="form-label">分類</label>
+                        <select class="form-select @error('category') is-invalid @enderror"
+                                id="categorySelect">
+                            <option value="">— 請選擇分類 —</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat }}" {{ $currentCat == $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                            @endforeach
+                            <option value="__custom__" {{ $isCustomCat ? 'selected' : '' }}>＋ 自訂新分類...</option>
+                        </select>
                         <input type="text"
-                               class="form-control @error('category') is-invalid @enderror"
-                               id="category"
+                               class="form-control mt-2 @error('category') is-invalid @enderror"
+                               id="categoryCustom"
                                name="category"
-                               value="{{ old('category', $project->category) }}"
-                               placeholder="例如：Web 應用、行動應用">
+                               value="{{ $currentCat }}"
+                               placeholder="輸入新分類名稱"
+                               style="{{ $isCustomCat ? '' : 'display:none;' }}">
                         @error('category')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -393,6 +406,29 @@
             if (container) container.style.display = 'none';
         }
     });
+
+    // 分類下拉選單 ↔ 自訂輸入切換
+    (function() {
+        const sel = document.getElementById('categorySelect');
+        const inp = document.getElementById('categoryCustom');
+        if (!sel || !inp) return;
+
+        sel.addEventListener('change', function() {
+            if (this.value === '__custom__') {
+                inp.style.display = '';
+                inp.value = '';
+                inp.focus();
+            } else {
+                inp.style.display = 'none';
+                inp.value = this.value;
+            }
+        });
+
+        // 初始化：如果已選既有分類，同步 hidden input
+        if (sel.value && sel.value !== '__custom__') {
+            inp.value = sel.value;
+        }
+    })();
 
     /* ===== Gallery Management ===== */
     (function() {

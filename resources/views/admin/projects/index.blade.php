@@ -43,11 +43,12 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <input type="text"
-                       class="form-control"
-                       name="category"
-                       placeholder="分類"
-                       value="{{ request('category') }}">
+                <select class="form-select" name="category">
+                    <option value="">全部分類</option>
+                    @foreach($categories as $cat)
+                        <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="col-md-auto">
                 <button type="submit" class="btn btn-secondary">
