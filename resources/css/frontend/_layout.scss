@@ -19,6 +19,17 @@
   height: 60px;
   background: rgba(6, 11, 24, 0.95);
   border-bottom-color: var(--border-glow);
+
+  .nav-logo-icon {
+    width: 32px;
+    height: 32px;
+  }
+  .nav-logo-text {
+    font-size: clamp(0.75rem, 0.9vw, 1rem);
+  }
+  .nav-logo-sub {
+    font-size: clamp(0.625rem, 0.7vw, 0.813rem);
+  }
 }
 .nav-logo {
   display: flex;
@@ -30,19 +41,22 @@
   width: 42px;
   height: 42px;
   position: relative;
+  transition: width 0.3s ease, height 0.3s ease;
 }
 .nav-logo-text {
   font-family: var(--font-display);
-  font-size: clamp(0.875rem, 1vw,  1.188rem);
+  font-size: clamp(0.875rem, 1vw, 1.188rem);
   font-weight: 600;
   letter-spacing: 3px;
   color: var(--text-primary);
+  transition: font-size 0.3s ease;
 }
 .nav-logo-sub {
   font-family: var(--font-chinese);
-  font-size: clamp(11px, 0.8vw,  0.938rem);
+  font-size: clamp(0.688rem, 0.8vw, 0.938rem);
   color: var(--text-secondary);
   letter-spacing: 2px;
+  transition: font-size 0.3s ease;
 }
 .nav-links {
   display: flex;
