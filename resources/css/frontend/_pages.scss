@@ -5,33 +5,84 @@
 /* ===== PAGE HEADER (shared by all inner pages) ===== */
 .page-header {
   position: relative;
-  min-height: 50vh;
+  min-height: 44vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--gradient-hero);
   overflow: hidden;
   padding-top: 80px;
+  padding-bottom: 24px;
+}
+/* 底部漸變過渡 — 取代硬邊界 */
+.page-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent, var(--bg-secondary));
+  z-index: 1;
 }
 .page-header-bg-grid {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(58, 139, 253, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(58, 139, 253, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(58, 139, 253, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(58, 139, 253, 0.05) 1px, transparent 1px);
   background-size: 60px 60px;
-  mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+  mask-image: radial-gradient(ellipse at center, black 40%, transparent 75%);
 }
+/* 右上主光暈 */
 .page-header-orb {
   position: absolute;
-  width: 400px;
-  height: 400px;
+  width: 450px;
+  height: 450px;
   border-radius: 50%;
   background: var(--accent-blue);
   filter: blur(120px);
-  opacity: 0.08;
-  top: 20%;
-  right: -5%;
+  opacity: 0.1;
+  top: 10%;
+  right: -8%;
+  animation: page-header-orb-drift 8s ease-in-out infinite alternate;
+}
+/* 左下暖色光暈 — 增加層次與不對稱 */
+.page-header-orb::after {
+  content: '';
+  position: absolute;
+  width: 350px;
+  height: 350px;
+  border-radius: 50%;
+  background: var(--accent-warm);
+  filter: blur(130px);
+  opacity: 0.45;
+  bottom: -60%;
+  left: -120%;
+  animation: page-header-orb-drift 10s ease-in-out infinite alternate-reverse;
+}
+@keyframes page-header-orb-drift {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-12px, 8px); }
+}
+/* 水平掃描線動畫 */
+.page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--accent-cyan) 50%, transparent 100%);
+  opacity: 0.15;
+  animation: page-header-scan 6s ease-in-out infinite;
+  z-index: 3;
+}
+@keyframes page-header-scan {
+  0%, 100% { top: 15%; opacity: 0; }
+  20% { opacity: 0.15; }
+  50% { top: 85%; opacity: 0.08; }
+  80% { opacity: 0.15; }
 }
 .page-header-content {
   position: relative;
@@ -40,13 +91,53 @@
   padding: 0 24px;
   max-width: 800px;
 }
+/* HUD 裝飾角線 */
+.page-header-content::before,
+.page-header-content::after {
+  content: '';
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-color: rgba(0, 212, 255, 0.15);
+  border-style: solid;
+  pointer-events: none;
+}
+.page-header-content::before {
+  top: -20px;
+  left: -8px;
+  border-width: 1px 0 0 1px;
+}
+.page-header-content::after {
+  bottom: -20px;
+  right: -8px;
+  border-width: 0 1px 1px 0;
+}
 .page-header-title {
   font-family: var(--font-display);
-  font-size: clamp(28px, 5vw,  3.25rem);
+  font-size: clamp(28px, 5vw, 3.25rem);
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 16px;
   letter-spacing: 2px;
+}
+@media (max-width: 768px) {
+  .page-header {
+    min-height: 36vh;
+    padding-bottom: 16px;
+  }
+  .page-header-content::before,
+  .page-header-content::after {
+    width: 24px;
+    height: 24px;
+  }
+  .page-header-content::before {
+    top: -12px;
+    left: 0;
+  }
+  .page-header-content::after {
+    bottom: -12px;
+    right: 0;
+  }
 }
 
 /* ===== BACK LINK ===== */
@@ -424,13 +515,38 @@
    ============================================================= */
 .article-header {
   position: relative;
-  min-height: 55vh;
+  min-height: 48vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--gradient-hero);
   overflow: hidden;
   padding-top: 80px;
+  padding-bottom: 24px;
+}
+/* 底部漸變（同 page-header） */
+.article-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent, var(--bg-secondary));
+  z-index: 1;
+}
+/* 掃描線（同 page-header） */
+.article-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--accent-cyan) 50%, transparent 100%);
+  opacity: 0.15;
+  animation: page-header-scan 6s ease-in-out infinite;
+  z-index: 3;
 }
 .article-header-content {
   position: relative;
@@ -438,6 +554,37 @@
   text-align: center;
   padding: 0 24px;
   max-width: 800px;
+}
+/* HUD 角線 */
+.article-header-content::before,
+.article-header-content::after {
+  content: '';
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-color: rgba(0, 212, 255, 0.15);
+  border-style: solid;
+  pointer-events: none;
+}
+.article-header-content::before {
+  top: -20px;
+  left: -8px;
+  border-width: 1px 0 0 1px;
+}
+.article-header-content::after {
+  bottom: -20px;
+  right: -8px;
+  border-width: 0 1px 1px 0;
+}
+@media (max-width: 768px) {
+  .article-header {
+    min-height: 36vh;
+  }
+  .article-header-content::before,
+  .article-header-content::after {
+    width: 24px;
+    height: 24px;
+  }
 }
 .article-title {
   font-family: var(--font-display);
