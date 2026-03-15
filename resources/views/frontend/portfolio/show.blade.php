@@ -172,9 +172,13 @@
       <button class="project-lightbox-prev" aria-label="上一張">&#10094;</button>
       <button class="project-lightbox-next" aria-label="下一張">&#10095;</button>
       @endif
-      <div class="project-lightbox-img-wrapper">
+      <div class="project-lightbox-img-wrapper" id="lightboxImgWrapper">
         <img src="" alt="" id="lightboxImg">
       </div>
+      <button class="project-lightbox-zoom" id="lightboxZoomBtn" aria-label="放大">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        <span id="lightboxZoomText">放大</span>
+      </button>
       <div class="project-lightbox-info">
         <div class="project-lightbox-caption" id="lightboxCaption"></div>
         @if(count($lightboxData) > 1)
@@ -254,18 +258,23 @@
 
         var lightbox = document.getElementById('projectLightbox');
         var lightboxImg = document.getElementById('lightboxImg');
+        var lightboxImgWrapper = document.getElementById('lightboxImgWrapper');
         var lightboxCaption = document.getElementById('lightboxCaption');
         var lightboxCounter = document.getElementById('lightboxCounter');
+        var lightboxZoomBtn = document.getElementById('lightboxZoomBtn');
+        var lightboxZoomText = document.getElementById('lightboxZoomText');
         var currentIndex = 0;
 
         function openLightbox(index) {
             currentIndex = index;
+            exitZoom(); // 每次打開都重置 zoom
             updateLightbox();
             lightbox.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
 
         function closeLightbox() {
+            exitZoom();
             lightbox.classList.remove('active');
             document.body.style.overflow = '';
         }
@@ -279,13 +288,48 @@
         }
 
         function prevImage() {
+            exitZoom();
             currentIndex = (currentIndex - 1 + images.length) % images.length;
             updateLightbox();
         }
 
         function nextImage() {
+            exitZoom();
             currentIndex = (currentIndex + 1) % images.length;
             updateLightbox();
+        }
+
+        // ===== Zoom 放大/還原 =====
+        function toggleZoom() {
+            if (lightbox.classList.contains('zoomed')) {
+                exitZoom();
+            } else {
+                enterZoom();
+            }
+        }
+
+        function enterZoom() {
+            lightbox.classList.add('zoomed');
+            if (lightboxZoomText) lightboxZoomText.textContent = '還原';
+            // 更新 zoom 按鈕 SVG（放大鏡 → 縮小）
+            var svg = lightboxZoomBtn ? lightboxZoomBtn.querySelector('svg') : null;
+            if (svg) {
+                svg.innerHTML = '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/>';
+            }
+        }
+
+        function exitZoom() {
+            lightbox.classList.remove('zoomed');
+            if (lightboxZoomText) lightboxZoomText.textContent = '放大';
+            var svg = lightboxZoomBtn ? lightboxZoomBtn.querySelector('svg') : null;
+            if (svg) {
+                svg.innerHTML = '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>';
+            }
+            // 重置滾動位置
+            if (lightboxImgWrapper) {
+                lightboxImgWrapper.scrollTop = 0;
+                lightboxImgWrapper.scrollLeft = 0;
+            }
         }
 
         // 點擊圖片開啟 lightbox
@@ -295,17 +339,37 @@
             });
         });
 
+        // 點擊圖片區域 toggle zoom
+        if (lightboxImgWrapper) {
+            lightboxImgWrapper.addEventListener('click', function(e) {
+                // 只在點擊圖片或 wrapper 時觸發（非 zoom 狀態下不關閉 lightbox）
+                if (e.target === lightboxImg || e.target === lightboxImgWrapper) {
+                    e.stopPropagation();
+                    toggleZoom();
+                }
+            });
+        }
+
+        // Zoom 按鈕
+        if (lightboxZoomBtn) {
+            lightboxZoomBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleZoom();
+            });
+        }
+
         // Lightbox 控制按鈕
         var closeBtn = lightbox.querySelector('.project-lightbox-close');
         var prevBtn = lightbox.querySelector('.project-lightbox-prev');
         var nextBtn = lightbox.querySelector('.project-lightbox-next');
         if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
-        if (prevBtn) prevBtn.addEventListener('click', prevImage);
-        if (nextBtn) nextBtn.addEventListener('click', nextImage);
+        if (prevBtn) prevBtn.addEventListener('click', function(e) { e.stopPropagation(); prevImage(); });
+        if (nextBtn) nextBtn.addEventListener('click', function(e) { e.stopPropagation(); nextImage(); });
 
-        // 點擊背景關閉
+        // 點擊背景關閉（非 zoom 狀態才關）
         lightbox.addEventListener('click', function(e) {
-            if (e.target === lightbox || e.target.classList.contains('project-lightbox-img-wrapper')) {
+            if (lightbox.classList.contains('zoomed')) return;
+            if (e.target === lightbox) {
                 closeLightbox();
             }
         });
@@ -313,7 +377,13 @@
         // 鍵盤操作
         document.addEventListener('keydown', function(e) {
             if (!lightbox.classList.contains('active')) return;
-            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'Escape') {
+                if (lightbox.classList.contains('zoomed')) {
+                    exitZoom();
+                } else {
+                    closeLightbox();
+                }
+            }
             if (e.key === 'ArrowLeft' && images.length > 1) prevImage();
             if (e.key === 'ArrowRight' && images.length > 1) nextImage();
         });
