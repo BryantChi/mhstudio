@@ -37,6 +37,21 @@
     @vite(['resources/css/frontend/mh-studio.scss', 'resources/js/frontend/mh-studio.js'])
 
     {{-- Schema.org 結構化資料 --}}
+    @php
+        $sameAsLinks = collect([
+            ['key' => 'social_github', 'enabled' => 'social_github_enabled', 'default_enabled' => '1'],
+            ['key' => 'social_linkedin', 'enabled' => 'social_linkedin_enabled', 'default_enabled' => '1'],
+            ['key' => 'social_line', 'enabled' => 'social_line_enabled', 'default_enabled' => '1'],
+            ['key' => 'social_facebook', 'enabled' => 'social_facebook_enabled', 'default_enabled' => '0'],
+            ['key' => 'social_twitter', 'enabled' => 'social_twitter_enabled', 'default_enabled' => '0'],
+            ['key' => 'social_instagram', 'enabled' => 'social_instagram_enabled', 'default_enabled' => '0'],
+            ['key' => 'social_youtube', 'enabled' => 'social_youtube_enabled', 'default_enabled' => '0'],
+        ])->filter(function ($item) {
+            $url = setting($item['key'], '');
+            $enabled = setting($item['enabled'], $item['default_enabled']);
+            return $enabled == '1' && $url !== '' && $url !== '#';
+        })->map(fn ($item) => setting($item['key']))->values()->all();
+    @endphp
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -71,10 +86,7 @@
             "@type": "Country",
             "name": "Taiwan"
         },
-        "sameAs": [
-            "{{ setting('social_github', '') }}",
-            "{{ setting('social_linkedin', '') }}"
-        ]
+        "sameAs": @json($sameAsLinks)
     }
     </script>
     @stack('head')

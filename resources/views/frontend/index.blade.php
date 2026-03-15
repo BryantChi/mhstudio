@@ -463,6 +463,56 @@
     </section>
     @endif
 
+    {{-- ===== SOCIAL EMBED ===== --}}
+    @if(setting('social_embed_enabled', false))
+    <section id="social-embed" class="social-embed">
+      <div class="section-header animate-on-scroll">
+        <div class="section-label">SOCIAL</div>
+        <h2 class="section-title">Follow Us</h2>
+        <div class="section-divider"></div>
+        <p class="section-desc">關注我們的社群媒體，掌握最新動態與作品分享</p>
+      </div>
+
+      <div class="social-embed-grid">
+        @if(setting('social_youtube_embed'))
+          @php
+              $youtubeUrl = setting('social_youtube_embed');
+              $youtubeId = '';
+              if (preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $youtubeUrl, $matches)) {
+                  $youtubeId = $matches[1];
+              }
+          @endphp
+          @if($youtubeId)
+          <div class="social-embed-item animate-on-scroll">
+            <div class="social-embed-label">
+              <svg viewBox="0 0 24 24" width="18" height="18"><path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 11.75a29 29 0 00.46 5.33A2.78 2.78 0 003.4 19.1c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2 29 29 0 00.46-5.25 29 29 0 00-.46-5.43z" fill="none" stroke="currentColor" stroke-width="1.5"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+              YouTube
+            </div>
+            <div class="social-embed-frame">
+              <iframe src="https://www.youtube.com/embed/{{ $youtubeId }}" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+            </div>
+          </div>
+          @endif
+        @endif
+
+        @if(setting('social_instagram_embed'))
+          <div class="social-embed-item animate-on-scroll">
+            <div class="social-embed-label">
+              <svg viewBox="0 0 24 24" width="18" height="18"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke="currentColor" stroke-width="1.5"/></svg>
+              Instagram
+            </div>
+            <div class="social-embed-frame social-embed-frame--ig">
+              <blockquote class="instagram-media" data-instgrm-permalink="{{ setting('social_instagram_embed') }}" data-instgrm-version="14" style="background:#000; border:0; border-radius:3px; box-shadow:none; margin:0; max-width:100%; min-width:100%; padding:0; width:100%;"></blockquote>
+            </div>
+          </div>
+        @endif
+      </div>
+    </section>
+    @if(setting('social_instagram_embed'))
+    <script async src="//www.instagram.com/embed.js"></script>
+    @endif
+    @endif
+
     {{-- ===== CONTACT ===== --}}
     <section id="contact">
       <div class="section-header animate-on-scroll">

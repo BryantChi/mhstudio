@@ -194,41 +194,198 @@
                     <strong>社群連結</strong>
                 </div>
                 <div class="card-body">
+                    <p class="text-muted mb-3" style="font-size: 13px;">設定社群平台連結，開啟右方開關後連結才會顯示在前台 Footer。</p>
+
+                    {{-- GitHub --}}
                     <div class="mb-3">
                         <label for="social_github" class="form-label">GitHub 連結</label>
-                        <input type="text"
-                               class="form-control @error('social_github') is-invalid @enderror"
-                               id="social_github"
-                               name="social_github"
-                               value="{{ old('social_github', $settings['social_github'] ?? '#') }}"
-                               placeholder="https://github.com/username">
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="text"
+                                   class="form-control @error('social_github') is-invalid @enderror"
+                                   id="social_github"
+                                   name="social_github"
+                                   value="{{ old('social_github', $settings['social_github'] ?? '#') }}"
+                                   placeholder="https://github.com/username">
+                            <div class="form-check form-switch flex-shrink-0" style="min-width: 50px;">
+                                <input type="hidden" name="social_github_enabled" value="0">
+                                <input class="form-check-input" type="checkbox" id="social_github_enabled" name="social_github_enabled" value="1"
+                                       {{ old('social_github_enabled', $settings['social_github_enabled'] ?? '1') == '1' ? 'checked' : '' }}>
+                            </div>
+                        </div>
                         @error('social_github')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
 
+                    {{-- LinkedIn --}}
                     <div class="mb-3">
                         <label for="social_linkedin" class="form-label">LinkedIn 連結</label>
-                        <input type="text"
-                               class="form-control @error('social_linkedin') is-invalid @enderror"
-                               id="social_linkedin"
-                               name="social_linkedin"
-                               value="{{ old('social_linkedin', $settings['social_linkedin'] ?? '#') }}"
-                               placeholder="https://linkedin.com/in/username">
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="text"
+                                   class="form-control @error('social_linkedin') is-invalid @enderror"
+                                   id="social_linkedin"
+                                   name="social_linkedin"
+                                   value="{{ old('social_linkedin', $settings['social_linkedin'] ?? '#') }}"
+                                   placeholder="https://linkedin.com/in/username">
+                            <div class="form-check form-switch flex-shrink-0" style="min-width: 50px;">
+                                <input type="hidden" name="social_linkedin_enabled" value="0">
+                                <input class="form-check-input" type="checkbox" id="social_linkedin_enabled" name="social_linkedin_enabled" value="1"
+                                       {{ old('social_linkedin_enabled', $settings['social_linkedin_enabled'] ?? '1') == '1' ? 'checked' : '' }}>
+                            </div>
+                        </div>
                         @error('social_linkedin')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    {{-- LINE --}}
+                    <div class="mb-3">
+                        <label for="social_line" class="form-label">LINE 連結</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="text"
+                                   class="form-control @error('social_line') is-invalid @enderror"
+                                   id="social_line"
+                                   name="social_line"
+                                   value="{{ old('social_line', $settings['social_line'] ?? '#') }}"
+                                   placeholder="https://line.me/ti/p/@username">
+                            <div class="form-check form-switch flex-shrink-0" style="min-width: 50px;">
+                                <input type="hidden" name="social_line_enabled" value="0">
+                                <input class="form-check-input" type="checkbox" id="social_line_enabled" name="social_line_enabled" value="1"
+                                       {{ old('social_line_enabled', $settings['social_line_enabled'] ?? '1') == '1' ? 'checked' : '' }}>
+                            </div>
+                        </div>
+                        @error('social_line')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    {{-- Facebook --}}
+                    <div class="mb-3">
+                        <label for="social_facebook" class="form-label">Facebook 連結</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="text"
+                                   class="form-control @error('social_facebook') is-invalid @enderror"
+                                   id="social_facebook"
+                                   name="social_facebook"
+                                   value="{{ old('social_facebook', $settings['social_facebook'] ?? '#') }}"
+                                   placeholder="https://facebook.com/pagename">
+                            <div class="form-check form-switch flex-shrink-0" style="min-width: 50px;">
+                                <input type="hidden" name="social_facebook_enabled" value="0">
+                                <input class="form-check-input" type="checkbox" id="social_facebook_enabled" name="social_facebook_enabled" value="1"
+                                       {{ old('social_facebook_enabled', $settings['social_facebook_enabled'] ?? '0') == '1' ? 'checked' : '' }}>
+                            </div>
+                        </div>
+                        @error('social_facebook')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    {{-- Twitter/X --}}
+                    <div class="mb-3">
+                        <label for="social_twitter" class="form-label">Twitter / X 連結</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="text"
+                                   class="form-control @error('social_twitter') is-invalid @enderror"
+                                   id="social_twitter"
+                                   name="social_twitter"
+                                   value="{{ old('social_twitter', $settings['social_twitter'] ?? '#') }}"
+                                   placeholder="https://x.com/username">
+                            <div class="form-check form-switch flex-shrink-0" style="min-width: 50px;">
+                                <input type="hidden" name="social_twitter_enabled" value="0">
+                                <input class="form-check-input" type="checkbox" id="social_twitter_enabled" name="social_twitter_enabled" value="1"
+                                       {{ old('social_twitter_enabled', $settings['social_twitter_enabled'] ?? '0') == '1' ? 'checked' : '' }}>
+                            </div>
+                        </div>
+                        @error('social_twitter')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    {{-- Instagram --}}
+                    <div class="mb-3">
+                        <label for="social_instagram" class="form-label">Instagram 連結</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="text"
+                                   class="form-control @error('social_instagram') is-invalid @enderror"
+                                   id="social_instagram"
+                                   name="social_instagram"
+                                   value="{{ old('social_instagram', $settings['social_instagram'] ?? '#') }}"
+                                   placeholder="https://instagram.com/username">
+                            <div class="form-check form-switch flex-shrink-0" style="min-width: 50px;">
+                                <input type="hidden" name="social_instagram_enabled" value="0">
+                                <input class="form-check-input" type="checkbox" id="social_instagram_enabled" name="social_instagram_enabled" value="1"
+                                       {{ old('social_instagram_enabled', $settings['social_instagram_enabled'] ?? '0') == '1' ? 'checked' : '' }}>
+                            </div>
+                        </div>
+                        @error('social_instagram')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    {{-- YouTube --}}
+                    <div class="mb-3">
+                        <label for="social_youtube" class="form-label">YouTube 連結</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="text"
+                                   class="form-control @error('social_youtube') is-invalid @enderror"
+                                   id="social_youtube"
+                                   name="social_youtube"
+                                   value="{{ old('social_youtube', $settings['social_youtube'] ?? '#') }}"
+                                   placeholder="https://youtube.com/@channelname">
+                            <div class="form-check form-switch flex-shrink-0" style="min-width: 50px;">
+                                <input type="hidden" name="social_youtube_enabled" value="0">
+                                <input class="form-check-input" type="checkbox" id="social_youtube_enabled" name="social_youtube_enabled" value="1"
+                                       {{ old('social_youtube_enabled', $settings['social_youtube_enabled'] ?? '0') == '1' ? 'checked' : '' }}>
+                            </div>
+                        </div>
+                        @error('social_youtube')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
+            {{-- 社群嵌入 --}}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <strong>社群嵌入</strong>
+                    <small class="text-muted ms-2">首頁 Instagram / YouTube 嵌入區塊</small>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input type="hidden" name="social_embed_enabled" value="0">
+                            <input class="form-check-input" type="checkbox" id="social_embed_enabled" name="social_embed_enabled" value="1"
+                                   {{ old('social_embed_enabled', $settings['social_embed_enabled'] ?? '0') == '1' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="social_embed_enabled">啟用首頁社群嵌入區塊</label>
+                        </div>
+                        <div class="form-text">開啟後，首頁將在 Blog 區塊與 Contact 區塊之間顯示社群嵌入內容。</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="social_youtube_embed" class="form-label">YouTube 影片 URL</label>
+                        <input type="text"
+                               class="form-control @error('social_youtube_embed') is-invalid @enderror"
+                               id="social_youtube_embed"
+                               name="social_youtube_embed"
+                               value="{{ old('social_youtube_embed', $settings['social_youtube_embed'] ?? '') }}"
+                               placeholder="https://www.youtube.com/watch?v=VIDEO_ID">
+                        <div class="form-text">貼上 YouTube 影片網址，系統將自動嵌入播放器。</div>
+                        @error('social_youtube_embed')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="mb-3">
-                        <label for="social_line" class="form-label">LINE 連結</label>
+                        <label for="social_instagram_embed" class="form-label">Instagram 貼文 URL</label>
                         <input type="text"
-                               class="form-control @error('social_line') is-invalid @enderror"
-                               id="social_line"
-                               name="social_line"
-                               value="{{ old('social_line', $settings['social_line'] ?? '#') }}"
-                               placeholder="https://line.me/ti/p/@username">
-                        @error('social_line')
+                               class="form-control @error('social_instagram_embed') is-invalid @enderror"
+                               id="social_instagram_embed"
+                               name="social_instagram_embed"
+                               value="{{ old('social_instagram_embed', $settings['social_instagram_embed'] ?? '') }}"
+                               placeholder="https://www.instagram.com/p/POST_ID/">
+                        <div class="form-text">貼上 Instagram 貼文網址，系統將自動嵌入顯示。</div>
+                        @error('social_instagram_embed')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -285,7 +442,8 @@
                         <li class="mb-1">Hero 區域的標題與描述</li>
                         <li class="mb-1">統計數據（經驗年數、專案數等）</li>
                         <li class="mb-1">聯繫資訊（Email、地點）</li>
-                        <li class="mb-1">社群連結（GitHub、LinkedIn、LINE）</li>
+                        <li class="mb-1">社群連結（GitHub、LinkedIn、LINE、Facebook、Twitter/X、Instagram、YouTube）</li>
+                        <li class="mb-1">社群嵌入（YouTube / Instagram）</li>
                         <li class="mb-1">技術棧列表</li>
                     </ul>
                     <hr>
