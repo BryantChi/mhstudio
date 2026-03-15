@@ -538,15 +538,20 @@
             <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
             <span>{{ __('frontend.contact_free_consult') }}</span>
           </div>
-          @if(setting('social_line_enabled', '1') == '1' && setting('social_line', '#') !== '#' && setting('social_line') !== '')
+          @if(setting('social_line_enabled', '1') == '1' && setting('line_id'))
+          @php
+              $lineUrl = setting('social_line', '#');
+              $hasLineUrl = $lineUrl && $lineUrl !== '#';
+              $lineHref = $hasLineUrl ? $lineUrl : 'https://line.me/ti/p/' . urlencode(setting('line_id'));
+          @endphp
           <div class="contact-detail">
             <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 5.58 2 10c0 2.13 1.07 4.04 2.76 5.47L4 20l3.53-2.12C8.87 18.28 10.4 18.5 12 18.5c5.52 0 10-3.58 10-8S17.52 2 12 2z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
-            <a href="{{ setting('social_line') }}" target="_blank" rel="noopener" style="color: var(--accent-cyan); text-decoration: none;">LINE 官方帳號 {{ setting('line_id', '@mengheng.io') }}</a>
+            <a href="{{ $lineHref }}" target="_blank" rel="noopener" style="color: var(--accent-cyan); text-decoration: none;">LINE 官方帳號 {{ setting('line_id') }}</a>
           </div>
           @if(setting('line_qrcode_url'))
           <div class="contact-line-qr animate-on-scroll" style="margin-top: 20px; text-align: center;">
-            <a href="{{ setting('social_line') }}" target="_blank" rel="noopener" aria-label="LINE QR Code">
-              <img src="{{ setting('line_qrcode_url') }}" alt="LINE 官方帳號 {{ setting('line_id', '@mengheng.io') }} QR Code" loading="lazy" style="width: 140px; height: 140px; border: 2px solid var(--border-subtle); border-radius: 8px; transition: border-color 0.3s;">
+            <a href="{{ $lineHref }}" target="_blank" rel="noopener" aria-label="LINE QR Code">
+              <img src="{{ setting('line_qrcode_url') }}" alt="LINE 官方帳號 {{ setting('line_id') }} QR Code" loading="lazy" style="width: 140px; height: 140px; border: 2px solid var(--border-subtle); border-radius: 8px; transition: border-color 0.3s;">
             </a>
             <p style="font-size: clamp(11px, 0.9vw, 14px); color: var(--text-dim); margin-top: 8px; letter-spacing: 1px;">掃碼加入 LINE 諮詢</p>
           </div>
