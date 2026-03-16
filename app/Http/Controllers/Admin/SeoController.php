@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Article;
+use App\Models\Project;
+use App\Models\Service;
 use App\Models\SeoMeta;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -18,8 +20,11 @@ class SeoController extends Controller
     public function index(): View
     {
         $totalMeta = SeoMeta::count();
-        $articlesWithSeo = Article::has('seoMeta')->count();
-        $articlesWithoutSeo = Article::doesntHave('seoMeta')->count();
+        $articlesWithSeo = Article::published()->has('seoMeta')->count();
+        $articlesWithoutSeo = Article::published()->doesntHave('seoMeta')->count();
+        $projectsWithoutSeo = Project::published()->doesntHave('seoMeta')->count();
+        $servicesWithoutSeo = Service::active()->doesntHave('seoMeta')->count();
+        $totalWithoutSeo = $articlesWithoutSeo + $projectsWithoutSeo + $servicesWithoutSeo;
         $totalArticles = $articlesWithSeo + $articlesWithoutSeo;
 
         // 計算 robots.txt 規則數
@@ -248,19 +253,45 @@ class SeoController extends Controller
     }
 
     /**
-     * 批次生成缺少的 SEO Meta
+     * 批次生成缺少的 SEO Meta（文章 + 作品 + 服務）
      */
     public function generateMissingSeoMeta(): RedirectResponse
     {
-        $articles = Article::doesntHave('seoMeta')->get();
+        $results = [];
 
-        $count = 0;
+        // 文章
+        $articles = Article::published()->doesntHave('seoMeta')->get();
         foreach ($articles as $article) {
             $article->generateSeoMeta();
-            $count++;
+        }
+        if ($articles->count() > 0) {
+            $results[] = "文章 {$articles->count()} 篇";
         }
 
-        flash_success("已為 {$count} 篇文章生成 SEO Meta");
+        // 作品
+        $projects = Project::published()->doesntHave('seoMeta')->get();
+        foreach ($projects as $project) {
+            $project->generateSeoMeta();
+        }
+        if ($projects->count() > 0) {
+            $results[] = "作品 {$projects->count()} 個";
+        }
+
+        // 服務
+        $services = Service::active()->doesntHave('seoMeta')->get();
+        foreach ($services as $service) {
+            $service->generateSeoMeta();
+        }
+        if ($services->count() > 0) {
+            $results[] = "服務 {$services->count()} 個";
+        }
+
+        $total = $articles->count() + $projects->count() + $services->count();
+        if ($total > 0) {
+            flash_success("已生成 SEO Meta：" . implode('、', $results));
+        } else {
+            flash_info('所有已發布內容皆已有 SEO Meta，無需生成');
+        }
 
         return redirect()->back();
     }
@@ -272,13 +303,22 @@ class SeoController extends Controller
     {
         $issues = [];
 
-        // 檢查缺少 SEO Meta 的文章
-        $articlesWithoutSeo = Article::doesntHave('seoMeta')->count();
-        if ($articlesWithoutSeo > 0) {
+        // 檢查缺少 SEO Meta 的內容
+        $missingArticles = Article::published()->doesntHave('seoMeta')->count();
+        $missingProjects = Project::published()->doesntHave('seoMeta')->count();
+        $missingServices = Service::active()->doesntHave('seoMeta')->count();
+        $totalMissing = $missingArticles + $missingProjects + $missingServices;
+
+        if ($totalMissing > 0) {
+            $details = [];
+            if ($missingArticles > 0) $details[] = "文章 {$missingArticles} 篇";
+            if ($missingProjects > 0) $details[] = "作品 {$missingProjects} 個";
+            if ($missingServices > 0) $details[] = "服務 {$missingServices} 個";
+
             $issues[] = [
                 'severity' => 'warning',
                 'title' => '缺少 SEO Meta',
-                'description' => "{$articlesWithoutSeo} 篇文章缺少 SEO Meta 資料",
+                'description' => implode('、', $details) . '缺少 SEO Meta 資料',
                 'action' => route('admin.seo.generate-missing'),
             ];
         }

@@ -80,6 +80,28 @@ class Service extends Model
         return $this->morphOne(SeoMeta::class, 'model');
     }
 
+    /**
+     * 自動生成 SEO Meta
+     */
+    public function generateSeoMeta(): void
+    {
+        if (!$this->seoMeta) {
+            $description = $this->description ?: '';
+            if ($description) {
+                $description = mb_substr(trim(preg_replace('/\s+/', ' ', strip_tags($description))), 0, 160);
+            }
+
+            $this->seoMeta()->create([
+                'meta_title' => $this->title,
+                'meta_description' => $description,
+                'og_title' => $this->title,
+                'og_description' => $description,
+                'og_image' => $this->image,
+                'canonical_url' => route('services.show', $this->slug),
+            ]);
+        }
+    }
+
     /* ===== Scopes ===== */
 
     public function scopeActive(Builder $query): void

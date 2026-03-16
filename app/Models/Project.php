@@ -61,6 +61,34 @@ class Project extends Model
         return $this->morphOne(SeoMeta::class, 'model');
     }
 
+    /**
+     * 自動生成 SEO Meta
+     */
+    public function generateSeoMeta(): void
+    {
+        if (!$this->seoMeta) {
+            $description = $this->excerpt ?: '';
+            if (!$description && $this->content) {
+                $description = mb_substr(trim(preg_replace('/\s+/', ' ', strip_tags($this->content))), 0, 160);
+            }
+
+            $keywords = is_array($this->tech_stack) ? implode(', ', $this->tech_stack) : '';
+            if ($this->category) {
+                $keywords = $this->category . ($keywords ? ', ' . $keywords : '');
+            }
+
+            $this->seoMeta()->create([
+                'meta_title' => $this->title,
+                'meta_description' => $description,
+                'meta_keywords' => $keywords,
+                'og_title' => $this->title,
+                'og_description' => $description,
+                'og_image' => $this->cover_image,
+                'canonical_url' => route('portfolio.show', $this->slug),
+            ]);
+        }
+    }
+
     public function milestones(): HasMany
     {
         return $this->hasMany(ProjectMilestone::class);
