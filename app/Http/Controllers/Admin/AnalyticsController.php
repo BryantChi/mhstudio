@@ -34,14 +34,12 @@ class AnalyticsController extends Controller
 
         // 不重複訪客（依 session_id）
         $uniqueVisitors = (clone $baseQuery)
-            ->distinct('session_id')
-            ->count('session_id');
+            ->whereNotNull('session_id')
+            ->selectRaw('COUNT(DISTINCT session_id) as cnt')
+            ->value('cnt') ?? 0;
 
-        // 總 session 數
-        $totalSessions = (clone $baseQuery)
-            ->select('session_id')
-            ->distinct()
-            ->count('session_id');
+        // 總 session 數（同上）
+        $totalSessions = $uniqueVisitors;
 
         // 每次工作階段頁面數
         $pagesPerSession = $totalSessions > 0
@@ -52,22 +50,20 @@ class AnalyticsController extends Controller
         $bounceRate = $this->calculateBounceRate($startDate, $endDate);
 
         // 計算趨勢（與前一個同等時段比較）
-        $daysDiff = $startDate->diffInDays($endDate);
+        $daysDiff = max(1, $startDate->diffInDays($endDate));
         $prevStartDate = $startDate->copy()->subDays($daysDiff);
-        $prevEndDate = $startDate->copy()->subSecond();
+        $prevEndDate = $startDate->copy()->subDay()->endOfDay();
 
         $prevBaseQuery = AnalyticsEvent::where('event_name', 'page_view')
             ->dateRange($prevStartDate, $prevEndDate);
 
         $prevTotalViews = (clone $prevBaseQuery)->count();
         $prevUniqueVisitors = (clone $prevBaseQuery)
-            ->distinct('session_id')
-            ->count('session_id');
+            ->whereNotNull('session_id')
+            ->selectRaw('COUNT(DISTINCT session_id) as cnt')
+            ->value('cnt') ?? 0;
 
-        $prevTotalSessions = (clone $prevBaseQuery)
-            ->select('session_id')
-            ->distinct()
-            ->count('session_id');
+        $prevTotalSessions = $prevUniqueVisitors;
 
         $prevPagesPerSession = $prevTotalSessions > 0
             ? round($prevTotalViews / $prevTotalSessions, 2)
@@ -125,7 +121,7 @@ class AnalyticsController extends Controller
             ->selectRaw('COUNT(DISTINCT session_id) as unique_visits')
             ->where('event_name', 'page_view')
             ->dateRange($startDate, $endDate)
-            ->groupBy('referrer')
+            ->groupByRaw("COALESCE(referrer, '(直接造訪)')")
             ->orderByDesc('visits')
             ->limit(10)
             ->get();
@@ -303,23 +299,25 @@ class AnalyticsController extends Controller
      */
     protected function getDeviceBreakdown(Carbon $startDate, Carbon $endDate): array
     {
-        $events = AnalyticsEvent::select('user_agent')
-            ->where('event_name', 'page_view')
+        $baseQuery = AnalyticsEvent::where('event_name', 'page_view')
             ->dateRange($startDate, $endDate)
-            ->whereNotNull('user_agent')
-            ->get();
+            ->whereNotNull('user_agent');
+
+        // 使用 SQL CASE 在資料庫層分類，避免載入全部記錄到記憶體
+        $tabletLike = "LOWER(user_agent) LIKE '%ipad%' OR LOWER(user_agent) LIKE '%tablet%' OR LOWER(user_agent) LIKE '%kindle%' OR LOWER(user_agent) LIKE '%silk%' OR LOWER(user_agent) LIKE '%playbook%' OR LOWER(user_agent) LIKE '%sm-t%'";
+        $mobileLike = "LOWER(user_agent) LIKE '%mobile%' OR LOWER(user_agent) LIKE '%android%' OR LOWER(user_agent) LIKE '%iphone%' OR LOWER(user_agent) LIKE '%ipod%' OR LOWER(user_agent) LIKE '%windows phone%'";
+
+        $result = (clone $baseQuery)->selectRaw("
+            SUM(CASE WHEN ({$tabletLike}) THEN 1 ELSE 0 END) as tablet_count,
+            SUM(CASE WHEN NOT ({$tabletLike}) AND ({$mobileLike}) THEN 1 ELSE 0 END) as mobile_count,
+            SUM(CASE WHEN NOT ({$tabletLike}) AND NOT ({$mobileLike}) THEN 1 ELSE 0 END) as desktop_count
+        ")->first();
 
         $devices = [
-            'desktop' => 0,
-            'mobile' => 0,
-            'tablet' => 0,
+            'desktop' => (int) ($result->desktop_count ?? 0),
+            'mobile' => (int) ($result->mobile_count ?? 0),
+            'tablet' => (int) ($result->tablet_count ?? 0),
         ];
-
-        foreach ($events as $event) {
-            $ua = strtolower($event->user_agent);
-            $type = $this->detectDeviceType($ua);
-            $devices[$type]++;
-        }
 
         $total = array_sum($devices);
 
@@ -330,27 +328,4 @@ class AnalyticsController extends Controller
         ];
     }
 
-    /**
-     * 偵測裝置類型
-     */
-    protected function detectDeviceType(string $userAgent): string
-    {
-        // 平板優先檢查（因為有些平板也包含 mobile 關鍵字）
-        $tabletKeywords = ['ipad', 'tablet', 'kindle', 'silk', 'playbook', 'nexus 7', 'nexus 10', 'sm-t'];
-        foreach ($tabletKeywords as $keyword) {
-            if (str_contains($userAgent, $keyword)) {
-                return 'tablet';
-            }
-        }
-
-        // 手機檢查
-        $mobileKeywords = ['mobile', 'android', 'iphone', 'ipod', 'windows phone', 'blackberry', 'opera mini', 'opera mobi'];
-        foreach ($mobileKeywords as $keyword) {
-            if (str_contains($userAgent, $keyword)) {
-                return 'mobile';
-            }
-        }
-
-        return 'desktop';
-    }
 }
