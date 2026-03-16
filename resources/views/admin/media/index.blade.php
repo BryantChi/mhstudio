@@ -31,6 +31,12 @@
         gap: 1rem;
         padding: 1rem;
     }
+    @media (min-width: 1600px) {
+        .media-grid { grid-template-columns: repeat(5, 1fr); }
+    }
+    @media (min-width: 1920px) {
+        .media-grid { grid-template-columns: repeat(6, 1fr); }
+    }
     @media (max-width: 1200px) {
         .media-grid { grid-template-columns: repeat(3, 1fr); }
     }
@@ -77,7 +83,7 @@
     .media-preview {
         position: relative;
         width: 100%;
-        height: 160px;
+        aspect-ratio: 4 / 3;
         display: flex;
         align-items: center;
         justify-content: center;
