@@ -346,7 +346,7 @@
         @if($mediaItems->count() > 0)
         <div class="media-grid" id="mediaGrid">
             @foreach($mediaItems as $item)
-            <div class="media-card" data-id="{{ $item->id }}" onclick="toggleSelect({{ $item->id }})">
+            <div class="media-card" data-id="{{ $item->id }}" onclick="toggleSelect({{ $item->id }}, event)">
                 {{-- 選取核取方塊 --}}
                 <div class="select-check" onclick="event.stopPropagation()">
                     <input type="checkbox"
@@ -359,7 +359,7 @@
                 <div class="media-preview">
                     @if($item->is_image)
                         <img src="{{ $item->url }}" alt="{{ $item->alt_text ?? $item->original_name }}" loading="lazy">
-                        <a href="{{ $item->url }}" data-fancybox="media-gallery" data-caption="{{ $item->original_name }}" class="media-preview-link" onclick="event.stopPropagation()" title="點擊預覽大圖">
+                        <a href="{{ $item->url }}" data-fancybox="media-gallery" data-caption="{{ $item->original_name }}" class="media-preview-link" title="點擊預覽大圖">
                             <svg class="preview-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                 <circle cx="12" cy="12" r="3"/>
@@ -388,7 +388,7 @@
                 <div class="media-info">
                     <div class="media-name" title="{{ $item->original_name }}">{{ $item->original_name }}</div>
                     <div class="media-meta">{{ $item->human_size }} &middot; {{ $item->created_at->format('Y-m-d') }}</div>
-                    <div class="media-actions" onclick="event.stopPropagation()">
+                    <div class="media-actions">
                         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="copyUrl('{{ $item->url }}')" title="複製網址" data-coreui-toggle="tooltip">
                             <svg class="icon"><use xlink:href="/assets/icons/free.svg#cil-copy"></use></svg>
                         </button>
@@ -402,7 +402,7 @@
                 </div>
 
                 {{-- Alt text 編輯表單（隱藏） --}}
-                <div class="alt-text-form p-2 border-top" id="altForm-{{ $item->id }}" onclick="event.stopPropagation()">
+                <div class="alt-text-form p-2 border-top" id="altForm-{{ $item->id }}">
                     <div class="input-group input-group-sm">
                         <input type="text"
                                class="form-control"
@@ -579,7 +579,10 @@ document.addEventListener('DOMContentLoaded', function() {
 // 選取相關
 let selectedIds = new Set();
 
-function toggleSelect(id) {
+function toggleSelect(id, event) {
+    // 點擊預覽連結或操作按鈕時不觸發選取
+    if (event && event.target.closest('.media-preview-link, .media-actions, .select-check, .alt-text-form')) return;
+
     const card = document.querySelector('.media-card[data-id="' + id + '"]');
     const checkbox = card.querySelector('.media-checkbox');
 
