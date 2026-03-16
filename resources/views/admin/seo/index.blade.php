@@ -328,9 +328,25 @@
     }
 
     function submitSitemap() {
-        // 開啟 Google Search Console ping URL
-        if (confirm('確定要提交 Sitemap 到 Google 嗎？')) {
-            window.open('https://www.google.com/ping?sitemap=' + encodeURIComponent('{{ url("sitemap.xml") }}'), '_blank');
+        var sitemapUrl = '{{ url("sitemap.xml") }}';
+        var host = '{{ parse_url(config("app.url"), PHP_URL_HOST) }}';
+
+        // 複製 Sitemap URL 到剪貼簿
+        navigator.clipboard.writeText(sitemapUrl).catch(function() {});
+
+        var result = confirm(
+            '📋 Sitemap URL 已複製到剪貼簿：\n' + sitemapUrl + '\n\n' +
+            '請選擇提交方式：\n' +
+            '• 按「確定」→ 開啟 Google Search Console\n' +
+            '• 按「取消」→ 開啟 Bing Webmaster Tools\n\n' +
+            '💡 提示：也可在 robots.txt 中加入\n' +
+            'Sitemap: ' + sitemapUrl
+        );
+
+        if (result) {
+            window.open('https://search.google.com/search-console/sitemaps?resource_id=' + encodeURIComponent('https://' + host + '/'), '_blank');
+        } else {
+            window.open('https://www.bing.com/webmasters/sitemaps?siteUrl=' + encodeURIComponent('https://' + host), '_blank');
         }
     }
 
