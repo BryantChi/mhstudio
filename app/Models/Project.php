@@ -64,28 +64,35 @@ class Project extends Model
     /**
      * 自動生成 SEO Meta
      */
-    public function generateSeoMeta(): void
+    public function generateSeoMeta(bool $force = false): void
     {
-        if (!$this->seoMeta) {
-            $description = $this->excerpt ?: '';
-            if (!$description && $this->content) {
-                $description = mb_substr(trim(preg_replace('/\s+/', ' ', strip_tags($this->content))), 0, 160);
-            }
+        $siteName = setting('site_name', 'MH Studio 孟衡');
+        $description = $this->excerpt ?: '';
+        if (!$description && $this->content) {
+            $description = mb_substr(trim(preg_replace('/\s+/', ' ', strip_tags($this->content))), 0, 160);
+        }
 
-            $keywords = is_array($this->tech_stack) ? implode(', ', $this->tech_stack) : '';
-            if ($this->category) {
-                $keywords = $this->category . ($keywords ? ', ' . $keywords : '');
-            }
+        $keywords = is_array($this->tech_stack) ? implode(', ', $this->tech_stack) : '';
+        if ($this->category) {
+            $keywords = $this->category . ($keywords ? ', ' . $keywords : '');
+        }
 
-            $this->seoMeta()->create([
-                'meta_title' => $this->title,
-                'meta_description' => $description,
-                'meta_keywords' => $keywords,
-                'og_title' => $this->title,
-                'og_description' => $description,
-                'og_image' => $this->cover_image,
-                'canonical_url' => route('portfolio.show', $this->slug),
-            ]);
+        $data = [
+            'meta_title' => $this->title . ' | ' . $siteName,
+            'meta_description' => $description,
+            'meta_keywords' => $keywords,
+            'meta_robots' => 'index, follow',
+            'og_title' => $this->title,
+            'og_description' => $description,
+            'og_image' => $this->cover_image,
+            'og_type' => 'website',
+            'canonical_url' => route('portfolio.show', $this->slug),
+        ];
+
+        if ($force && $this->seoMeta) {
+            $this->seoMeta->update($data);
+        } elseif (!$this->seoMeta) {
+            $this->seoMeta()->create($data);
         }
     }
 

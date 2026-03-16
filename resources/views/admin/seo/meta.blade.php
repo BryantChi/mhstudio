@@ -16,13 +16,22 @@
         <p class="text-muted">管理頁面 Meta 標籤</p>
     </div>
     <div class="col-md-6 text-md-end">
-        <form method="POST" action="{{ route('admin.seo.generate-missing') }}" class="d-inline" onsubmit="return confirm('確定要為所有缺少 Meta 的文章自動生成 Meta Tags 嗎？')">
+        <form method="POST" action="{{ route('admin.seo.generate-missing') }}" class="d-inline" onsubmit="return confirm('為所有缺少 Meta 的內容（文章、作品、服務）自動生成 SEO Meta？')">
             @csrf
             <button type="submit" class="btn btn-success">
                 <svg class="icon me-2">
                     <use xlink:href="/assets/icons/free.svg#cil-plus"></use>
                 </svg>
-                批次生成缺少的 Meta
+                生成缺少的
+            </button>
+        </form>
+        <form method="POST" action="{{ route('admin.seo.regenerate-all') }}" class="d-inline" onsubmit="return confirm('⚠️ 確定要重新生成全部 SEO Meta 嗎？\n\n這會覆蓋所有現有的 Meta Title、Description、OG 標籤等。\n手動編輯過的內容將被覆蓋。')">
+            @csrf
+            <button type="submit" class="btn btn-warning">
+                <svg class="icon me-2">
+                    <use xlink:href="/assets/icons/free.svg#cil-reload"></use>
+                </svg>
+                重新生成全部
             </button>
         </form>
     </div>

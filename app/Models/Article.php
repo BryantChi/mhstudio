@@ -180,18 +180,27 @@ class Article extends Model implements HasMedia
     /**
      * 自動生成 SEO Meta
      */
-    public function generateSeoMeta(): void
+    public function generateSeoMeta(bool $force = false): void
     {
-        if (!$this->seoMeta) {
-            $this->seoMeta()->create([
-                'meta_title' => $this->title,
-                'meta_description' => $this->generateMetaDescription(),
-                'meta_keywords' => $this->generateMetaKeywords(),
-                'og_title' => $this->title,
-                'og_description' => $this->generateMetaDescription(),
-                'og_image' => $this->featured_image,
-                'canonical_url' => route('blog.show', $this->slug),
-            ]);
+        $siteName = setting('site_name', 'MH Studio 孟衡');
+        $description = $this->generateMetaDescription();
+
+        $data = [
+            'meta_title' => $this->title . ' | ' . $siteName,
+            'meta_description' => $description,
+            'meta_keywords' => $this->generateMetaKeywords(),
+            'meta_robots' => 'index, follow',
+            'og_title' => $this->title,
+            'og_description' => $description,
+            'og_image' => $this->featured_image,
+            'og_type' => 'article',
+            'canonical_url' => route('blog.show', $this->slug),
+        ];
+
+        if ($force && $this->seoMeta) {
+            $this->seoMeta->update($data);
+        } elseif (!$this->seoMeta) {
+            $this->seoMeta()->create($data);
         }
     }
 

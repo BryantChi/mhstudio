@@ -297,6 +297,50 @@ class SeoController extends Controller
     }
 
     /**
+     * 重新生成全部 SEO Meta（覆蓋現有）
+     */
+    public function regenerateAllSeoMeta(): RedirectResponse
+    {
+        $results = [];
+
+        // 文章
+        $articles = Article::published()->with('seoMeta', 'tags')->get();
+        foreach ($articles as $article) {
+            $article->generateSeoMeta(true);
+        }
+        if ($articles->count() > 0) {
+            $results[] = "文章 {$articles->count()} 篇";
+        }
+
+        // 作品
+        $projects = Project::published()->with('seoMeta')->get();
+        foreach ($projects as $project) {
+            $project->generateSeoMeta(true);
+        }
+        if ($projects->count() > 0) {
+            $results[] = "作品 {$projects->count()} 個";
+        }
+
+        // 服務
+        $services = Service::active()->with('seoMeta')->get();
+        foreach ($services as $service) {
+            $service->generateSeoMeta(true);
+        }
+        if ($services->count() > 0) {
+            $results[] = "服務 {$services->count()} 個";
+        }
+
+        $total = $articles->count() + $projects->count() + $services->count();
+        if ($total > 0) {
+            flash_success("已重新生成全部 SEO Meta：" . implode('、', $results));
+        } else {
+            flash_info('沒有已發布的內容需要生成');
+        }
+
+        return redirect()->back();
+    }
+
+    /**
      * SEO 分析
      */
     public function analyze(): View

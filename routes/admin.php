@@ -83,6 +83,7 @@ Route::prefix(config('admin.prefix', 'admin'))
             Route::get('/robots-txt', [SeoController::class, 'robotsTxt'])->name('robots-txt')->defaults('view', 'admin.seo.robots-txt-simple');
             Route::put('/robots-txt', [SeoController::class, 'updateRobotsTxt'])->name('robots-txt.update');
             Route::post('/generate-missing', [SeoController::class, 'generateMissingSeoMeta'])->name('generate-missing');
+            Route::post('/regenerate-all', [SeoController::class, 'regenerateAllSeoMeta'])->name('regenerate-all');
             Route::get('/analyze', [SeoController::class, 'analyze'])->name('analyze');
         });
 

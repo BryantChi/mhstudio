@@ -83,22 +83,29 @@ class Service extends Model
     /**
      * 自動生成 SEO Meta
      */
-    public function generateSeoMeta(): void
+    public function generateSeoMeta(bool $force = false): void
     {
-        if (!$this->seoMeta) {
-            $description = $this->description ?: '';
-            if ($description) {
-                $description = mb_substr(trim(preg_replace('/\s+/', ' ', strip_tags($description))), 0, 160);
-            }
+        $siteName = setting('site_name', 'MH Studio 孟衡');
+        $description = $this->description ?: '';
+        if ($description) {
+            $description = mb_substr(trim(preg_replace('/\s+/', ' ', strip_tags($description))), 0, 160);
+        }
 
-            $this->seoMeta()->create([
-                'meta_title' => $this->title,
-                'meta_description' => $description,
-                'og_title' => $this->title,
-                'og_description' => $description,
-                'og_image' => $this->image,
-                'canonical_url' => route('services.show', $this->slug),
-            ]);
+        $data = [
+            'meta_title' => $this->title . ' | ' . $siteName,
+            'meta_description' => $description,
+            'meta_robots' => 'index, follow',
+            'og_title' => $this->title,
+            'og_description' => $description,
+            'og_image' => $this->image,
+            'og_type' => 'website',
+            'canonical_url' => route('services.show', $this->slug),
+        ];
+
+        if ($force && $this->seoMeta) {
+            $this->seoMeta->update($data);
+        } elseif (!$this->seoMeta) {
+            $this->seoMeta()->create($data);
         }
     }
 
