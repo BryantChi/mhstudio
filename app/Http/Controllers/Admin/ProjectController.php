@@ -47,7 +47,7 @@ class ProjectController extends Controller
             $query->where('category', $request->category);
         }
 
-        $projects = $query->orderByDesc('is_featured')->orderBy('order')->orderByDesc('created_at')->paginate(15);
+        $projects = $query->orderByDesc('is_featured')->orderByDesc('created_at')->orderBy('order')->paginate(15);
         $categories = Project::whereNotNull('category')
             ->where('category', '!=', '')
             ->distinct()
