@@ -359,7 +359,7 @@
                 <div class="media-preview">
                     @if($item->is_image)
                         <img src="{{ $item->url }}" alt="{{ $item->alt_text ?? $item->original_name }}" loading="lazy">
-                        <a href="{{ $item->url }}" target="_blank" class="media-preview-link" onclick="event.stopPropagation()" title="點擊預覽大圖">
+                        <a href="{{ $item->url }}" data-fancybox="media-gallery" data-caption="{{ $item->original_name }}" class="media-preview-link" onclick="event.stopPropagation()" title="點擊預覽大圖">
                             <svg class="preview-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                 <circle cx="12" cy="12" r="3"/>

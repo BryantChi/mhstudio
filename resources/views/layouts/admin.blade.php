@@ -18,6 +18,9 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+    <!-- Fancybox 5 (圖片預覽) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5/dist/fancybox/fancybox.css">
+
     @stack('styles')
 </head>
 <body>
@@ -40,6 +43,10 @@
 
         @include('layouts.partials.footer')
     </div>
+
+    <!-- Fancybox 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5/dist/fancybox/fancybox.umd.js"></script>
+    <script>Fancybox.bind('[data-fancybox]', { animated: true, Images: { zoom: true } });</script>
 
     @stack('scripts')
 </body>
