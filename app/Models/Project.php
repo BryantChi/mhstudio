@@ -150,7 +150,7 @@ class Project extends Model
 
     public function scopeOrdered(Builder $query): void
     {
-        $query->orderByDesc('is_featured')->orderBy('order')->orderByDesc('completed_at');
+        $query->orderByDesc('is_featured')->orderBy('order')->orderBy('created_at');
     }
 
     /* ===== Accessors ===== */

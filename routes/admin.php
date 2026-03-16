@@ -130,6 +130,7 @@ Route::prefix(config('admin.prefix', 'admin'))
         Route::resource('contact-messages', ContactMessageController::class)->only(['index', 'show', 'update', 'destroy']);
 
         // 作品集管理
+        Route::post('projects/reorder', [ProjectController::class, 'reorder'])->name('projects.reorder');
         Route::resource('projects', ProjectController::class);
 
         // 專案客戶管理

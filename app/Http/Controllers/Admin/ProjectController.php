@@ -17,8 +17,18 @@ use Illuminate\View\View;
 
 class ProjectController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
+        // _sortable 模式：回傳 JSON 給拖曳排序面板
+        if ($request->has('_sortable')) {
+            $items = Project::orderByDesc('is_featured')
+                ->orderBy('order')
+                ->orderBy('created_at')
+                ->get(['id', 'title', 'order', 'is_featured']);
+
+            return response()->json($items);
+        }
+
         $query = Project::query();
 
         if ($request->filled('search')) {
@@ -37,7 +47,7 @@ class ProjectController extends Controller
             $query->where('category', $request->category);
         }
 
-        $projects = $query->orderByDesc('is_featured')->latest()->paginate(15);
+        $projects = $query->orderByDesc('is_featured')->orderBy('order')->orderBy('created_at')->paginate(15);
         $categories = Project::whereNotNull('category')
             ->where('category', '!=', '')
             ->distinct()
@@ -45,6 +55,23 @@ class ProjectController extends Controller
             ->pluck('category');
 
         return view('admin.projects.index', compact('projects', 'categories'));
+    }
+
+    /**
+     * 拖曳排序
+     */
+    public function reorder(Request $request): JsonResponse
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:projects,id',
+        ]);
+
+        foreach ($request->ids as $index => $id) {
+            Project::where('id', $id)->update(['order' => $index]);
+        }
+
+        return response()->json(['success' => true]);
     }
 
     public function create(): View

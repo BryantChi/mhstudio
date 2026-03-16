@@ -21,6 +21,12 @@
             </svg>
             新增作品
         </a>
+        @include('admin.partials.sortable-mode', [
+            'reorderUrl' => route('admin.projects.reorder'),
+            'fetchUrl' => route('admin.projects.index', ['_sortable' => 1]),
+            'itemLabel' => '作品',
+            'titleField' => 'title',
+        ])
         @include('admin.partials.view-toggle', ['pageKey' => 'projects'])
     </div>
 </div>
