@@ -166,6 +166,9 @@ class ProjectController extends Controller
             $validated['tech_stack'] = array_map('trim', explode(',', $validated['tech_stack']));
         }
 
+        // checkbox 未勾選時不會送出，手動補 false
+        $validated['is_featured'] = $request->boolean('is_featured');
+
         $project->update($validated);
 
         flash_success('作品更新成功');
