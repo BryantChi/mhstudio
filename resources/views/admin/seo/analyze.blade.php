@@ -106,33 +106,22 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <button class="btn btn-outline-primary" onclick="checkMeta()">
-                        <svg class="icon me-2">
-                            <use xlink:href="/assets/icons/free.svg#cil-tags"></use>
-                        </svg>
-                        檢查 Meta Tags
-                    </button>
-
-                    <button class="btn btn-outline-success" onclick="checkImages()">
-                        <svg class="icon me-2">
-                            <use xlink:href="/assets/icons/free.svg#cil-image"></use>
-                        </svg>
-                        檢查圖片 Alt
-                    </button>
-
-                    <button class="btn btn-outline-info" onclick="checkLinks()">
-                        <svg class="icon me-2">
-                            <use xlink:href="/assets/icons/free.svg#cil-link"></use>
-                        </svg>
-                        檢查連結
-                    </button>
-
-                    <button class="btn btn-outline-warning" onclick="checkSpeed()">
-                        <svg class="icon me-2">
-                            <use xlink:href="/assets/icons/free.svg#cil-speedometer"></use>
-                        </svg>
-                        檢查頁面速度
-                    </button>
+                    <a href="{{ route('admin.seo.meta') }}" class="btn btn-outline-primary">
+                        <svg class="icon me-2"><use xlink:href="/assets/icons/free.svg#cil-tags"></use></svg>
+                        管理 Meta Tags
+                    </a>
+                    <a href="https://pagespeed.web.dev/analysis?url={{ urlencode(config('app.url')) }}" target="_blank" class="btn btn-outline-warning">
+                        <svg class="icon me-2"><use xlink:href="/assets/icons/free.svg#cil-speedometer"></use></svg>
+                        PageSpeed Insights
+                    </a>
+                    <a href="https://search.google.com/test/rich-results?url={{ urlencode(config('app.url')) }}" target="_blank" class="btn btn-outline-info">
+                        <svg class="icon me-2"><use xlink:href="/assets/icons/free.svg#cil-code"></use></svg>
+                        結構化資料測試
+                    </a>
+                    <a href="https://search.google.com/test/mobile-friendly?url={{ urlencode(config('app.url')) }}" target="_blank" class="btn btn-outline-success">
+                        <svg class="icon me-2"><use xlink:href="/assets/icons/free.svg#cil-mobile"></use></svg>
+                        行動裝置友善度
+                    </a>
                 </div>
             </div>
         </div>
@@ -189,12 +178,13 @@
 
         <div class="card mt-3">
             <div class="card-header">
-                <strong>分析歷史</strong>
+                <strong>外部 SEO 工具</strong>
             </div>
             <div class="card-body">
-                <small class="text-muted d-block mb-2">最後分析：2024-01-15 10:30</small>
-                <small class="text-muted d-block mb-2">上次評分：73</small>
-                <small class="text-muted d-block">評分變化：+2</small>
+                <div class="d-grid gap-2">
+                    <a href="https://search.google.com/search-console" target="_blank" class="btn btn-sm btn-outline-secondary">Google Search Console</a>
+                    <a href="https://www.bing.com/webmasters" target="_blank" class="btn btn-sm btn-outline-secondary">Bing Webmaster Tools</a>
+                </div>
             </div>
         </div>
     </div>
@@ -203,24 +193,7 @@
 @push('scripts')
 <script>
     function runAnalysis() {
-        // 重新載入本頁即重新分析
         window.location.reload();
-    }
-
-    function checkMeta() {
-        window.location.href = '{{ route("admin.seo.meta") }}';
-    }
-
-    function checkImages() {
-        alert('圖片 Alt 標籤檢查功能尚在開發中');
-    }
-
-    function checkLinks() {
-        alert('連結檢查功能尚在開發中');
-    }
-
-    function checkSpeed() {
-        window.open('https://pagespeed.web.dev/analysis?url=' + encodeURIComponent('{{ config("app.url") }}'), '_blank');
     }
 </script>
 @endpush

@@ -84,6 +84,29 @@ class SeoController extends Controller
             $query->where('model_type', $request->type);
         }
 
+        // 狀態篩選
+        if ($request->filled('status')) {
+            $status = $request->input('status');
+            if ($status === 'complete') {
+                $query->whereNotNull('meta_title')
+                      ->where('meta_title', '!=', '')
+                      ->whereNotNull('meta_description')
+                      ->where('meta_description', '!=', '');
+            } elseif ($status === 'incomplete') {
+                $query->where(function ($q) {
+                    $q->whereNull('meta_description')
+                      ->orWhere('meta_description', '')
+                      ->orWhereNull('og_title')
+                      ->orWhere('og_title', '');
+                })->whereNotNull('meta_title')->where('meta_title', '!=', '');
+            } elseif ($status === 'missing') {
+                $query->where(function ($q) {
+                    $q->whereNull('meta_title')
+                      ->orWhere('meta_title', '');
+                });
+            }
+        }
+
         $seoMetas = $query->latest()->paginate(15);
 
         return view('admin.seo.meta', compact('seoMetas'));
@@ -155,17 +178,21 @@ class SeoController extends Controller
      */
     public function updateSitemapSettings(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'sitemap_enabled' => 'boolean',
-            'sitemap_ping_google' => 'boolean',
-            'sitemap_ping_bing' => 'boolean',
-        ]);
-
-        foreach ($validated as $key => $value) {
-            setting()->set('seo.' . $key, $value);
+        // 包含內容（checkbox 未勾選不會送出，預設 0）
+        $includes = ['include_articles', 'include_projects', 'include_services', 'include_legal'];
+        foreach ($includes as $key) {
+            setting()->set('sitemap_' . $key, $request->boolean($key) ? '1' : '0');
         }
 
-        flash_success('Sitemap 設定更新成功');
+        // 優先順序
+        $priorities = ['priority_home', 'priority_articles', 'priority_projects', 'priority_services'];
+        foreach ($priorities as $key) {
+            if ($request->filled($key)) {
+                setting()->set('sitemap_' . $key, $request->input($key));
+            }
+        }
+
+        flash_success('Sitemap 設定已儲存');
 
         return redirect()->back();
     }
@@ -178,7 +205,7 @@ class SeoController extends Controller
         $robotsPath = public_path('robots.txt');
         $content = file_exists($robotsPath) ? file_get_contents($robotsPath) : '';
 
-        return view('admin.seo.robots-txt-new', compact('content'));
+        return view('admin.seo.robots-txt-simple', compact('content'));
     }
 
     /**
