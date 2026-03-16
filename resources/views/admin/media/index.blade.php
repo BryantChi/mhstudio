@@ -59,23 +59,23 @@
         border-color: #321fdb;
     }
 
-    /* 選取核取方塊 */
+    /* 選取核取方塊 — 永遠可見 + 加大點擊區域 */
     .media-card .select-check {
         position: absolute;
-        top: 0.5rem;
-        left: 0.5rem;
+        top: 0;
+        left: 0;
         z-index: 10;
-        opacity: 0;
-        transition: opacity 0.2s;
+        padding: 0.5rem;
     }
-    .media-card:hover .select-check,
-    .media-card.selected .select-check,
-    .bulk-mode .media-card .select-check {
-        opacity: 1;
+    .media-card .select-check .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        cursor: pointer;
     }
 
     /* 預覽區 */
     .media-preview {
+        position: relative;
         width: 100%;
         height: 160px;
         display: flex;
@@ -94,27 +94,36 @@
         height: 48px;
         color: #8a93a2;
     }
-
-    /* 懸浮操作覆蓋層 */
-    .media-overlay {
+    /* 圖片點擊預覽連結 */
+    .media-preview-link {
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
+        inset: 0;
+        z-index: 5;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.5rem;
+    }
+    .media-preview-link:hover::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.3);
+    }
+    .media-preview-link .preview-icon {
+        position: relative;
+        z-index: 6;
+        width: 32px;
+        height: 32px;
+        color: #fff;
         opacity: 0;
         transition: opacity 0.2s;
+        filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
     }
-    .media-card:hover .media-overlay {
+    .media-preview-link:hover .preview-icon {
         opacity: 1;
     }
 
-    /* 卡片資訊 */
+    /* 卡片資訊 + 操作按鈕 */
     .media-info {
         padding: 0.5rem 0.75rem;
     }
@@ -128,6 +137,19 @@
     .media-info .media-meta {
         font-size: 0.75rem;
         color: #8a93a2;
+        margin-bottom: 0.375rem;
+    }
+    .media-actions {
+        display: flex;
+        gap: 0.25rem;
+        flex-wrap: wrap;
+    }
+    .media-actions .btn {
+        padding: 0.2rem 0.4rem;
+    }
+    .media-actions .btn .icon {
+        width: 14px;
+        height: 14px;
     }
 
     /* 拖放區域 */
@@ -318,19 +340,25 @@
         @if($mediaItems->count() > 0)
         <div class="media-grid" id="mediaGrid">
             @foreach($mediaItems as $item)
-            <div class="media-card" data-id="{{ $item->id }}">
+            <div class="media-card" data-id="{{ $item->id }}" onclick="toggleSelect({{ $item->id }})">
                 {{-- 選取核取方塊 --}}
-                <div class="select-check">
+                <div class="select-check" onclick="event.stopPropagation()">
                     <input type="checkbox"
                            class="form-check-input media-checkbox"
                            value="{{ $item->id }}"
-                           onclick="event.stopPropagation(); toggleSelect({{ $item->id }})">
+                           onclick="toggleSelect({{ $item->id }})">
                 </div>
 
                 {{-- 預覽區 --}}
                 <div class="media-preview">
                     @if($item->is_image)
                         <img src="{{ $item->url }}" alt="{{ $item->alt_text ?? $item->original_name }}" loading="lazy">
+                        <a href="{{ $item->url }}" target="_blank" class="media-preview-link" onclick="event.stopPropagation()" title="點擊預覽大圖">
+                            <svg class="preview-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </a>
                     @else
                         @php
                             $ext = pathinfo($item->original_name, PATHINFO_EXTENSION);
@@ -348,42 +376,27 @@
                             <use xlink:href="/assets/icons/free.svg#{{ $icon }}"></use>
                         </svg>
                     @endif
+                </div>
 
-                    {{-- 懸浮操作 --}}
-                    <div class="media-overlay">
-                        @if($item->is_image)
-                        <a href="{{ $item->url }}" target="_blank" class="btn btn-sm btn-light" title="檢視">
-                            <svg class="icon">
-                                <use xlink:href="/assets/icons/free.svg#cil-external-link"></use>
-                            </svg>
-                        </a>
-                        @endif
-                        <button type="button" class="btn btn-sm btn-light" onclick="event.stopPropagation(); copyUrl('{{ $item->url }}')" title="複製網址">
-                            <svg class="icon">
-                                <use xlink:href="/assets/icons/free.svg#cil-copy"></use>
-                            </svg>
+                {{-- 檔案資訊 + 操作按鈕 --}}
+                <div class="media-info">
+                    <div class="media-name" title="{{ $item->original_name }}">{{ $item->original_name }}</div>
+                    <div class="media-meta">{{ $item->human_size }} &middot; {{ $item->created_at->format('Y-m-d') }}</div>
+                    <div class="media-actions" onclick="event.stopPropagation()">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="copyUrl('{{ $item->url }}')" title="複製網址" data-coreui-toggle="tooltip">
+                            <svg class="icon"><use xlink:href="/assets/icons/free.svg#cil-copy"></use></svg>
                         </button>
-                        <button type="button" class="btn btn-sm btn-light" onclick="event.stopPropagation(); editAltText({{ $item->id }})" title="編輯替代文字">
-                            <svg class="icon">
-                                <use xlink:href="/assets/icons/free.svg#cil-pencil"></use>
-                            </svg>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="editAltText({{ $item->id }})" title="編輯替代文字" data-coreui-toggle="tooltip">
+                            <svg class="icon"><use xlink:href="/assets/icons/free.svg#cil-pencil"></use></svg>
                         </button>
-                        <button type="button" class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteMedia({{ $item->id }})" title="刪除">
-                            <svg class="icon">
-                                <use xlink:href="/assets/icons/free.svg#cil-trash"></use>
-                            </svg>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteMedia({{ $item->id }})" title="刪除" data-coreui-toggle="tooltip">
+                            <svg class="icon"><use xlink:href="/assets/icons/free.svg#cil-trash"></use></svg>
                         </button>
                     </div>
                 </div>
 
-                {{-- 檔案資訊 --}}
-                <div class="media-info">
-                    <div class="media-name" title="{{ $item->original_name }}">{{ $item->original_name }}</div>
-                    <div class="media-meta">{{ $item->human_size }} &middot; {{ $item->created_at->format('Y-m-d') }}</div>
-                </div>
-
                 {{-- Alt text 編輯表單（隱藏） --}}
-                <div class="alt-text-form p-2 border-top" id="altForm-{{ $item->id }}">
+                <div class="alt-text-form p-2 border-top" id="altForm-{{ $item->id }}" onclick="event.stopPropagation()">
                     <div class="input-group input-group-sm">
                         <input type="text"
                                class="form-control"
