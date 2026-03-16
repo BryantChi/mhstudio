@@ -23,7 +23,7 @@ class ProjectController extends Controller
         if ($request->has('_sortable')) {
             $items = Project::orderByDesc('is_featured')
                 ->orderBy('order')
-                ->orderBy('created_at')
+                ->orderByDesc('created_at')
                 ->get(['id', 'title', 'order', 'is_featured']);
 
             return response()->json($items);
@@ -47,7 +47,7 @@ class ProjectController extends Controller
             $query->where('category', $request->category);
         }
 
-        $projects = $query->orderByDesc('is_featured')->orderBy('order')->orderBy('created_at')->paginate(15);
+        $projects = $query->orderByDesc('is_featured')->orderBy('order')->orderByDesc('created_at')->paginate(15);
         $categories = Project::whereNotNull('category')
             ->where('category', '!=', '')
             ->distinct()
