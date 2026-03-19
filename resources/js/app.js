@@ -143,6 +143,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // 側邊欄：自動捲動到當前選取的頁面項目
+    const activeNavLink = document.querySelector('.sidebar-nav .nav-link.active');
+    if (activeNavLink) {
+        // 等待 CoreUI Navigation 展開 nav-group 後再捲動
+        setTimeout(() => {
+            activeNavLink.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }, 150);
+    }
+
     // 動態搜尋（延遲執行）
     const searchInputs = document.querySelectorAll('input[data-search]');
     searchInputs.forEach(input => {
