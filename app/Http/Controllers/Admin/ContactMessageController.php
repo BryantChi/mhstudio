@@ -39,7 +39,7 @@ class ContactMessageController extends Controller
             $contactMessage->markAsRead();
         }
 
-        return view('admin.contact-messages.show', compact('contactMessage'));
+        return view('admin.contact-messages.show', ['message' => $contactMessage]);
     }
 
     public function update(Request $request, ContactMessage $contactMessage): RedirectResponse
