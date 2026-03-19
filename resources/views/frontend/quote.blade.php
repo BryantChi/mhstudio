@@ -514,6 +514,11 @@
               <div class="quote-result-actions">
                 <form action="{{ route('quote-request.submit') }}" method="POST" id="quoteSubmitForm">
                   @csrf
+                  {{-- Anti-spam --}}
+                  <div style="position:absolute;left:-9999px;top:-9999px;" aria-hidden="true" tabindex="-1">
+                    <input type="text" name="website_url" value="" autocomplete="off" tabindex="-1">
+                  </div>
+                  <input type="hidden" name="_form_token" value="{{ \App\Services\SpamProtectionService::generateFormToken() }}">
                   <input type="hidden" name="name" id="quoteSubmitName">
                   <input type="hidden" name="email" id="quoteSubmitEmail">
                   <input type="hidden" name="phone" id="quoteSubmitPhone">

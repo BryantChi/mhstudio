@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\TimeEntryController;
 use App\Http\Controllers\Admin\PricingController;
 use App\Http\Controllers\Admin\ContractTemplateController;
 use App\Http\Controllers\Admin\DeployController;
+use App\Http\Controllers\Admin\ImpersonateController;
 use App\Http\Controllers\Admin\LegalPageController;
 use App\Http\Controllers\Admin\QuoteRequestController;
 
@@ -235,6 +236,14 @@ Route::prefix(config('admin.prefix', 'admin'))
         Route::resource('quote-requests', QuoteRequestController::class)->only(['index', 'show']);
         Route::put('quote-requests/{quoteRequest}/status', [QuoteRequestController::class, 'updateStatus'])->name('quote-requests.update-status');
         Route::post('quote-requests/{quoteRequest}/convert', [QuoteRequestController::class, 'convertToQuote'])->name('quote-requests.convert');
+
+        // 離開模擬登入（不需 super-admin 權限，因為模擬中的用戶可能不是 super-admin）
+        // 必須在 impersonate/{user} 之前定義，避免 "leave" 被當作 {user} 參數
+        Route::get('impersonate/leave', [ImpersonateController::class, 'leave'])->name('impersonate.leave');
+        // 開始模擬登入（僅 super-admin）
+        Route::get('impersonate/{user}', [ImpersonateController::class, 'start'])
+            ->name('impersonate.start')
+            ->middleware(\App\Http\Middleware\EnsureSuperAdmin::class);
 
         // 部署工具（僅 super-admin）
         Route::prefix('deploy')->name('deploy.')->middleware(\App\Http\Middleware\EnsureSuperAdmin::class)->group(function () {

@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Mail\QuoteRequestConfirmation;
+use App\Mail\QuoteRequestNotification;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\Client;
-use App\Models\LegalPage;
 use App\Models\ClientInteraction;
 use App\Models\ContactMessage;
+use App\Models\LegalPage;
 use App\Models\PricingCategory;
 use App\Models\Project;
 use App\Models\QuoteRequest;
@@ -16,8 +18,7 @@ use App\Models\Service;
 use App\Models\Subscriber;
 use App\Models\Tag;
 use App\Models\Testimonial;
-use App\Mail\QuoteRequestNotification;
-use App\Mail\QuoteRequestConfirmation;
+use App\Services\SpamProtectionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -76,8 +77,8 @@ class PageController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('excerpt', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%");
+                    ->orWhere('excerpt', 'like', "%{$search}%")
+                    ->orWhere('content', 'like', "%{$search}%");
             });
         }
 
@@ -186,18 +187,18 @@ class PageController extends Controller
     {
         $categories = PricingCategory::active()
             ->ordered()
-            ->with(['features' => fn($q) => $q->active()->ordered()])
+            ->with(['features' => fn ($q) => $q->active()->ordered()])
             ->get();
 
         $preselectedCategory = $request->query('category');
 
         // 服務方案
         $servicePlans = Service::active()->ordered()->ofType('website')
-            ->with(['items' => fn($q) => $q->active()->orderBy('order')])->get();
+            ->with(['items' => fn ($q) => $q->active()->orderBy('order')])->get();
         $hostingPlans = Service::active()->ordered()->ofType('hosting')
-            ->with(['items' => fn($q) => $q->active()->orderBy('order')])->get();
+            ->with(['items' => fn ($q) => $q->active()->orderBy('order')])->get();
         $maintenancePlans = Service::active()->ordered()->ofType('maintenance')
-            ->with(['items' => fn($q) => $q->active()->orderBy('order')])->get();
+            ->with(['items' => fn ($q) => $q->active()->orderBy('order')])->get();
         $addonPlans = Service::active()->ordered()->ofType('addon')->get();
 
         return view('frontend.quote', compact(
@@ -218,7 +219,7 @@ class PageController extends Controller
         $data = Cache::remember('pricing_data', 3600, function () {
             $categories = PricingCategory::active()
                 ->ordered()
-                ->with(['features' => fn($q) => $q->active()->ordered()])
+                ->with(['features' => fn ($q) => $q->active()->ordered()])
                 ->get()
                 ->map(function ($cat) {
                     return [
@@ -256,11 +257,11 @@ class PageController extends Controller
     /**
      * 處理報價請求提交
      */
-    public function quoteRequestSubmit(Request $request): RedirectResponse|JsonResponse
+    public function quoteRequestSubmit(Request $request, SpamProtectionService $spamProtection): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
+            'email' => 'required|email:rfc,dns|max:255',
             'company' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:50',
             'message' => 'nullable|string|max:5000',
@@ -271,6 +272,25 @@ class PageController extends Controller
             'estimated_min' => 'required|numeric|min:0',
             'estimated_max' => 'required|numeric|min:0',
         ]);
+
+        // Multi-layer spam protection
+        $spamResult = $spamProtection->check($request);
+        if ($spamResult) {
+            if ($spamResult === 'spam_detected') {
+                // Silent fake success for bots
+                if ($request->expectsJson()) {
+                    return response()->json(['success' => true, 'message' => '報價請求已送出！']);
+                }
+
+                return redirect()->back()->with('success', '報價請求已送出！');
+            }
+
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $spamResult], 422);
+            }
+
+            return redirect()->back()->withInput()->withErrors(['_spam' => $spamResult]);
+        }
 
         // Decode selected_features JSON string
         $selectedFeatures = json_decode($validated['selected_features'], true) ?: [];
@@ -301,7 +321,7 @@ class PageController extends Controller
                 'user_id' => null,
                 'type' => 'other',
                 'subject' => '提交網站報價請求',
-                'content' => '報價請求編號：' . $quoteRequest->request_number . "\n估算金額：NT$ " . number_format($quoteRequest->estimated_min) . ' ~ NT$ ' . number_format($quoteRequest->estimated_max),
+                'content' => '報價請求編號：'.$quoteRequest->request_number."\n估算金額：NT$ ".number_format($quoteRequest->estimated_min).' ~ NT$ '.number_format($quoteRequest->estimated_max),
                 'interaction_date' => now(),
             ]);
         } else {
@@ -320,7 +340,7 @@ class PageController extends Controller
                 'user_id' => null,
                 'type' => 'other',
                 'subject' => '提交網站報價請求（新客戶）',
-                'content' => '報價請求編號：' . $quoteRequest->request_number . "\n估算金額：NT$ " . number_format($quoteRequest->estimated_min) . ' ~ NT$ ' . number_format($quoteRequest->estimated_max),
+                'content' => '報價請求編號：'.$quoteRequest->request_number."\n估算金額：NT$ ".number_format($quoteRequest->estimated_min).' ~ NT$ '.number_format($quoteRequest->estimated_max),
                 'interaction_date' => now(),
             ]);
         }
@@ -357,16 +377,29 @@ class PageController extends Controller
     /**
      * 處理聯繫表單提交
      */
-    public function contactSubmit(Request $request)
+    public function contactSubmit(Request $request, SpamProtectionService $spamProtection): RedirectResponse
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'project_type' => 'nullable|string|max:255',
-            'budget' => 'nullable|string|max:50',
-            'timeline' => 'nullable|string|max:50',
+            'email' => 'required|email:rfc,dns|max:255',
+            'project_type' => 'nullable|string|in:app,web,system,uiux,other',
+            'budget' => 'nullable|string|in:under_100k,100k_300k,300k_500k,over_500k,discuss',
+            'timeline' => 'nullable|string|in:1month,1_3months,3_6months,flexible',
             'message' => 'nullable|string|max:5000',
         ]);
+
+        // Multi-layer spam protection
+        $spamResult = $spamProtection->check($request);
+        if ($spamResult) {
+            // Silent redirect for obvious bots (honeypot), show error for borderline cases
+            if ($spamResult === 'spam_detected') {
+                return redirect()->back()->with('success', '感謝您的訊息！我們會盡快與您聯繫。');
+            }
+
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['_spam' => $spamResult]);
+        }
 
         ContactMessage::create([
             'name' => $request->input('name'),
@@ -415,7 +448,7 @@ class PageController extends Controller
         $email = $request->email;
         $token = $request->token;
 
-        if (hash('sha256', $email . config('app.key')) !== $token) {
+        if (hash('sha256', $email.config('app.key')) !== $token) {
             abort(403);
         }
 

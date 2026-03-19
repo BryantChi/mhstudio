@@ -19,7 +19,7 @@ use App\Http\Controllers\LanguageController;
 
 Route::get('/', [PageController::class, 'index'])->name('home');
 Route::post('/contact', [PageController::class, 'contactSubmit'])
-    ->middleware('throttle:5,1')
+    ->middleware('throttle:3,1')
     ->name('contact.submit');
 
 // Blog

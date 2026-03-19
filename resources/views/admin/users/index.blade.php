@@ -118,6 +118,18 @@
                                 </a>
                                 @endcan
 
+                                @if(auth()->user()->isSuperAdmin() && $user->id !== auth()->id() && !$user->isSuperAdmin() && !session('impersonator_id'))
+                                <a href="{{ route('admin.impersonate.start', $user) }}"
+                                   class="btn btn-sm btn-light text-warning"
+                                   data-coreui-toggle="tooltip"
+                                   title="模擬登入"
+                                   onclick="return confirm('確定要模擬登入為「{{ $user->name }}」嗎？');">
+                                    <svg class="icon">
+                                        <use xlink:href="/assets/icons/free.svg#cil-user"></use>
+                                    </svg>
+                                </a>
+                                @endif
+
                                 @can('delete users')
                                 @if($user->id !== auth()->id())
                                 <form method="POST"
@@ -194,6 +206,18 @@
                         </svg>
                     </a>
                     @endcan
+
+                    @if(auth()->user()->isSuperAdmin() && $user->id !== auth()->id() && !$user->isSuperAdmin() && !session('impersonator_id'))
+                    <a href="{{ route('admin.impersonate.start', $user) }}"
+                       class="btn btn-sm btn-light text-warning"
+                       data-coreui-toggle="tooltip"
+                       title="模擬登入"
+                       onclick="return confirm('確定要模擬登入為「{{ $user->name }}」嗎？');">
+                        <svg class="icon">
+                            <use xlink:href="/assets/icons/free.svg#cil-user"></use>
+                        </svg>
+                    </a>
+                    @endif
 
                     @can('delete users')
                     @if($user->id !== auth()->id())

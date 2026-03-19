@@ -36,14 +36,19 @@ class SecurityHeaders
         }
 
         // Content Security Policy（寬鬆模式，允許 CDN、inline 和社群嵌入）
+        $recaptchaEnabled = ! empty(config('services.recaptcha.site_key'));
+        $recaptchaScript = $recaptchaEnabled ? ' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/' : '';
+        $recaptchaFrame = $recaptchaEnabled ? ' https://www.google.com/recaptcha/' : '';
+        $recaptchaConnect = $recaptchaEnabled ? ' https://www.google.com/recaptcha/' : '';
+
         $csp = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.instagram.com https://www.youtube.com",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.instagram.com https://www.youtube.com".$recaptchaScript,
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
             "font-src 'self' https://fonts.gstatic.com data:",
             "img-src 'self' data: https: blob:",
-            "connect-src 'self' https://www.google-analytics.com https://www.instagram.com",
-            "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.instagram.com https://line.me",
+            "connect-src 'self' https://www.google-analytics.com https://www.instagram.com".$recaptchaConnect,
+            "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.instagram.com https://line.me".$recaptchaFrame,
             "frame-ancestors 'self'",
         ]);
         $response->headers->set('Content-Security-Policy', $csp);

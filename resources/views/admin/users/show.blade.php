@@ -16,6 +16,17 @@
         <p class="text-muted">查看用戶資訊</p>
     </div>
     <div class="col-md-6 text-md-end">
+        @if(auth()->user()->isSuperAdmin() && $user->id !== auth()->id() && !$user->isSuperAdmin() && !session('impersonator_id'))
+        <a href="{{ route('admin.impersonate.start', $user) }}"
+           class="btn btn-warning"
+           onclick="return confirm('確定要模擬登入為「{{ $user->name }}」嗎？');">
+            <svg class="icon me-2">
+                <use xlink:href="/assets/icons/free.svg#cil-user"></use>
+            </svg>
+            模擬登入
+        </a>
+        @endif
+
         @can('edit users')
         <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-primary">
             <svg class="icon me-2">

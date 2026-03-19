@@ -9,7 +9,7 @@ use Illuminate\Database\Seeder;
 
 class SeoMetaSeeder extends Seeder
 {
-    public function run(): void
+    public function run()
     {
         $appUrl = config('app.url', 'https://powerchi.com.tw');
 

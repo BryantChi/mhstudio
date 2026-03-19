@@ -96,6 +96,10 @@
         "sameAs": @json($sameAsLinks)
     }
     </script>
+    {{-- reCAPTCHA v3 (optional, only if enabled in settings) --}}
+    @if(setting('recaptcha_enabled', '0') === '1' && config('services.recaptcha.site_key'))
+    <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+    @endif
     @stack('head')
     @stack('styles')
 </head>
