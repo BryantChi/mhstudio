@@ -189,8 +189,10 @@ class DeployController extends Controller
 
             // 直接用 SQL 清理，不依賴 telescope:prune 指令
             $deleted = \Illuminate\Support\Facades\DB::table('telescope_entries')->count();
+            \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0');
             \Illuminate\Support\Facades\DB::table('telescope_entries_tags')->truncate();
             \Illuminate\Support\Facades\DB::table('telescope_entries')->truncate();
+            \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
             // 重建表回收空間
             \Illuminate\Support\Facades\DB::statement('ALTER TABLE telescope_entries ENGINE=InnoDB');
