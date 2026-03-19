@@ -404,6 +404,11 @@ a:hover {
     height: 16px;
 }
 
+/* Sidebar Nav - 預留 footer 空間避免重疊 */
+.sidebar-nav {
+    padding-bottom: 50px;
+}
+
 /* Sidebar Footer - 容器 */
 .sidebar-footer {
     position: absolute;
