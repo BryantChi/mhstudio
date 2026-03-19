@@ -169,13 +169,28 @@ class DeployController extends Controller
 
     /**
      * 清理 Telescope 記錄
+     * 相容正式環境（Telescope 為 require-dev，可能未安裝）
      */
     public function telescopePrune(): JsonResponse
     {
         try {
-            // 清理記錄
-            Artisan::call('telescope:prune');
-            $pruneOutput = trim(Artisan::output());
+            $db = config('database.connections.mysql.database');
+            $hasTable = \Illuminate\Support\Facades\DB::select(
+                "SELECT COUNT(*) AS cnt FROM information_schema.tables WHERE table_schema = ? AND table_name = 'telescope_entries'",
+                [$db]
+            );
+
+            if (! $hasTable[0]->cnt) {
+                return response()->json([
+                    'success' => true,
+                    'output' => 'Telescope 資料表不存在（正式環境未安裝 Telescope），無需清理。',
+                ]);
+            }
+
+            // 直接用 SQL 清理，不依賴 telescope:prune 指令
+            $deleted = \Illuminate\Support\Facades\DB::table('telescope_entries')->count();
+            \Illuminate\Support\Facades\DB::table('telescope_entries_tags')->truncate();
+            \Illuminate\Support\Facades\DB::table('telescope_entries')->truncate();
 
             // 重建表回收空間
             \Illuminate\Support\Facades\DB::statement('ALTER TABLE telescope_entries ENGINE=InnoDB');
@@ -184,16 +199,14 @@ class DeployController extends Controller
             \Illuminate\Support\Facades\DB::statement('ANALYZE TABLE telescope_entries_tags');
 
             // 回報目前大小
-            $db = config('database.connections.mysql.database');
             $sizeResult = \Illuminate\Support\Facades\DB::select(
                 'SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS size_mb FROM information_schema.tables WHERE table_schema = ?',
                 [$db]
             );
-            $remaining = \Illuminate\Support\Facades\DB::table('telescope_entries')->count();
 
             return response()->json([
                 'success' => true,
-                'output' => $pruneOutput."\n\n剩餘記錄：{$remaining} 筆\n資料庫總大小：{$sizeResult[0]->size_mb} MB",
+                'output' => "已清除 {$deleted} 筆 Telescope 記錄並回收磁碟空間。\n資料庫總大小：{$sizeResult[0]->size_mb} MB",
             ]);
         } catch (\Throwable $e) {
             return response()->json([
