@@ -139,6 +139,42 @@
     </div>
 </div>
 
+{{-- Telescope 管理 --}}
+<div class="card mb-4">
+    <div class="card-header">
+        <strong>
+            <svg class="icon me-2"><use xlink:href="/assets/icons/free.svg#cil-monitor"></use></svg>
+            Telescope 除錯工具管理
+        </strong>
+    </div>
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <p class="mb-1">
+                    <strong>目前狀態：</strong>
+                    @if(config('telescope.enabled'))
+                        <span class="badge bg-success">啟用中</span>
+                        <small class="text-muted d-block mt-1">Telescope 正在記錄所有請求，會佔用大量資料庫空間。正式環境建議停用。</small>
+                    @else
+                        <span class="badge bg-secondary">已停用</span>
+                        <small class="text-muted d-block mt-1">Telescope 已停用，不會寫入任何記錄。</small>
+                    @endif
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <button type="button" class="btn btn-{{ config('telescope.enabled') ? 'warning' : 'success' }} btn-sm deploy-btn" data-action="{{ route('admin.deploy.telescope-toggle') }}">
+                    <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-{{ config('telescope.enabled') ? 'ban' : 'check-circle' }}"></use></svg>
+                    {{ config('telescope.enabled') ? '停用 Telescope' : '啟用 Telescope' }}
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm deploy-btn ms-2" data-action="{{ route('admin.deploy.telescope-prune') }}">
+                    <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-trash"></use></svg>
+                    清理記錄 + 回收空間
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- 執行結果 --}}
 <div class="card" id="resultCard" style="display:none;">
     <div class="card-header" id="resultHeader">

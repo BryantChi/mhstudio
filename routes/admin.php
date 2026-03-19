@@ -255,5 +255,7 @@ Route::prefix(config('admin.prefix', 'admin'))
             Route::post('/storage-link', [DeployController::class, 'storageLink'])->name('storage-link');
             Route::post('/optimize', [DeployController::class, 'optimize'])->name('optimize');
             Route::post('/init', [DeployController::class, 'init'])->name('init');
+            Route::post('/telescope-prune', [DeployController::class, 'telescopePrune'])->name('telescope-prune');
+            Route::post('/telescope-toggle', [DeployController::class, 'telescopeToggle'])->name('telescope-toggle');
         });
     });
