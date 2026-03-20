@@ -128,12 +128,12 @@
 
 .sortable-item .item-order-badge {
     flex-shrink: 0;
-    font-size: .75rem;
+    font-size: .875rem;
     font-weight: 700;
-    color: var(--cui-primary, #3b82f6);
-    background: var(--cui-primary-bg-subtle, #dbeafe);
-    width: 1.75rem;
-    height: 1.75rem;
+    color: #fff;
+    background: var(--cui-primary, #3b82f6);
+    width: 2rem;
+    height: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
