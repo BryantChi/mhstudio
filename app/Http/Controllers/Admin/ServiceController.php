@@ -16,9 +16,14 @@ class ServiceController extends Controller
     use ReordersItems;
     public function index(Request $request): View|JsonResponse
     {
-        // 排序模式：回傳精簡 JSON 資料
+        // 排序模式：回傳精簡 JSON 資料（依 type 篩選）
         if ($request->has('_sortable')) {
-            $items = Service::ordered()->get(['id', 'title', 'order']);
+            $query = Service::ordered();
+            if ($request->filled('type')) {
+                $query->where('type', $request->type);
+            }
+            $items = $query->get(['id', 'title', 'order']);
+
             return response()->json($items);
         }
 
@@ -129,7 +134,7 @@ class ServiceController extends Controller
         unset($validated['items'], $validated['features_items'], $validated['faq_questions'], $validated['faq_answers']);
 
         $service = Service::create($validated);
-        $this->syncOrder(Service::class, $service->id, $service->order);
+        $this->syncOrder(Service::class, $service->id, $service->order, $service->type ? ['type' => $service->type] : []);
 
         // 建立包含項目
         foreach ($items as $index => $item) {
@@ -231,7 +236,7 @@ class ServiceController extends Controller
         unset($validated['items'], $validated['features_items'], $validated['faq_questions'], $validated['faq_answers']);
 
         $service->update($validated);
-        $this->syncOrder(Service::class, $service->id, $service->order);
+        $this->syncOrder(Service::class, $service->id, $service->order, $service->type ? ['type' => $service->type] : []);
 
         // 刪除舊項目並重建
         $service->items()->delete();

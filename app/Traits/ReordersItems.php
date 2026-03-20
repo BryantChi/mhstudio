@@ -25,7 +25,11 @@ trait ReordersItems
     {
         $query = $modelClass::orderBy('order');
         foreach ($scopeWhere as $col => $val) {
-            $query->where($col, $val);
+            if (is_null($val)) {
+                $query->whereNull($col);
+            } else {
+                $query->where($col, $val);
+            }
         }
         $items = $query->get();
 

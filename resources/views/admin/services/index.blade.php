@@ -32,7 +32,7 @@
         @include('admin.partials.view-toggle', ['pageKey' => 'services'])
         @include('admin.partials.sortable-mode', [
             'reorderUrl' => route('admin.services.reorder'),
-            'fetchUrl' => route('admin.services.index', ['_sortable' => 1]),
+            'fetchUrl' => route('admin.services.index', array_filter(['_sortable' => 1, 'type' => $type ?? null])),
             'itemLabel' => '服務',
             'titleField' => 'title',
         ])

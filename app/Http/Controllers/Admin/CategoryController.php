@@ -18,9 +18,10 @@ class CategoryController extends Controller
      */
     public function index(Request $request): View|JsonResponse
     {
-        // 排序模式：回傳精簡 JSON 資料
+        // 排序模式：回傳精簡 JSON 資料（僅頂層分類）
         if ($request->has('_sortable')) {
-            $items = Category::ordered()->get(['id', 'name', 'order']);
+            $items = Category::whereNull('parent_id')->ordered()->get(['id', 'name', 'order']);
+
             return response()->json($items);
         }
 
@@ -94,7 +95,7 @@ class CategoryController extends Controller
         $validated['order'] = $validated['order'] ?? Category::max('order') + 1;
 
         $category = Category::create($validated);
-        $this->syncOrder(Category::class, $category->id, $category->order);
+        $this->syncOrder(Category::class, $category->id, $category->order, ['parent_id' => $category->parent_id]);
 
         flash_success('分類建立成功');
 
@@ -155,7 +156,7 @@ class CategoryController extends Controller
         }
 
         $category->update($validated);
-        $this->syncOrder(Category::class, $category->id, $category->order);
+        $this->syncOrder(Category::class, $category->id, $category->order, ['parent_id' => $category->parent_id]);
 
         flash_success('分類更新成功');
 
