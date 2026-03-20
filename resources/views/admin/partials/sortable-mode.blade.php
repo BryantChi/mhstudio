@@ -1,5 +1,5 @@
 {{--
-    Sortable Mode Component — 拖曳排序模式
+    Sortable Mode Component v3 — 拖曳排序模式
     用法：@include('admin.partials.sortable-mode', [
         'reorderUrl' => route('admin.services.reorder'),
         'fetchUrl' => route('admin.services.index', ['_sortable' => 1]),
@@ -23,26 +23,27 @@
 @once
 @push('styles')
 <style>
-/* ===== Sortable Mode v2 ===== */
+/* ===== Sortable Mode v3 ===== */
 .sortable-overlay {
     display: none;
     position: fixed;
     inset: 0;
     z-index: 1050;
-    background: rgba(0,0,0,.5);
-    backdrop-filter: blur(2px);
+    background: rgba(0,0,0,.45);
+    backdrop-filter: blur(3px);
 }
 .sortable-overlay.active { display: flex; align-items: center; justify-content: center; }
 
 .sortable-panel {
     background: var(--cui-card-bg, #fff);
     border-radius: .75rem;
-    box-shadow: 0 1rem 3rem rgba(0,0,0,.25);
-    width: 92%;
-    max-width: 640px;
-    max-height: 85vh;
+    box-shadow: 0 1.5rem 4rem rgba(0,0,0,.25);
+    width: 94%;
+    max-width: 580px;
+    max-height: 88vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .sortable-panel-header {
@@ -51,31 +52,37 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-shrink: 0;
 }
-.sortable-panel-header h5 { margin: 0; font-weight: 600; }
+.sortable-panel-header h5 { margin: 0; font-weight: 600; font-size: 1rem; }
 
 .sortable-panel-body {
     flex: 1;
     overflow-y: auto;
-    padding: .25rem 0;
+    padding: .5rem;
 }
 
 .sortable-panel-footer {
     padding: .75rem 1.25rem;
     border-top: 1px solid var(--cui-border-color, #d8dbe0);
     display: flex;
-    justify-content: flex-end;
-    gap: .5rem;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    background: var(--cui-tertiary-bg, #f0f4f7);
+}
+.sortable-panel-footer .sortable-count {
+    font-size: .8125rem;
+    color: var(--cui-text-medium-emphasis, #768192);
 }
 
 .sortable-hint {
-    padding: .5rem 1.25rem;
-    font-size: .85rem;
+    padding: .625rem 1.25rem;
+    font-size: .8125rem;
     color: var(--cui-text-medium-emphasis, #768192);
     background: var(--cui-tertiary-bg, #f0f4f7);
-    display: flex;
-    align-items: center;
-    gap: .5rem;
+    border-bottom: 1px solid var(--cui-border-color, #d8dbe0);
+    flex-shrink: 0;
 }
 
 /* Sortable list items */
@@ -84,79 +91,139 @@
 .sortable-item {
     display: flex;
     align-items: center;
-    gap: .75rem;
-    padding: .875rem 1.25rem;
-    cursor: grab;
-    border-bottom: 1px solid var(--cui-border-color-translucent, rgba(0,0,0,.08));
-    transition: background .15s, box-shadow .15s;
+    gap: .5rem;
+    padding: .5rem .625rem;
+    margin-bottom: .375rem;
+    background: var(--cui-card-bg, #fff);
+    border: 1px solid var(--cui-border-color, #d8dbe0);
+    border-radius: .5rem;
+    transition: box-shadow .15s, border-color .15s;
     user-select: none;
 }
-.sortable-item:last-child { border-bottom: none; }
+.sortable-item:last-child { margin-bottom: 0; }
 .sortable-item:hover {
-    background: var(--cui-primary-bg-subtle, #cfe2ff);
+    border-color: var(--cui-primary, #3b82f6);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, .1);
 }
-.sortable-item:active { cursor: grabbing; }
 
-.sortable-item .drag-handle {
-    color: var(--cui-text-medium-emphasis, #768192);
-    flex-shrink: 0;
-    font-size: 1.25rem;
-    line-height: 1;
-    opacity: .5;
-    transition: opacity .15s;
+/* 拖曳區域 — 佔據主要空間 */
+.sortable-item .drag-zone {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    cursor: grab;
+    padding: .375rem .25rem;
+    border-radius: .25rem;
+    min-height: 2.5rem;
 }
-.sortable-item:hover .drag-handle { opacity: 1; }
+.sortable-item .drag-zone:active { cursor: grabbing; }
+
+.sortable-item .drag-icon {
+    color: var(--cui-text-disabled, #b1b7c1);
+    flex-shrink: 0;
+    display: flex;
+    transition: color .15s;
+}
+.sortable-item:hover .drag-icon { color: var(--cui-primary, #3b82f6); }
+
+.sortable-item .item-order-badge {
+    flex-shrink: 0;
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--cui-primary, #3b82f6);
+    background: var(--cui-primary-bg-subtle, #dbeafe);
+    width: 1.75rem;
+    height: 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
 
 .sortable-item .item-title {
     flex: 1;
-    font-size: .9375rem;
+    font-size: .875rem;
     font-weight: 500;
-    line-height: 1.3;
+    line-height: 1.4;
+    color: var(--cui-body-color, #212631);
 }
 
-.sortable-item .item-order {
+/* 上下移動按鈕 */
+.sortable-item .move-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
     flex-shrink: 0;
-    font-size: .8125rem;
-    font-weight: 600;
-    color: #fff;
+}
+.sortable-item .move-btn {
+    width: 1.625rem;
+    height: 1.375rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--cui-border-color, #d8dbe0);
+    border-radius: .25rem;
+    background: var(--cui-card-bg, #fff);
+    color: var(--cui-text-medium-emphasis, #768192);
+    cursor: pointer;
+    transition: all .1s;
+    padding: 0;
+    line-height: 1;
+}
+.sortable-item .move-btn:hover {
     background: var(--cui-primary, #3b82f6);
-    padding: .2rem .6rem;
-    border-radius: 1rem;
-    min-width: 1.75rem;
-    text-align: center;
-    line-height: 1.3;
+    border-color: var(--cui-primary, #3b82f6);
+    color: #fff;
+}
+.sortable-item .move-btn:disabled {
+    opacity: .25;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+.sortable-item .move-btn svg {
+    width: 12px;
+    height: 12px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 /* SortableJS ghost & chosen */
 .sortable-ghost {
-    opacity: .3;
-    background: var(--cui-primary-bg-subtle, #cfe2ff) !important;
+    opacity: .25;
 }
 .sortable-chosen {
-    background: #fff !important;
-    box-shadow: 0 4px 16px rgba(0,0,0,.15);
-    border-radius: .375rem;
+    box-shadow: 0 6px 20px rgba(59,130,246,.2) !important;
+    border-color: var(--cui-primary, #3b82f6) !important;
+    background: var(--cui-primary-bg-subtle, #dbeafe) !important;
     z-index: 10;
 }
 .sortable-drag {
-    box-shadow: 0 8px 24px rgba(0,0,0,.2);
-    border-radius: .375rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,.2) !important;
+    transform: rotate(1deg);
 }
 
 /* Loading state */
 .sortable-loading {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 3rem;
+    gap: .75rem;
     color: var(--cui-text-medium-emphasis, #768192);
 }
 
-/* Touch-friendly: larger tap targets on mobile */
+/* Touch-friendly on mobile */
 @media (max-width: 768px) {
-    .sortable-item { padding: 1rem 1.25rem; }
-    .sortable-item .item-title { font-size: 1rem; }
-    .sortable-panel { width: 96%; max-height: 90vh; }
+    .sortable-panel { width: 98%; max-height: 92vh; border-radius: .5rem; }
+    .sortable-item { padding: .625rem; }
+    .sortable-item .drag-zone { min-height: 2.75rem; padding: .5rem .25rem; }
+    .sortable-item .item-title { font-size: .9375rem; }
+    .sortable-item .move-btn { width: 2rem; height: 1.75rem; }
 }
 </style>
 @endpush
@@ -173,22 +240,24 @@
             <button type="button" class="btn-close" id="sortableCancel" aria-label="關閉"></button>
         </div>
         <div class="sortable-hint">
-            <svg class="icon" style="width:16px;height:16px"><use xlink:href="/assets/icons/free.svg#cil-cursor-move"></use></svg>
-            直接拖曳項目調整順序，完成後點擊「儲存排序」
+            拖曳項目或使用 ▲▼ 按鈕調整順序，完成後點擊「儲存排序」
         </div>
         <div class="sortable-panel-body" id="sortablePanelBody">
             <div class="sortable-loading" id="sortableLoading">
-                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-                載入中...
+                <div class="spinner-border spinner-border-sm" role="status"></div>
+                <span>載入中...</span>
             </div>
             <ul class="sortable-list" id="sortableList"></ul>
         </div>
         <div class="sortable-panel-footer">
-            <button type="button" class="btn btn-secondary btn-sm" id="sortableCancelBtn">取消</button>
-            <button type="button" class="btn btn-primary btn-sm" id="sortableSaveBtn" disabled>
-                <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-save"></use></svg>
-                儲存排序
-            </button>
+            <span class="sortable-count" id="sortableCount"></span>
+            <div style="display:flex;gap:.5rem;">
+                <button type="button" class="btn btn-secondary btn-sm" id="sortableCancelBtn">取消</button>
+                <button type="button" class="btn btn-primary btn-sm" id="sortableSaveBtn" disabled>
+                    <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-save"></use></svg>
+                    儲存排序
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -209,8 +278,8 @@
     var saveBtn    = document.getElementById('sortableSaveBtn');
     var listEl     = document.getElementById('sortableList');
     var loadingEl  = document.getElementById('sortableLoading');
+    var countEl    = document.getElementById('sortableCount');
     var sortableInstance = null;
-    var isDirty = false;
 
     function open() {
         overlay.classList.add('active');
@@ -221,13 +290,17 @@
     function close() {
         overlay.classList.remove('active');
         document.body.style.overflow = '';
-        isDirty = false;
         saveBtn.disabled = true;
+        resetSaveBtn();
+        if (sortableInstance) { sortableInstance.destroy(); sortableInstance = null; }
+    }
+
+    function markDirty() {
+        saveBtn.disabled = false;
+    }
+
+    function resetSaveBtn() {
         saveBtn.innerHTML = '<svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-save"></use></svg>儲存排序';
-        if (sortableInstance) {
-            sortableInstance.destroy();
-            sortableInstance = null;
-        }
     }
 
     function loadData() {
@@ -241,12 +314,14 @@
         .then(function(r) { return r.json(); })
         .then(function(items) {
             loadingEl.style.display = 'none';
+            countEl.textContent = '共 ' + items.length + ' 項';
             renderList(items);
             initSortable();
+            updateMoveButtons();
         })
         .catch(function(err) {
             loadingEl.style.display = 'none';
-            listEl.innerHTML = '<li class="sortable-item text-danger">載入失敗，請重試</li>';
+            listEl.innerHTML = '<li class="sortable-item"><span class="item-title text-danger">載入失敗，請重試</span></li>';
             console.error('Sortable fetch error:', err);
         });
     }
@@ -256,35 +331,83 @@
         items.forEach(function(item, i) {
             var title = item[TITLE_FIELD] || item.name || item.title || item.client_name || ('ID: ' + item.id);
             html += '<li class="sortable-item" data-id="' + item.id + '">'
-                  + '  <span class="drag-handle">&#9776;</span>'
-                  + '  <span class="item-title">' + escapeHtml(title) + '</span>'
-                  + '  <span class="item-order">' + (i + 1) + '</span>'
+                  + '  <div class="drag-zone">'
+                  + '    <span class="drag-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></span>'
+                  + '    <span class="item-order-badge">' + (i + 1) + '</span>'
+                  + '    <span class="item-title">' + escapeHtml(title) + '</span>'
+                  + '  </div>'
+                  + '  <div class="move-btns">'
+                  + '    <button type="button" class="move-btn move-up" title="上移"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg></button>'
+                  + '    <button type="button" class="move-btn move-down" title="下移"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>'
+                  + '  </div>'
                   + '</li>';
         });
         listEl.innerHTML = html;
+
+        // Bind move buttons
+        listEl.querySelectorAll('.move-up').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var li = btn.closest('.sortable-item');
+                var prev = li.previousElementSibling;
+                if (prev) {
+                    li.parentNode.insertBefore(li, prev);
+                    markDirty();
+                    updateOrderNumbers();
+                    updateMoveButtons();
+                    li.style.background = 'var(--cui-primary-bg-subtle, #dbeafe)';
+                    setTimeout(function() { li.style.background = ''; }, 300);
+                }
+            });
+        });
+
+        listEl.querySelectorAll('.move-down').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var li = btn.closest('.sortable-item');
+                var next = li.nextElementSibling;
+                if (next) {
+                    li.parentNode.insertBefore(next, li);
+                    markDirty();
+                    updateOrderNumbers();
+                    updateMoveButtons();
+                    li.style.background = 'var(--cui-primary-bg-subtle, #dbeafe)';
+                    setTimeout(function() { li.style.background = ''; }, 300);
+                }
+            });
+        });
     }
 
     function initSortable() {
         if (sortableInstance) sortableInstance.destroy();
         sortableInstance = new Sortable(listEl, {
             animation: 200,
-            delay: 50,
+            handle: '.drag-zone',
+            delay: 80,
             delayOnTouchOnly: true,
-            touchStartThreshold: 3,
+            touchStartThreshold: 5,
             ghostClass: 'sortable-ghost',
             chosenClass: 'sortable-chosen',
             dragClass: 'sortable-drag',
             onEnd: function() {
-                isDirty = true;
-                saveBtn.disabled = false;
+                markDirty();
                 updateOrderNumbers();
+                updateMoveButtons();
             }
         });
     }
 
     function updateOrderNumbers() {
         listEl.querySelectorAll('.sortable-item').forEach(function(el, i) {
-            el.querySelector('.item-order').textContent = i + 1;
+            el.querySelector('.item-order-badge').textContent = i + 1;
+        });
+    }
+
+    function updateMoveButtons() {
+        var items = listEl.querySelectorAll('.sortable-item');
+        items.forEach(function(el, i) {
+            el.querySelector('.move-up').disabled = (i === 0);
+            el.querySelector('.move-down').disabled = (i === items.length - 1);
         });
     }
 
@@ -321,7 +444,7 @@
         })
         .catch(function(err) {
             saveBtn.disabled = false;
-            saveBtn.innerHTML = '<svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-save"></use></svg>儲存排序';
+            resetSaveBtn();
             if (typeof window.showToast === 'function') {
                 window.showToast('儲存失敗，請重試', 'danger');
             }
@@ -340,17 +463,9 @@
     cancelBtn.addEventListener('click', close);
     cancelX.addEventListener('click', close);
     saveBtn.addEventListener('click', save);
-
-    // Close on overlay background click
-    overlay.addEventListener('click', function(e) {
-        if (e.target === overlay) close();
-    });
-
-    // Close on Escape key
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && overlay.classList.contains('active')) {
-            close();
-        }
+        if (e.key === 'Escape' && overlay.classList.contains('active')) close();
     });
 })();
 </script>
