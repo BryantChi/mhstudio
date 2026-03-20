@@ -86,7 +86,7 @@ class ClientController extends Controller
         Client::create($validated);
         flash_success('客戶建立成功');
 
-        return redirect()->route('admin.clients.index');
+        return redirect(admin_list_url('admin.clients.index'));
     }
 
     /**
@@ -143,7 +143,7 @@ class ClientController extends Controller
         $client->update($validated);
         flash_success('客戶更新成功');
 
-        return redirect()->route('admin.clients.index');
+        return redirect(admin_list_url('admin.clients.index'));
     }
 
     /**
@@ -154,7 +154,7 @@ class ClientController extends Controller
         $client->delete();
         flash_success('客戶已刪除');
 
-        return redirect()->route('admin.clients.index');
+        return redirect(admin_list_url('admin.clients.index'));
     }
 
     /**

@@ -122,7 +122,7 @@ class NewsletterController extends Controller
 
         flash_success('電子報已刪除');
 
-        return redirect()->route('admin.newsletters.index');
+        return redirect(admin_list_url('admin.newsletters.index'));
     }
 
     /**
@@ -136,7 +136,7 @@ class NewsletterController extends Controller
 
         flash_success('電子報已開始發送');
 
-        return redirect()->route('admin.newsletters.index');
+        return redirect(admin_list_url('admin.newsletters.index'));
     }
 
     /**

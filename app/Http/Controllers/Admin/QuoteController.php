@@ -113,7 +113,7 @@ class QuoteController extends Controller
 
         flash_success('報價單建立成功');
 
-        return redirect()->route('admin.quotes.index');
+        return redirect(admin_list_url('admin.quotes.index'));
     }
 
     /**
@@ -191,7 +191,7 @@ class QuoteController extends Controller
 
         flash_success('報價單更新成功');
 
-        return redirect()->route('admin.quotes.index');
+        return redirect(admin_list_url('admin.quotes.index'));
     }
 
     /**
@@ -202,7 +202,7 @@ class QuoteController extends Controller
         $quote->delete();
         flash_success('報價單已刪除');
 
-        return redirect()->route('admin.quotes.index');
+        return redirect(admin_list_url('admin.quotes.index'));
     }
 
     /**

@@ -95,7 +95,7 @@ class ArticleController extends Controller
 
         flash_success('文章建立成功');
 
-        return redirect()->route('admin.articles.index');
+        return redirect(admin_list_url('admin.articles.index'));
     }
 
     /**
@@ -160,7 +160,7 @@ class ArticleController extends Controller
 
         flash_success('文章更新成功');
 
-        return redirect()->route('admin.articles.index');
+        return redirect(admin_list_url('admin.articles.index'));
     }
 
     /**
@@ -177,6 +177,6 @@ class ArticleController extends Controller
 
         flash_success('文章刪除成功');
 
-        return redirect()->route('admin.articles.index');
+        return redirect(admin_list_url('admin.articles.index'));
     }
 }

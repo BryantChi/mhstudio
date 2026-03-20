@@ -50,7 +50,7 @@ class TestimonialController extends Controller
 
         flash_success('客戶評價建立成功');
 
-        return redirect()->route('admin.testimonials.index');
+        return redirect(admin_list_url('admin.testimonials.index'));
     }
 
     public function edit(Testimonial $testimonial): View
@@ -77,7 +77,7 @@ class TestimonialController extends Controller
 
         flash_success('客戶評價更新成功');
 
-        return redirect()->route('admin.testimonials.index');
+        return redirect(admin_list_url('admin.testimonials.index'));
     }
 
     public function destroy(Testimonial $testimonial): RedirectResponse
@@ -85,7 +85,7 @@ class TestimonialController extends Controller
         $testimonial->delete();
         flash_success('客戶評價已刪除');
 
-        return redirect()->route('admin.testimonials.index');
+        return redirect(admin_list_url('admin.testimonials.index'));
     }
 
     /**

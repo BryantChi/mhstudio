@@ -95,7 +95,7 @@ class CategoryController extends Controller
 
         flash_success('分類建立成功');
 
-        return redirect()->route('admin.categories.index');
+        return redirect(admin_list_url('admin.categories.index'));
     }
 
     /**
@@ -155,7 +155,7 @@ class CategoryController extends Controller
 
         flash_success('分類更新成功');
 
-        return redirect()->route('admin.categories.index');
+        return redirect(admin_list_url('admin.categories.index'));
     }
 
     /**
@@ -179,7 +179,7 @@ class CategoryController extends Controller
 
         flash_success('分類刪除成功');
 
-        return redirect()->route('admin.categories.index');
+        return redirect(admin_list_url('admin.categories.index'));
     }
 
     /**

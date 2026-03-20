@@ -43,7 +43,7 @@ use App\Http\Controllers\Admin\QuoteRequestController;
 
 Route::prefix(config('admin.prefix', 'admin'))
     ->name('admin.')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', \App\Http\Middleware\RememberListUrl::class])
     ->group(function () {
 
         // 儀表板

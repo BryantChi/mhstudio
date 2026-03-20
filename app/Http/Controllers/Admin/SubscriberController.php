@@ -37,7 +37,7 @@ class SubscriberController extends Controller
         $subscriber->delete();
         flash_success('訂閱者已刪除');
 
-        return redirect()->route('admin.subscribers.index');
+        return redirect(admin_list_url('admin.subscribers.index'));
     }
 
     public function export()

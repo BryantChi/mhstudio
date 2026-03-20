@@ -169,7 +169,7 @@ class ContractController extends Controller
 
         flash_success('合約建立成功');
 
-        return redirect()->route('admin.contracts.index');
+        return redirect(admin_list_url('admin.contracts.index'));
     }
 
     /**
@@ -295,7 +295,7 @@ class ContractController extends Controller
 
         flash_success('合約更新成功');
 
-        return redirect()->route('admin.contracts.index');
+        return redirect(admin_list_url('admin.contracts.index'));
     }
 
     /**
@@ -306,7 +306,7 @@ class ContractController extends Controller
         $contract->delete();
         flash_success('合約已刪除');
 
-        return redirect()->route('admin.contracts.index');
+        return redirect(admin_list_url('admin.contracts.index'));
     }
 
     /**

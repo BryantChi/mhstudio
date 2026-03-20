@@ -35,7 +35,7 @@ class PricingController extends Controller
 
         PricingCategory::create($validated);
 
-        return redirect()->route('admin.pricing.index')->with('success', '分類已建立');
+        return redirect(admin_list_url('admin.pricing.index'))->with('success', '分類已建立');
     }
 
     public function updateCategory(Request $request, PricingCategory $category): RedirectResponse
@@ -52,13 +52,13 @@ class PricingController extends Controller
         $validated['is_active'] = $request->boolean('is_active');
         $category->update($validated);
 
-        return redirect()->route('admin.pricing.index')->with('success', '分類已更新');
+        return redirect(admin_list_url('admin.pricing.index'))->with('success', '分類已更新');
     }
 
     public function destroyCategory(PricingCategory $category): RedirectResponse
     {
         $category->delete();
-        return redirect()->route('admin.pricing.index')->with('success', '分類已刪除');
+        return redirect(admin_list_url('admin.pricing.index'))->with('success', '分類已刪除');
     }
 
     public function storeFeature(Request $request): RedirectResponse
@@ -78,7 +78,7 @@ class PricingController extends Controller
 
         PricingFeature::create($validated);
 
-        return redirect()->route('admin.pricing.index')->with('success', '功能項目已建立');
+        return redirect(admin_list_url('admin.pricing.index'))->with('success', '功能項目已建立');
     }
 
     public function updateFeature(Request $request, PricingFeature $feature): RedirectResponse
@@ -96,13 +96,13 @@ class PricingController extends Controller
         $validated['is_active'] = $request->boolean('is_active');
         $feature->update($validated);
 
-        return redirect()->route('admin.pricing.index')->with('success', '功能項目已更新');
+        return redirect(admin_list_url('admin.pricing.index'))->with('success', '功能項目已更新');
     }
 
     public function destroyFeature(PricingFeature $feature): RedirectResponse
     {
         $feature->delete();
-        return redirect()->route('admin.pricing.index')->with('success', '功能項目已刪除');
+        return redirect(admin_list_url('admin.pricing.index'))->with('success', '功能項目已刪除');
     }
 
     public function reorderCategories(Request $request)

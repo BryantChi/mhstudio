@@ -73,7 +73,7 @@ class UserController extends Controller
 
         flash_success('用戶建立成功');
 
-        return redirect()->route('admin.users.index');
+        return redirect(admin_list_url('admin.users.index'));
     }
 
     /**
@@ -125,7 +125,7 @@ class UserController extends Controller
 
         flash_success('用戶更新成功');
 
-        return redirect()->route('admin.users.index');
+        return redirect(admin_list_url('admin.users.index'));
     }
 
     /**
@@ -142,6 +142,6 @@ class UserController extends Controller
 
         flash_success('用戶刪除成功');
 
-        return redirect()->route('admin.users.index');
+        return redirect(admin_list_url('admin.users.index'));
     }
 }

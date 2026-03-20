@@ -57,7 +57,7 @@ class TagController extends Controller
 
         flash_success('標籤建立成功');
 
-        return redirect()->route('admin.tags.index');
+        return redirect(admin_list_url('admin.tags.index'));
     }
 
     /**
@@ -93,7 +93,7 @@ class TagController extends Controller
 
         flash_success('標籤更新成功');
 
-        return redirect()->route('admin.tags.index');
+        return redirect(admin_list_url('admin.tags.index'));
     }
 
     /**
@@ -111,7 +111,7 @@ class TagController extends Controller
 
         flash_success('標籤刪除成功');
 
-        return redirect()->route('admin.tags.index');
+        return redirect(admin_list_url('admin.tags.index'));
     }
 
     /**

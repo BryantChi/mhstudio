@@ -108,7 +108,7 @@ class InvoiceController extends Controller
 
         flash_success('發票建立成功');
 
-        return redirect()->route('admin.invoices.index');
+        return redirect(admin_list_url('admin.invoices.index'));
     }
 
     /**
@@ -185,7 +185,7 @@ class InvoiceController extends Controller
 
         flash_success('發票更新成功');
 
-        return redirect()->route('admin.invoices.index');
+        return redirect(admin_list_url('admin.invoices.index'));
     }
 
     /**
@@ -196,7 +196,7 @@ class InvoiceController extends Controller
         $invoice->delete();
         flash_success('發票已刪除');
 
-        return redirect()->route('admin.invoices.index');
+        return redirect(admin_list_url('admin.invoices.index'));
     }
 
     /**

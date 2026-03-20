@@ -339,7 +339,7 @@ class SettingController extends Controller
 
         flash_success('設定建立成功');
 
-        return redirect()->route('admin.settings.index');
+        return redirect(admin_list_url('admin.settings.index'));
     }
 
     /**
@@ -369,7 +369,7 @@ class SettingController extends Controller
 
         flash_success('設定更新成功');
 
-        return redirect()->route('admin.settings.index');
+        return redirect(admin_list_url('admin.settings.index'));
     }
 
     /**
@@ -386,6 +386,6 @@ class SettingController extends Controller
 
         flash_success('設定刪除成功');
 
-        return redirect()->route('admin.settings.index');
+        return redirect(admin_list_url('admin.settings.index'));
     }
 }

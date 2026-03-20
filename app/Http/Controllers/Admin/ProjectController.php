@@ -115,7 +115,7 @@ class ProjectController extends Controller
 
         flash_success('作品建立成功');
 
-        return redirect()->route('admin.projects.index');
+        return redirect(admin_list_url('admin.projects.index'));
     }
 
     public function show(Project $project): View
@@ -173,7 +173,7 @@ class ProjectController extends Controller
 
         flash_success('作品更新成功');
 
-        return redirect()->route('admin.projects.index');
+        return redirect(admin_list_url('admin.projects.index'));
     }
 
     public function destroy(Project $project): RedirectResponse
@@ -181,7 +181,7 @@ class ProjectController extends Controller
         $project->delete();
         flash_success('作品已刪除');
 
-        return redirect()->route('admin.projects.index');
+        return redirect(admin_list_url('admin.projects.index'));
     }
 
     /* ===== 圖片庫管理 ===== */

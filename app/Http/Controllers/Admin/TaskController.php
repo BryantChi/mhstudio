@@ -110,7 +110,7 @@ class TaskController extends Controller
         Task::create($validated);
         flash_success('任務建立成功');
 
-        return redirect()->route('admin.tasks.index');
+        return redirect(admin_list_url('admin.tasks.index'));
     }
 
     /**
@@ -150,7 +150,7 @@ class TaskController extends Controller
         $task->update($validated);
         flash_success('任務更新成功');
 
-        return redirect()->route('admin.tasks.index');
+        return redirect(admin_list_url('admin.tasks.index'));
     }
 
     /**
@@ -161,7 +161,7 @@ class TaskController extends Controller
         $task->delete();
         flash_success('任務已刪除');
 
-        return redirect()->route('admin.tasks.index');
+        return redirect(admin_list_url('admin.tasks.index'));
     }
 
     /**
