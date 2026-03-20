@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Testimonial;
+use App\Traits\ReordersItems;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -11,6 +12,7 @@ use Illuminate\View\View;
 
 class TestimonialController extends Controller
 {
+    use ReordersItems;
     public function index(Request $request): View|JsonResponse
     {
         // 排序模式：回傳精簡 JSON 資料
@@ -46,7 +48,8 @@ class TestimonialController extends Controller
 
         $validated['order'] = $validated['order'] ?? Testimonial::max('order') + 1;
 
-        Testimonial::create($validated);
+        $testimonial = Testimonial::create($validated);
+        $this->syncOrder(Testimonial::class, $testimonial->id, $testimonial->order);
 
         flash_success('客戶評價建立成功');
 
@@ -74,6 +77,7 @@ class TestimonialController extends Controller
         ]);
 
         $testimonial->update($validated);
+        $this->syncOrder(Testimonial::class, $testimonial->id, $testimonial->order);
 
         flash_success('客戶評價更新成功');
 

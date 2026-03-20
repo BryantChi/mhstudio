@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
+use App\Traits\ReordersItems;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,6 +14,7 @@ use Illuminate\View\View;
 
 class TaskController extends Controller
 {
+    use ReordersItems;
     /**
      * 任務列表 / 看板視圖
      */
@@ -107,7 +109,8 @@ class TaskController extends Controller
             $validated['completed_at'] = now();
         }
 
-        Task::create($validated);
+        $task = Task::create($validated);
+        $this->syncOrder(Task::class, $task->id, $task->order);
         flash_success('任務建立成功');
 
         return redirect(admin_list_url('admin.tasks.index'));
@@ -148,6 +151,7 @@ class TaskController extends Controller
         }
 
         $task->update($validated);
+        $this->syncOrder(Task::class, $task->id, $task->order);
         flash_success('任務更新成功');
 
         return redirect(admin_list_url('admin.tasks.index'));

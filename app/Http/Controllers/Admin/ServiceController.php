@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PricingCategory;
 use App\Models\Service;
+use App\Traits\ReordersItems;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -12,6 +13,7 @@ use Illuminate\View\View;
 
 class ServiceController extends Controller
 {
+    use ReordersItems;
     public function index(Request $request): View|JsonResponse
     {
         // 排序模式：回傳精簡 JSON 資料
@@ -127,6 +129,7 @@ class ServiceController extends Controller
         unset($validated['items'], $validated['features_items'], $validated['faq_questions'], $validated['faq_answers']);
 
         $service = Service::create($validated);
+        $this->syncOrder(Service::class, $service->id, $service->order);
 
         // 建立包含項目
         foreach ($items as $index => $item) {
@@ -228,6 +231,7 @@ class ServiceController extends Controller
         unset($validated['items'], $validated['features_items'], $validated['faq_questions'], $validated['faq_answers']);
 
         $service->update($validated);
+        $this->syncOrder(Service::class, $service->id, $service->order);
 
         // 刪除舊項目並重建
         $service->items()->delete();

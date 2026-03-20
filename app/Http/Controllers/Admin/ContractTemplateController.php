@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ContractTemplate;
+use App\Traits\ReordersItems;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -11,6 +12,7 @@ use Illuminate\View\View;
 
 class ContractTemplateController extends Controller
 {
+    use ReordersItems;
     /**
      * 範本列表
      */
@@ -63,7 +65,8 @@ class ContractTemplateController extends Controller
         $validated['is_active'] = $request->has('is_active');
         $validated['order'] = $validated['order'] ?? ContractTemplate::max('order') + 1;
 
-        ContractTemplate::create($validated);
+        $contractTemplate = ContractTemplate::create($validated);
+        $this->syncOrder(ContractTemplate::class, $contractTemplate->id, $contractTemplate->order);
 
         flash_success('合約範本建立成功');
 
@@ -96,6 +99,7 @@ class ContractTemplateController extends Controller
         $validated['is_active'] = $request->has('is_active');
 
         $contractTemplate->update($validated);
+        $this->syncOrder(ContractTemplate::class, $contractTemplate->id, $contractTemplate->order);
 
         flash_success('合約範本更新成功');
 

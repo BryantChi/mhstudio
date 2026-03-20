@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Traits\ReordersItems;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -11,6 +12,7 @@ use Illuminate\View\View;
 
 class CategoryController extends Controller
 {
+    use ReordersItems;
     /**
      * Display a listing of the resource.
      */
@@ -91,7 +93,8 @@ class CategoryController extends Controller
 
         $validated['order'] = $validated['order'] ?? Category::max('order') + 1;
 
-        Category::create($validated);
+        $category = Category::create($validated);
+        $this->syncOrder(Category::class, $category->id, $category->order);
 
         flash_success('分類建立成功');
 
@@ -152,6 +155,7 @@ class CategoryController extends Controller
         }
 
         $category->update($validated);
+        $this->syncOrder(Category::class, $category->id, $category->order);
 
         flash_success('分類更新成功');
 

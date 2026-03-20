@@ -8,6 +8,7 @@ use App\Models\ProjectFile;
 use App\Models\ProjectImage;
 use App\Models\ProjectMilestone;
 use App\Models\User;
+use App\Traits\ReordersItems;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -17,6 +18,7 @@ use Illuminate\View\View;
 
 class ProjectController extends Controller
 {
+    use ReordersItems;
     public function index(Request $request): View|JsonResponse
     {
         // _sortable 模式：回傳 JSON 給拖曳排序面板
@@ -111,7 +113,8 @@ class ProjectController extends Controller
 
         $validated['order'] = $validated['order'] ?? Project::max('order') + 1;
 
-        Project::create($validated);
+        $project = Project::create($validated);
+        $this->syncOrder(Project::class, $project->id, $project->order);
 
         flash_success('作品建立成功');
 
@@ -170,6 +173,7 @@ class ProjectController extends Controller
         $validated['is_featured'] = $request->boolean('is_featured');
 
         $project->update($validated);
+        $this->syncOrder(Project::class, $project->id, $project->order);
 
         flash_success('作品更新成功');
 

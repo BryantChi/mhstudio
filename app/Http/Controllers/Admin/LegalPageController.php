@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\LegalPage;
+use App\Traits\ReordersItems;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -11,6 +12,7 @@ use Illuminate\View\View;
 
 class LegalPageController extends Controller
 {
+    use ReordersItems;
     /**
      * 法律頁面列表
      */
@@ -66,7 +68,8 @@ class LegalPageController extends Controller
         $validated['is_active'] = $request->boolean('is_active');
         $validated['order'] = $validated['order'] ?? LegalPage::max('order') + 1;
 
-        LegalPage::create($validated);
+        $legalPage = LegalPage::create($validated);
+        $this->syncOrder(LegalPage::class, $legalPage->id, $legalPage->order);
 
         flash_success('法律頁面建立成功');
 
@@ -102,6 +105,7 @@ class LegalPageController extends Controller
         $validated['is_active'] = $request->boolean('is_active');
 
         $legalPage->update($validated);
+        $this->syncOrder(LegalPage::class, $legalPage->id, $legalPage->order);
 
         flash_success('法律頁面更新成功');
 
