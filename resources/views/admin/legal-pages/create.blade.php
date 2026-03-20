@@ -131,6 +131,7 @@
 </form>
 
 @push('scripts')
+@include('admin.partials.tinymce', ['selector' => 'content'])
 <script>
 // 自動從標題生成 slug
 document.getElementById('title')?.addEventListener('input', function() {

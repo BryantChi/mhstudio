@@ -98,4 +98,7 @@
         </div>
     </div>
 </form>
+@push('scripts')
+@include('admin.partials.tinymce', ['selector' => 'content'])
+@endpush
 @endsection

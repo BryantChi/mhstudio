@@ -144,6 +144,10 @@
     </div>
 </form>
 
+@push('scripts')
+@include('admin.partials.tinymce', ['selector' => 'content'])
+@endpush
+
 @push('styles')
 <style>
 #content { font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, monospace; font-size: .875rem; }

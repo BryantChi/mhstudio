@@ -401,6 +401,7 @@
 @include('admin.media.partials.picker-modal')
 
 @push('scripts')
+@include('admin.partials.tinymce', ['selector' => 'content'])
 <script>
     // 自動生成 Slug
     document.getElementById('title').addEventListener('blur', function() {

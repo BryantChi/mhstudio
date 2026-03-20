@@ -373,6 +373,7 @@
 @include('admin.media.partials.picker-modal')
 
 @push('scripts')
+@include('admin.partials.tinymce', ['selector' => 'content'])
 {{-- SortableJS CDN for gallery drag-and-drop --}}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script>

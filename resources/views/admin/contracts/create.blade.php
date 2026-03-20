@@ -302,6 +302,7 @@
 </form>
 
 @push('scripts')
+@include('admin.partials.tinymce', ['selector' => 'content'])
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     let itemIndex = 1;
