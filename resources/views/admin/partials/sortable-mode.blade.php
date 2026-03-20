@@ -23,7 +23,7 @@
 @once
 @push('styles')
 <style>
-/* ===== Sortable Mode ===== */
+/* ===== Sortable Mode v2 ===== */
 .sortable-overlay {
     display: none;
     position: fixed;
@@ -36,11 +36,11 @@
 
 .sortable-panel {
     background: var(--cui-card-bg, #fff);
-    border-radius: .5rem;
-    box-shadow: 0 1rem 3rem rgba(0,0,0,.2);
-    width: 90%;
-    max-width: 600px;
-    max-height: 80vh;
+    border-radius: .75rem;
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.25);
+    width: 92%;
+    max-width: 640px;
+    max-height: 85vh;
     display: flex;
     flex-direction: column;
 }
@@ -57,7 +57,7 @@
 .sortable-panel-body {
     flex: 1;
     overflow-y: auto;
-    padding: .5rem 0;
+    padding: .25rem 0;
 }
 
 .sortable-panel-footer {
@@ -73,6 +73,9 @@
     font-size: .85rem;
     color: var(--cui-text-medium-emphasis, #768192);
     background: var(--cui-tertiary-bg, #f0f4f7);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
 }
 
 /* Sortable list items */
@@ -82,47 +85,62 @@
     display: flex;
     align-items: center;
     gap: .75rem;
-    padding: .625rem 1.25rem;
+    padding: .875rem 1.25rem;
     cursor: grab;
-    border-bottom: 1px solid var(--cui-border-color, #d8dbe0);
-    transition: background .1s;
+    border-bottom: 1px solid var(--cui-border-color-translucent, rgba(0,0,0,.08));
+    transition: background .15s, box-shadow .15s;
     user-select: none;
 }
 .sortable-item:last-child { border-bottom: none; }
-.sortable-item:hover { background: var(--cui-tertiary-bg, #f0f4f7); }
+.sortable-item:hover {
+    background: var(--cui-primary-bg-subtle, #cfe2ff);
+}
 .sortable-item:active { cursor: grabbing; }
 
 .sortable-item .drag-handle {
     color: var(--cui-text-medium-emphasis, #768192);
     flex-shrink: 0;
-    font-size: 1.1rem;
+    font-size: 1.25rem;
+    line-height: 1;
+    opacity: .5;
+    transition: opacity .15s;
 }
+.sortable-item:hover .drag-handle { opacity: 1; }
 
 .sortable-item .item-title {
     flex: 1;
-    font-size: .9rem;
+    font-size: .9375rem;
     font-weight: 500;
+    line-height: 1.3;
 }
 
 .sortable-item .item-order {
     flex-shrink: 0;
-    font-size: .75rem;
-    color: var(--cui-text-medium-emphasis, #768192);
-    background: var(--cui-tertiary-bg, #f0f4f7);
-    padding: .15rem .5rem;
-    border-radius: .25rem;
-    min-width: 2rem;
+    font-size: .8125rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--cui-primary, #3b82f6);
+    padding: .2rem .6rem;
+    border-radius: 1rem;
+    min-width: 1.75rem;
     text-align: center;
+    line-height: 1.3;
 }
 
 /* SortableJS ghost & chosen */
 .sortable-ghost {
-    opacity: .4;
+    opacity: .3;
     background: var(--cui-primary-bg-subtle, #cfe2ff) !important;
 }
 .sortable-chosen {
-    background: var(--cui-light, #ebedef) !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    background: #fff !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,.15);
+    border-radius: .375rem;
+    z-index: 10;
+}
+.sortable-drag {
+    box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    border-radius: .375rem;
 }
 
 /* Loading state */
@@ -132,6 +150,13 @@
     justify-content: center;
     padding: 3rem;
     color: var(--cui-text-medium-emphasis, #768192);
+}
+
+/* Touch-friendly: larger tap targets on mobile */
+@media (max-width: 768px) {
+    .sortable-item { padding: 1rem 1.25rem; }
+    .sortable-item .item-title { font-size: 1rem; }
+    .sortable-panel { width: 96%; max-height: 90vh; }
 }
 </style>
 @endpush
@@ -148,7 +173,8 @@
             <button type="button" class="btn-close" id="sortableCancel" aria-label="關閉"></button>
         </div>
         <div class="sortable-hint">
-            拖曳項目調整順序，完成後點擊「儲存排序」
+            <svg class="icon" style="width:16px;height:16px"><use xlink:href="/assets/icons/free.svg#cil-cursor-move"></use></svg>
+            直接拖曳項目調整順序，完成後點擊「儲存排序」
         </div>
         <div class="sortable-panel-body" id="sortablePanelBody">
             <div class="sortable-loading" id="sortableLoading">
@@ -168,7 +194,7 @@
 </div>
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script src="/vendor/sortable/Sortable.min.js"></script>
 <script>
 (function() {
     var FETCH_URL = @json($fetchUrl);
@@ -197,6 +223,7 @@
         document.body.style.overflow = '';
         isDirty = false;
         saveBtn.disabled = true;
+        saveBtn.innerHTML = '<svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-save"></use></svg>儲存排序';
         if (sortableInstance) {
             sortableInstance.destroy();
             sortableInstance = null;
@@ -240,10 +267,13 @@
     function initSortable() {
         if (sortableInstance) sortableInstance.destroy();
         sortableInstance = new Sortable(listEl, {
-            animation: 150,
-            handle: '.drag-handle',
+            animation: 200,
+            delay: 50,
+            delayOnTouchOnly: true,
+            touchStartThreshold: 3,
             ghostClass: 'sortable-ghost',
             chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
             onEnd: function() {
                 isDirty = true;
                 saveBtn.disabled = false;

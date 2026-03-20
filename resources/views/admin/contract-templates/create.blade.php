@@ -73,8 +73,8 @@
                     <div class="mb-3">
                         <label for="order" class="form-label">排序</label>
                         <input type="number" class="form-control" id="order" name="order"
-                               value="{{ old('order', 0) }}" min="0">
-                        <small class="text-muted">數字越小越前面</small>
+                               value="{{ old('order', 0) }}" readonly>
+                        <div class="form-text">排序由列表頁的「拖曳排序」功能管理</div>
                     </div>
                     <div class="mb-3">
                         <div class="form-check form-switch">
