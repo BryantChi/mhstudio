@@ -67,7 +67,7 @@ class ContractTemplateController extends Controller
 
         flash_success('合約範本建立成功');
 
-        return redirect()->route('admin.contract-templates.index');
+        return redirect(admin_list_url('admin.contract-templates.index'));
     }
 
     /**
@@ -99,7 +99,7 @@ class ContractTemplateController extends Controller
 
         flash_success('合約範本更新成功');
 
-        return redirect()->route('admin.contract-templates.index');
+        return redirect(admin_list_url('admin.contract-templates.index'));
     }
 
     /**
@@ -111,7 +111,7 @@ class ContractTemplateController extends Controller
 
         flash_success('合約範本已刪除');
 
-        return redirect()->route('admin.contract-templates.index');
+        return redirect(admin_list_url('admin.contract-templates.index'));
     }
 
     /**

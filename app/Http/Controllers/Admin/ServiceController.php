@@ -142,7 +142,7 @@ class ServiceController extends Controller
 
         flash_success('服務項目建立成功');
 
-        return redirect()->route('admin.services.index', $service->type ? ['type' => $service->type] : []);
+        return redirect(admin_list_url('admin.services.index'), $service->type ? ['type' => $service->type] : []);
     }
 
     public function edit(Service $service): View
@@ -244,7 +244,7 @@ class ServiceController extends Controller
 
         flash_success('服務項目更新成功');
 
-        return redirect()->route('admin.services.index', $service->type ? ['type' => $service->type] : []);
+        return redirect(admin_list_url('admin.services.index'), $service->type ? ['type' => $service->type] : []);
     }
 
     public function destroy(Service $service): RedirectResponse
@@ -253,7 +253,7 @@ class ServiceController extends Controller
         $service->delete();
         flash_success('服務項目已刪除');
 
-        return redirect()->route('admin.services.index', $type ? ['type' => $type] : []);
+        return redirect(admin_list_url('admin.services.index'), $type ? ['type' => $type] : []);
     }
 
     /**

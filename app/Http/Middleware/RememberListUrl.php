@@ -14,8 +14,7 @@ class RememberListUrl
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $response = $next($request);
-
+        // 在處理請求之前存入 session，確保 StartSession middleware 能正確保存
         if ($request->isMethod('get')) {
             $routeName = $request->route()?->getName();
             if ($routeName && str_ends_with($routeName, '.index')) {
@@ -24,6 +23,6 @@ class RememberListUrl
             }
         }
 
-        return $response;
+        return $next($request);
     }
 }

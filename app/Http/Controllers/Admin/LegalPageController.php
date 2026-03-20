@@ -70,7 +70,7 @@ class LegalPageController extends Controller
 
         flash_success('法律頁面建立成功');
 
-        return redirect()->route('admin.legal-pages.index');
+        return redirect(admin_list_url('admin.legal-pages.index'));
     }
 
     /**
@@ -105,7 +105,7 @@ class LegalPageController extends Controller
 
         flash_success('法律頁面更新成功');
 
-        return redirect()->route('admin.legal-pages.index');
+        return redirect(admin_list_url('admin.legal-pages.index'));
     }
 
     /**
@@ -117,7 +117,7 @@ class LegalPageController extends Controller
 
         flash_success('法律頁面已刪除');
 
-        return redirect()->route('admin.legal-pages.index');
+        return redirect(admin_list_url('admin.legal-pages.index'));
     }
 
     /**

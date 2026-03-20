@@ -84,7 +84,7 @@ class TimeEntryController extends Controller
         TimeEntry::create($validated);
         flash_success('工時紀錄已新增');
 
-        return redirect()->route('admin.time-entries.index');
+        return redirect(admin_list_url('admin.time-entries.index'));
     }
 
     /**
@@ -108,7 +108,7 @@ class TimeEntryController extends Controller
         $timeEntry->update($validated);
         flash_success('工時紀錄已更新');
 
-        return redirect()->route('admin.time-entries.index');
+        return redirect(admin_list_url('admin.time-entries.index'));
     }
 
     /**
@@ -119,7 +119,7 @@ class TimeEntryController extends Controller
         $timeEntry->delete();
         flash_success('工時紀錄已刪除');
 
-        return redirect()->route('admin.time-entries.index');
+        return redirect(admin_list_url('admin.time-entries.index'));
     }
 
     /**

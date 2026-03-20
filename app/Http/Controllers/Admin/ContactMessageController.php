@@ -65,7 +65,7 @@ class ContactMessageController extends Controller
         $contactMessage->delete();
         flash_success('訊息已刪除');
 
-        return redirect()->route('admin.contact-messages.index');
+        return redirect(admin_list_url('admin.contact-messages.index'));
     }
 
     public function markAllRead(): RedirectResponse
@@ -77,6 +77,6 @@ class ContactMessageController extends Controller
 
         flash_success('所有訊息已標記為已讀');
 
-        return redirect()->route('admin.contact-messages.index');
+        return redirect(admin_list_url('admin.contact-messages.index'));
     }
 }
