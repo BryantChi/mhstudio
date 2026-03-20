@@ -7,7 +7,6 @@ if (! function_exists('admin_list_url')) {
     function admin_list_url(string $indexRoute): string
     {
         $prefix = str_replace('.index', '', $indexRoute);
-
         return session("admin_list.{$prefix}", route($indexRoute));
     }
 }

@@ -23,6 +23,14 @@
 
     @stack('styles')
 </head>
+{{-- 記錄列表頁 URL（含頁數）供編輯後返回 --}}
+@php
+    $currentRoute = Route::currentRouteName() ?? '';
+    if (request()->isMethod('get') && str_ends_with($currentRoute, '.index')) {
+        $prefix = str_replace('.index', '', $currentRoute);
+        session()->put("admin_list.{$prefix}", request()->fullUrl());
+    }
+@endphp
 <body>
     <div class="sidebar sidebar-dark sidebar-fixed" id="sidebar">
         @include('layouts.partials.sidebar')
