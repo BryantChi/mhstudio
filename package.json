@@ -4,7 +4,8 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "postinstall": "cp -r node_modules/tinymce/{tinymce.min.js,skins,themes,icons,plugins,models} public/vendor/tinymce/ 2>/dev/null || true"
     },
     "devDependencies": {
         "axios": "^1.6.4",
@@ -19,6 +20,6 @@
         "chart.js": "^4.4.1",
         "simplebar": "^6.2.5",
         "sortablejs": "^1.15.7",
-        "tinymce": "^6.8.2"
+        "tinymce": "^6.8.6"
     }
 }

@@ -352,6 +352,7 @@
 @include('admin.media.partials.picker-modal')
 
 @push('scripts')
+@include('admin.partials.tinymce', ['selector' => 'content'])
 <script>
     // 自動生成 Slug（僅在 slug 為空時）
     document.getElementById('title').addEventListener('blur', function() {

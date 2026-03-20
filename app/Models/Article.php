@@ -58,6 +58,18 @@ class Article extends Model implements HasMedia
             if (empty($article->user_id)) {
                 $article->user_id = auth()->id();
             }
+
+            // 狀態為 published 但沒設 published_at 時，自動填入現在時間
+            if ($article->status === 'published' && empty($article->published_at)) {
+                $article->published_at = now();
+            }
+        });
+
+        static::updating(function ($article) {
+            // 從其他狀態改為 published 但沒設 published_at 時，自動填入
+            if ($article->isDirty('status') && $article->status === 'published' && empty($article->published_at)) {
+                $article->published_at = now();
+            }
         });
     }
 

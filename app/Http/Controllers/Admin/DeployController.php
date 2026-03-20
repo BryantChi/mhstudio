@@ -79,9 +79,15 @@ class DeployController extends Controller
             Artisan::call('view:cache');
             $viewOutput = trim(Artisan::output());
 
+            // 修復已發布但缺少 published_at 的文章
+            $fixed = \App\Models\Article::where('status', 'published')
+                ->whereNull('published_at')
+                ->update(['published_at' => now()]);
+            $fixOutput = $fixed > 0 ? "修復了 {$fixed} 篇缺少發布時間的文章" : '';
+
             return response()->json([
                 'success' => true,
-                'output' => implode("\n", array_filter([$clearOutput, $optimizeOutput, $viewOutput])),
+                'output' => implode("\n", array_filter([$clearOutput, $optimizeOutput, $viewOutput, $fixOutput])),
             ]);
         } catch (\Throwable $e) {
             return response()->json([
