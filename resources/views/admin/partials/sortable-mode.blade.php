@@ -219,11 +219,25 @@
 
 /* Touch-friendly on mobile */
 @media (max-width: 768px) {
-    .sortable-panel { width: 98%; max-height: 92vh; border-radius: .5rem; }
-    .sortable-item { padding: .625rem; }
-    .sortable-item .drag-zone { min-height: 2.75rem; padding: .5rem .25rem; }
-    .sortable-item .item-title { font-size: .9375rem; }
-    .sortable-item .move-btn { width: 2rem; height: 1.75rem; }
+    .sortable-overlay.active { align-items: flex-end; }
+    .sortable-panel {
+        width: 100%;
+        max-height: 80vh;
+        border-radius: .75rem .75rem 0 0;
+        box-shadow: 0 -4px 20px rgba(0,0,0,.2);
+    }
+    .sortable-panel-header { padding: .75rem 1rem; }
+    .sortable-panel-header h5 { font-size: .9375rem; }
+    .sortable-hint { padding: .375rem 1rem; font-size: .75rem; }
+    .sortable-panel-body { padding: .375rem; }
+    .sortable-panel-footer { padding: .5rem 1rem; }
+    .sortable-item { padding: .375rem .5rem; margin-bottom: .25rem; }
+    .sortable-item .drag-zone { min-height: 2.25rem; padding: .25rem 0; gap: .5rem; }
+    .sortable-item .item-title { font-size: .8125rem; }
+    .sortable-item .item-order-badge { width: 1.5rem; height: 1.5rem; font-size: .6875rem; }
+    .sortable-item .drag-icon svg { width: 14px; height: 14px; }
+    .sortable-item .move-btn { width: 1.5rem; height: 1.25rem; }
+    .sortable-item .move-btn svg { width: 10px; height: 10px; }
 }
 </style>
 @endpush
