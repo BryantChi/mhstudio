@@ -68,7 +68,7 @@ class ProjectController extends Controller
             'newest' => $query->orderByDesc('created_at'),
             'oldest' => $query->orderBy('created_at'),
             'title' => $query->orderBy('title'),
-            'order' => $query->orderBy('order'),
+            'featured' => $query->orderByDesc('is_featured')->orderBy('order'),
             default => $query->orderBy('order'),
         };
 

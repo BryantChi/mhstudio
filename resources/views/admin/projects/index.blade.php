@@ -110,11 +110,11 @@
             <div class="col-lg-2 col-md-3 col-6">
                 <label class="form-label small text-muted mb-1">排序</label>
                 <select class="form-select" name="sort">
-                    <option value="default" {{ request('sort', 'default') == 'default' ? 'selected' : '' }}>預設（精選優先）</option>
+                    <option value="default" {{ request('sort', 'default') == 'default' ? 'selected' : '' }}>排序編號</option>
                     <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>最新建立</option>
                     <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>最早建立</option>
                     <option value="title" {{ request('sort') == 'title' ? 'selected' : '' }}>標題 A→Z</option>
-                    <option value="order" {{ request('sort') == 'order' ? 'selected' : '' }}>排序編號</option>
+                    <option value="featured" {{ request('sort') == 'featured' ? 'selected' : '' }}>精選優先</option>
                 </select>
             </div>
             <div class="col-lg-2 col-md-3 col-6">
