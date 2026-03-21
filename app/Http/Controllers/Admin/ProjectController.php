@@ -37,7 +37,8 @@ class ProjectController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('client', 'like', "%{$search}%");
+                  ->orWhere('client', 'like', "%{$search}%")
+                  ->orWhere('excerpt', 'like', "%{$search}%");
             });
         }
 
@@ -53,14 +54,41 @@ class ProjectController extends Controller
             $query->where('visibility', $request->visibility);
         }
 
-        $projects = $query->orderByDesc('is_featured')->orderByDesc('created_at')->orderBy('order')->paginate(15);
+        if ($request->filled('featured')) {
+            $query->where('is_featured', $request->featured === '1');
+        }
+
+        // 排序
+        $sort = $request->get('sort', 'default');
+        $query = match ($sort) {
+            'newest' => $query->orderByDesc('created_at'),
+            'oldest' => $query->orderBy('created_at'),
+            'title' => $query->orderBy('title'),
+            'order' => $query->orderBy('order'),
+            default => $query->orderByDesc('is_featured')->orderByDesc('created_at')->orderBy('order'),
+        };
+
+        $projects = $query->paginate(15)->withQueryString();
+
         $categories = Project::whereNotNull('category')
             ->where('category', '!=', '')
             ->distinct()
             ->orderBy('category')
             ->pluck('category');
 
-        return view('admin.projects.index', compact('projects', 'categories'));
+        // 統計數據
+        $counts = [
+            'total' => Project::count(),
+            'published' => Project::where('status', 'published')->count(),
+            'draft' => Project::where('status', 'draft')->count(),
+            'public' => Project::where('visibility', 'public')->count(),
+            'showcase' => Project::where('visibility', 'showcase')->count(),
+            'unlisted' => Project::where('visibility', 'unlisted')->count(),
+            'hidden' => Project::where('visibility', 'hidden')->count(),
+            'featured' => Project::where('is_featured', true)->count(),
+        ];
+
+        return view('admin.projects.index', compact('projects', 'categories', 'counts'));
     }
 
     /**

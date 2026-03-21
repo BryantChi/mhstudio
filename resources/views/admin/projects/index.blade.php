@@ -31,24 +31,58 @@
     </div>
 </div>
 
+{{-- 快捷統計標籤 --}}
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a href="{{ route('admin.projects.index') }}" class="badge {{ !request()->hasAny(['status','visibility','featured','category','search']) ? 'bg-primary' : 'bg-light text-dark' }} text-decoration-none" style="font-size:.8125rem;padding:.45rem .75rem;">
+        全部 <span class="ms-1 opacity-75">{{ $counts['total'] }}</span>
+    </a>
+    <a href="{{ route('admin.projects.index', ['status' => 'published']) }}" class="badge {{ request('status') == 'published' ? 'bg-success' : 'bg-light text-dark' }} text-decoration-none" style="font-size:.8125rem;padding:.45rem .75rem;">
+        已發布 <span class="ms-1 opacity-75">{{ $counts['published'] }}</span>
+    </a>
+    <a href="{{ route('admin.projects.index', ['status' => 'draft']) }}" class="badge {{ request('status') == 'draft' ? 'bg-secondary' : 'bg-light text-dark' }} text-decoration-none" style="font-size:.8125rem;padding:.45rem .75rem;">
+        草稿 <span class="ms-1 opacity-75">{{ $counts['draft'] }}</span>
+    </a>
+    <span class="border-start mx-1"></span>
+    <a href="{{ route('admin.projects.index', ['visibility' => 'public']) }}" class="badge {{ request('visibility') == 'public' ? 'bg-success' : 'bg-light text-dark' }} text-decoration-none" style="font-size:.8125rem;padding:.45rem .75rem;">
+        公開 <span class="ms-1 opacity-75">{{ $counts['public'] }}</span>
+    </a>
+    @if($counts['showcase'] > 0)
+    <a href="{{ route('admin.projects.index', ['visibility' => 'showcase']) }}" class="badge {{ request('visibility') == 'showcase' ? 'bg-info' : 'bg-light text-dark' }} text-decoration-none" style="font-size:.8125rem;padding:.45rem .75rem;">
+        僅展示 <span class="ms-1 opacity-75">{{ $counts['showcase'] }}</span>
+    </a>
+    @endif
+    @if($counts['unlisted'] > 0)
+    <a href="{{ route('admin.projects.index', ['visibility' => 'unlisted']) }}" class="badge {{ request('visibility') == 'unlisted' ? 'bg-warning text-dark' : 'bg-light text-dark' }} text-decoration-none" style="font-size:.8125rem;padding:.45rem .75rem;">
+        僅限連結 <span class="ms-1 opacity-75">{{ $counts['unlisted'] }}</span>
+    </a>
+    @endif
+    @if($counts['hidden'] > 0)
+    <a href="{{ route('admin.projects.index', ['visibility' => 'hidden']) }}" class="badge {{ request('visibility') == 'hidden' ? 'bg-dark' : 'bg-light text-dark' }} text-decoration-none" style="font-size:.8125rem;padding:.45rem .75rem;">
+        隱藏 <span class="ms-1 opacity-75">{{ $counts['hidden'] }}</span>
+    </a>
+    @endif
+    @if($counts['featured'] > 0)
+    <span class="border-start mx-1"></span>
+    <a href="{{ route('admin.projects.index', ['featured' => '1']) }}" class="badge {{ request('featured') == '1' ? 'bg-warning text-dark' : 'bg-light text-dark' }} text-decoration-none" style="font-size:.8125rem;padding:.45rem .75rem;">
+        <svg class="me-1" style="width:12px;height:12px;vertical-align:-1px;" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" stroke="none"/></svg>
+        精選 <span class="ms-1 opacity-75">{{ $counts['featured'] }}</span>
+    </a>
+    @endif
+</div>
+
 <div class="card">
     <div class="card-header">
-        <form method="GET" action="{{ route('admin.projects.index') }}" class="row g-3">
-            <div class="col-md-3">
+        <form method="GET" action="{{ route('admin.projects.index') }}" class="row g-2 align-items-end">
+            <div class="col-lg-4 col-md-6">
+                <label class="form-label small text-muted mb-1">關鍵字</label>
                 <input type="text"
                        class="form-control"
                        name="search"
-                       placeholder="搜尋作品標題或客戶"
+                       placeholder="搜尋標題、客戶、摘要..."
                        value="{{ request('search') }}">
             </div>
-            <div class="col-md-3">
-                <select class="form-select" name="status">
-                    <option value="">全部狀態</option>
-                    <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>草稿</option>
-                    <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>已發布</option>
-                </select>
-            </div>
-            <div class="col-md-2">
+            <div class="col-lg-2 col-md-3 col-6">
+                <label class="form-label small text-muted mb-1">分類</label>
                 <select class="form-select" name="category">
                     <option value="">全部分類</option>
                     @foreach($categories as $cat)
@@ -56,7 +90,8 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-2">
+            <div class="col-lg-2 col-md-3 col-6">
+                <label class="form-label small text-muted mb-1">可見性</label>
                 <select class="form-select" name="visibility">
                     <option value="">全部可見性</option>
                     <option value="public" {{ request('visibility') == 'public' ? 'selected' : '' }}>公開</option>
@@ -65,15 +100,36 @@
                     <option value="hidden" {{ request('visibility') == 'hidden' ? 'selected' : '' }}>隱藏</option>
                 </select>
             </div>
-            <div class="col-md-auto">
-                <button type="submit" class="btn btn-secondary">
-                    <svg class="icon">
-                        <use xlink:href="/assets/icons/free.svg#cil-search"></use>
-                    </svg>
-                    搜尋
-                </button>
-                <a href="{{ route('admin.projects.index') }}" class="btn btn-light">清除</a>
+            <div class="col-lg-2 col-md-3 col-6">
+                <label class="form-label small text-muted mb-1">排序</label>
+                <select class="form-select" name="sort">
+                    <option value="default" {{ request('sort', 'default') == 'default' ? 'selected' : '' }}>預設（精選優先）</option>
+                    <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>最新建立</option>
+                    <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>最早建立</option>
+                    <option value="title" {{ request('sort') == 'title' ? 'selected' : '' }}>標題 A→Z</option>
+                    <option value="order" {{ request('sort') == 'order' ? 'selected' : '' }}>排序編號</option>
+                </select>
             </div>
+            <div class="col-lg-2 col-md-3 col-6">
+                <div class="d-flex gap-1">
+                    <button type="submit" class="btn btn-secondary flex-fill">
+                        <svg class="icon"><use xlink:href="/assets/icons/free.svg#cil-search"></use></svg>
+                        搜尋
+                    </button>
+                    @if(request()->hasAny(['search','status','category','visibility','featured','sort']))
+                    <a href="{{ route('admin.projects.index') }}" class="btn btn-light" data-coreui-toggle="tooltip" title="清除篩選">
+                        <svg class="icon"><use xlink:href="/assets/icons/free.svg#cil-x"></use></svg>
+                    </a>
+                    @endif
+                </div>
+            </div>
+            {{-- 保留隱藏的篩選值（從快捷標籤帶過來的） --}}
+            @if(request('status') && !request('visibility'))
+            <input type="hidden" name="status" value="{{ request('status') }}">
+            @endif
+            @if(request('featured'))
+            <input type="hidden" name="featured" value="{{ request('featured') }}">
+            @endif
         </form>
     </div>
 
