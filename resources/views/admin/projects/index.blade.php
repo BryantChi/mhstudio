@@ -21,6 +21,15 @@
             </svg>
             新增作品
         </a>
+        @if(auth()->user()->isSuperAdmin())
+        <a href="{{ route('admin.projects.export', request()->only(['status','visibility','category'])) }}"
+           class="btn btn-sm btn-outline-success ms-2"
+           data-coreui-toggle="tooltip"
+           title="匯出目前篩選結果為 CSV">
+            <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-cloud-download"></use></svg>
+            匯出
+        </a>
+        @endif
         @include('admin.partials.sortable-mode', [
             'reorderUrl' => route('admin.projects.reorder'),
             'fetchUrl' => route('admin.projects.index', ['_sortable' => 1]),

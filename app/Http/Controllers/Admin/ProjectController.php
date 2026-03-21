@@ -241,6 +241,71 @@ class ProjectController extends Controller
         return redirect(admin_list_url('admin.projects.index'));
     }
 
+    /**
+     * 匯出作品集 CSV（僅 super-admin）
+     */
+    public function export(Request $request)
+    {
+        $query = Project::orderBy('order');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('visibility')) {
+            if ($request->visibility === 'public') {
+                $query->where(function ($q) {
+                    $q->where('visibility', 'public')->orWhereNull('visibility');
+                });
+            } else {
+                $query->where('visibility', $request->visibility);
+            }
+        }
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        $projects = $query->get();
+
+        $headers = ['ID', '標題', 'Slug', '客戶', '分類', '狀態', '可見性', '精選', '技術棧', '摘要', '網址', '完成日期', '排序', '建立時間'];
+        $csv = "\xEF\xBB\xBF"; // UTF-8 BOM for Excel
+        $csv .= implode(',', $headers)."\n";
+
+        foreach ($projects as $p) {
+            $csv .= implode(',', [
+                $p->id,
+                $this->csvValue($p->title),
+                $this->csvValue($p->slug),
+                $this->csvValue($p->client ?? ''),
+                $this->csvValue($p->category ?? ''),
+                $p->status,
+                $p->visibility ?? 'public',
+                $p->is_featured ? '是' : '否',
+                $this->csvValue(is_array($p->tech_stack) ? implode(', ', $p->tech_stack) : ''),
+                $this->csvValue(mb_substr(strip_tags($p->excerpt ?? ''), 0, 200)),
+                $this->csvValue($p->url ?? ''),
+                $p->completed_at?->format('Y-m-d') ?? '',
+                $p->order + 1,
+                $p->created_at->format('Y-m-d H:i'),
+            ])."\n";
+        }
+
+        $filename = 'projects_'.date('Y-m-d_His').'.csv';
+
+        return response($csv)
+            ->header('Content-Type', 'text/csv; charset=UTF-8')
+            ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
+    }
+
+    private function csvValue(string $value): string
+    {
+        $value = str_replace('"', '""', $value);
+        if (preg_match('/^[=+\-@\t\r]/', $value)) {
+            $value = "'".$value;
+        }
+
+        return '"'.$value.'"';
+    }
+
     /* ===== 圖片庫管理 ===== */
 
     /**

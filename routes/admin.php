@@ -133,6 +133,9 @@ Route::prefix(config('admin.prefix', 'admin'))
 
         // 作品集管理
         Route::post('projects/reorder', [ProjectController::class, 'reorder'])->name('projects.reorder');
+        Route::get('projects/export', [ProjectController::class, 'export'])
+            ->name('projects.export')
+            ->middleware(\App\Http\Middleware\EnsureSuperAdmin::class);
         Route::resource('projects', ProjectController::class);
 
         // 專案客戶管理
