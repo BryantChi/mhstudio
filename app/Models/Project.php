@@ -28,6 +28,8 @@ class Project extends Model
         'category',
         'status',
         'is_featured',
+        'visibility',
+        'exclude_from_search',
         'order',
         'completed_at',
     ];
@@ -35,6 +37,7 @@ class Project extends Model
     protected $casts = [
         'tech_stack' => 'array',
         'is_featured' => 'boolean',
+        'exclude_from_search' => 'boolean',
         'completed_at' => 'date',
     ];
 
@@ -81,7 +84,7 @@ class Project extends Model
             'meta_title' => $this->title . ' | ' . $siteName,
             'meta_description' => $description,
             'meta_keywords' => $keywords,
-            'meta_robots' => 'index, follow',
+            'meta_robots' => $this->exclude_from_search ? 'noindex, nofollow' : 'index, follow',
             'og_title' => $this->title,
             'og_description' => $description,
             'og_image' => $this->cover_image,
@@ -150,6 +153,14 @@ class Project extends Model
         $query->where('status', 'published');
     }
 
+    /**
+     * 前台可見（published + public）
+     */
+    public function scopePublicVisible(Builder $query): void
+    {
+        $query->where('status', 'published')->where('visibility', 'public');
+    }
+
     public function scopeFeatured(Builder $query): void
     {
         $query->where('is_featured', true);
@@ -194,6 +205,26 @@ class Project extends Model
             'published' => '已發布',
             'draft' => '草稿',
             default => '未知',
+        };
+    }
+
+    public function getVisibilityLabelAttribute(): string
+    {
+        return match ($this->visibility) {
+            'public' => '公開',
+            'unlisted' => '僅限連結',
+            'hidden' => '隱藏',
+            default => '公開',
+        };
+    }
+
+    public function getVisibilityColorAttribute(): string
+    {
+        return match ($this->visibility) {
+            'public' => 'success',
+            'unlisted' => 'warning',
+            'hidden' => 'secondary',
+            default => 'success',
         };
     }
 

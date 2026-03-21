@@ -36,7 +36,7 @@ class PageController extends Controller
         // 首頁資料快取 10 分鐘，減少重複 DB 查詢
         $homeData = Cache::remember('homepage_data', 600, function () {
             return [
-                'featuredProjects' => Project::published()->featured()->ordered()->take(3)->get(),
+                'featuredProjects' => Project::publicVisible()->featured()->ordered()->take(3)->get(),
                 'services' => Service::active()->ordered()->homepage()->get(),
                 'testimonials' => Testimonial::active()->ordered()->get(),
                 'latestArticles' => Article::published()
@@ -128,7 +128,8 @@ class PageController extends Controller
      */
     public function portfolio(Request $request): View
     {
-        $query = Project::published()->ordered();
+        // 列表頁只顯示 public 的作品（unlisted/hidden 不出現）
+        $query = Project::publicVisible()->ordered();
 
         // 後端分類篩選
         if ($request->filled('category')) {
@@ -137,8 +138,8 @@ class PageController extends Controller
 
         $projects = $query->paginate(15)->withQueryString();
 
-        // 分類清單（從所有已發布作品取得，不受篩選影響）
-        $categories = Project::published()
+        // 分類清單（從公開已發布作品取得）
+        $categories = Project::publicVisible()
             ->whereNotNull('category')
             ->where('category', '!=', '')
             ->distinct()
@@ -153,12 +154,15 @@ class PageController extends Controller
      */
     public function portfolioShow(string $slug): View
     {
+        // 允許 public 和 unlisted（有連結就能看），排除 hidden
         $project = Project::published()
+            ->whereIn('visibility', ['public', 'unlisted'])
             ->with(['images' => fn ($q) => $q->orderBy('order')])
             ->where('slug', $slug)
             ->firstOrFail();
 
-        $relatedProjects = \App\Models\Project::published()
+        // 相關作品只取 public
+        $relatedProjects = Project::publicVisible()
             ->where('id', '!=', $project->id)
             ->where('category', $project->category)
             ->take(3)

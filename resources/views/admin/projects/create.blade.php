@@ -140,6 +140,36 @@
                     </div>
 
                     <div class="mb-3">
+                        <label for="visibility" class="form-label">可見性</label>
+                        <select class="form-select @error('visibility') is-invalid @enderror"
+                                id="visibility"
+                                name="visibility">
+                            <option value="public" {{ old('visibility', 'public') == 'public' ? 'selected' : '' }}>公開 — 列表+搜尋引擎可見</option>
+                            <option value="unlisted" {{ old('visibility') == 'unlisted' ? 'selected' : '' }}>僅限連結 — 不出現在列表，有網址才能看</option>
+                            <option value="hidden" {{ old('visibility') == 'hidden' ? 'selected' : '' }}>隱藏 — 完全不公開</option>
+                        </select>
+                        <div class="form-text">合作案件建議選「僅限連結」或「隱藏」</div>
+                        @error('visibility')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   id="exclude_from_search"
+                                   name="exclude_from_search"
+                                   value="1"
+                                   {{ old('exclude_from_search') ? 'checked' : '' }}>
+                            <label class="form-check-label" for="exclude_from_search">
+                                搜尋引擎不收錄 (noindex)
+                            </label>
+                        </div>
+                        <div class="form-text">勾選後 Google 不會收錄此作品頁面</div>
+                    </div>
+
+                    <div class="mb-3">
                         <label for="categorySelect" class="form-label">分類</label>
                         <select class="form-select @error('category') is-invalid @enderror"
                                 id="categorySelect">

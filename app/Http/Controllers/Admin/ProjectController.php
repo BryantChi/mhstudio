@@ -102,6 +102,8 @@ class ProjectController extends Controller
             'category' => 'nullable|string|max:100',
             'status' => 'required|in:draft,published',
             'is_featured' => 'boolean',
+            'visibility' => 'nullable|in:public,unlisted,hidden',
+            'exclude_from_search' => 'boolean',
             'order' => 'integer',
             'completed_at' => 'nullable|date',
         ]);
@@ -112,6 +114,7 @@ class ProjectController extends Controller
         }
 
         $validated['order'] = $validated['order'] ?? Project::max('order') + 1;
+        $validated['exclude_from_search'] = $request->boolean('exclude_from_search');
 
         $project = Project::create($validated);
         $this->syncOrder(Project::class, $project->id, $project->order);
@@ -161,6 +164,8 @@ class ProjectController extends Controller
             'category' => 'nullable|string|max:100',
             'status' => 'required|in:draft,published',
             'is_featured' => 'boolean',
+            'visibility' => 'nullable|in:public,unlisted,hidden',
+            'exclude_from_search' => 'boolean',
             'order' => 'integer',
             'completed_at' => 'nullable|date',
         ]);
@@ -171,6 +176,7 @@ class ProjectController extends Controller
 
         // checkbox 未勾選時不會送出，手動補 false
         $validated['is_featured'] = $request->boolean('is_featured');
+        $validated['exclude_from_search'] = $request->boolean('exclude_from_search');
 
         $project->update($validated);
         $this->syncOrder(Project::class, $project->id, $project->order);
