@@ -85,9 +85,13 @@ class DeployController extends Controller
                 ->update(['published_at' => now()]);
             $fixOutput = $fixed > 0 ? "修復了 {$fixed} 篇缺少發布時間的文章" : '';
 
+            // 修復 visibility 為 NULL 的作品（設為 public）
+            $fixedVis = \App\Models\Project::whereNull('visibility')->update(['visibility' => 'public']);
+            $fixVisOutput = $fixedVis > 0 ? "修復了 {$fixedVis} 個缺少可見性的作品" : '';
+
             return response()->json([
                 'success' => true,
-                'output' => implode("\n", array_filter([$clearOutput, $optimizeOutput, $viewOutput, $fixOutput])),
+                'output' => implode("\n", array_filter([$clearOutput, $optimizeOutput, $viewOutput, $fixOutput, $fixVisOutput ?? ''])),
             ]);
         } catch (\Throwable $e) {
             return response()->json([

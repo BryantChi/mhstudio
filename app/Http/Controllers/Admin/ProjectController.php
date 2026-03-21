@@ -51,7 +51,13 @@ class ProjectController extends Controller
         }
 
         if ($request->filled('visibility')) {
-            $query->where('visibility', $request->visibility);
+            if ($request->visibility === 'public') {
+                $query->where(function ($q) {
+                    $q->where('visibility', 'public')->orWhereNull('visibility');
+                });
+            } else {
+                $query->where('visibility', $request->visibility);
+            }
         }
 
         if ($request->filled('featured')) {
@@ -76,12 +82,14 @@ class ProjectController extends Controller
             ->orderBy('category')
             ->pluck('category');
 
-        // 統計數據
+        // 統計數據（visibility 可能為 null，視為 public）
         $counts = [
             'total' => Project::count(),
             'published' => Project::where('status', 'published')->count(),
             'draft' => Project::where('status', 'draft')->count(),
-            'public' => Project::where('visibility', 'public')->count(),
+            'public' => Project::where(function ($q) {
+                $q->where('visibility', 'public')->orWhereNull('visibility');
+            })->count(),
             'showcase' => Project::where('visibility', 'showcase')->count(),
             'unlisted' => Project::where('visibility', 'unlisted')->count(),
             'hidden' => Project::where('visibility', 'hidden')->count(),
