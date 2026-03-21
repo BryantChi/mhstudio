@@ -59,7 +59,7 @@
                 @endif
 
                 <div class="content-preview">
-                    {!! nl2br(e($article->content)) !!}
+                    {!! $article->content !!}
                 </div>
             </div>
         </div>
