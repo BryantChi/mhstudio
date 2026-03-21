@@ -32,20 +32,20 @@
 </div>
 
 {{-- 快捷篩選標籤 --}}
-<div class="d-flex flex-wrap align-items-center gap-2 mb-3" style="font-size:.8125rem;">
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3" style="font-size:.9375rem;">
     {{-- 狀態 --}}
     <span class="text-muted fw-semibold">狀態：</span>
-    <a href="{{ route('admin.projects.index') }}" class="badge {{ !request()->hasAny(['status','visibility','featured','category','search']) ? 'bg-primary' : 'bg-light text-dark' }} text-decoration-none" style="padding:.4rem .7rem;">
+    <a href="{{ route('admin.projects.index') }}" class="badge {{ !request()->hasAny(['status','visibility','featured','category','search']) ? 'bg-primary' : 'bg-light text-dark' }} text-decoration-none" style="padding:.5rem .875rem;font-size:.9375rem;">
         全部 {{ $counts['total'] }}
     </a>
-    <a href="{{ route('admin.projects.index', ['status' => 'published']) }}" class="badge {{ request('status') == 'published' ? 'bg-success' : 'bg-light text-dark' }} text-decoration-none" style="padding:.4rem .7rem;">
+    <a href="{{ route('admin.projects.index', ['status' => 'published']) }}" class="badge {{ request('status') == 'published' ? 'bg-success' : 'bg-light text-dark' }} text-decoration-none" style="padding:.5rem .875rem;font-size:.9375rem;">
         已發布 {{ $counts['published'] }}
     </a>
-    <a href="{{ route('admin.projects.index', ['status' => 'draft']) }}" class="badge {{ request('status') == 'draft' ? 'bg-secondary' : 'bg-light text-dark' }} text-decoration-none" style="padding:.4rem .7rem;">
+    <a href="{{ route('admin.projects.index', ['status' => 'draft']) }}" class="badge {{ request('status') == 'draft' ? 'bg-secondary' : 'bg-light text-dark' }} text-decoration-none" style="padding:.5rem .875rem;font-size:.9375rem;">
         草稿 {{ $counts['draft'] }}
     </a>
     @if($counts['featured'] > 0)
-    <a href="{{ route('admin.projects.index', ['featured' => '1']) }}" class="badge {{ request('featured') == '1' ? 'bg-warning text-dark' : 'bg-light text-dark' }} text-decoration-none" style="padding:.4rem .7rem;">
+    <a href="{{ route('admin.projects.index', ['featured' => '1']) }}" class="badge {{ request('featured') == '1' ? 'bg-warning text-dark' : 'bg-light text-dark' }} text-decoration-none" style="padding:.5rem .875rem;font-size:.9375rem;">
         ★ 精選 {{ $counts['featured'] }}
     </a>
     @endif
@@ -54,16 +54,16 @@
 
     {{-- 可見性 --}}
     <span class="text-muted fw-semibold">可見性：</span>
-    <a href="{{ route('admin.projects.index', ['visibility' => 'public']) }}" class="badge {{ request('visibility') == 'public' ? 'bg-success' : 'bg-light text-dark' }} text-decoration-none" style="padding:.4rem .7rem;">
+    <a href="{{ route('admin.projects.index', ['visibility' => 'public']) }}" class="badge {{ request('visibility') == 'public' ? 'bg-success' : 'bg-light text-dark' }} text-decoration-none" style="padding:.5rem .875rem;font-size:.9375rem;">
         公開 {{ $counts['public'] }}
     </a>
-    <a href="{{ route('admin.projects.index', ['visibility' => 'showcase']) }}" class="badge {{ request('visibility') == 'showcase' ? 'bg-info' : 'bg-light text-dark' }} text-decoration-none" style="padding:.4rem .7rem;">
+    <a href="{{ route('admin.projects.index', ['visibility' => 'showcase']) }}" class="badge {{ request('visibility') == 'showcase' ? 'bg-info' : 'bg-light text-dark' }} text-decoration-none" style="padding:.5rem .875rem;font-size:.9375rem;">
         僅展示 {{ $counts['showcase'] }}
     </a>
-    <a href="{{ route('admin.projects.index', ['visibility' => 'unlisted']) }}" class="badge {{ request('visibility') == 'unlisted' ? 'bg-warning text-dark' : 'bg-light text-dark' }} text-decoration-none" style="padding:.4rem .7rem;">
+    <a href="{{ route('admin.projects.index', ['visibility' => 'unlisted']) }}" class="badge {{ request('visibility') == 'unlisted' ? 'bg-warning text-dark' : 'bg-light text-dark' }} text-decoration-none" style="padding:.5rem .875rem;font-size:.9375rem;">
         僅限連結 {{ $counts['unlisted'] }}
     </a>
-    <a href="{{ route('admin.projects.index', ['visibility' => 'hidden']) }}" class="badge {{ request('visibility') == 'hidden' ? 'bg-dark' : 'bg-light text-dark' }} text-decoration-none" style="padding:.4rem .7rem;">
+    <a href="{{ route('admin.projects.index', ['visibility' => 'hidden']) }}" class="badge {{ request('visibility') == 'hidden' ? 'bg-dark' : 'bg-light text-dark' }} text-decoration-none" style="padding:.5rem .875rem;font-size:.9375rem;">
         隱藏 {{ $counts['hidden'] }}
     </a>
 </div>
