@@ -66,7 +66,8 @@ class LegalPageController extends Controller
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');
-        $validated['order'] = $validated['order'] ?? LegalPage::max('order') + 1;
+        // 表單送出 1-based，轉為 0-based 儲存
+        $validated['order'] = isset($validated['order']) ? max(0, $validated['order'] - 1) : (LegalPage::max('order') ?? -1) + 1;
 
         $legalPage = LegalPage::create($validated);
         $this->syncOrder(LegalPage::class, $legalPage->id, $legalPage->order);
@@ -103,6 +104,11 @@ class LegalPageController extends Controller
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');
+
+        // 表單送出 1-based，轉為 0-based 儲存
+        if (isset($validated['order'])) {
+            $validated['order'] = max(0, $validated['order'] - 1);
+        }
 
         $legalPage->update($validated);
         $this->syncOrder(LegalPage::class, $legalPage->id, $legalPage->order);

@@ -126,8 +126,8 @@ class ServiceController extends Controller
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['show_on_homepage'] = $request->boolean('show_on_homepage');
 
-        // 自動指派排序值
-        $validated['order'] = $validated['order'] ?? Service::max('order') + 1;
+        // 自動指派排序值（表單送出 1-based，轉為 0-based 儲存）
+        $validated['order'] = isset($validated['order']) ? max(0, $validated['order'] - 1) : (Service::max('order') ?? -1) + 1;
 
         // 取出 items 再建立
         $items = $validated['items'] ?? [];
@@ -230,6 +230,11 @@ class ServiceController extends Controller
         // Boolean 欄位
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['show_on_homepage'] = $request->boolean('show_on_homepage');
+
+        // 表單送出 1-based，轉為 0-based 儲存
+        if (isset($validated['order'])) {
+            $validated['order'] = max(0, $validated['order'] - 1);
+        }
 
         // 取出 items
         $items = $validated['items'] ?? [];

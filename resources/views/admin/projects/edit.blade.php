@@ -389,8 +389,8 @@
                     <div class="mb-3">
                         <label for="order" class="form-label">排序</label>
                         <input type="number" class="form-control" id="order" name="order"
-                               value="{{ old('order', $project->order) }}" min="0">
-                        <div class="form-text">數字越小越前面，也可從列表頁使用拖曳排序</div>
+                               value="{{ old('order', $project->order + 1) }}" min="1">
+                        <div class="form-text">排序位置（1 = 第一個），也可從列表頁使用拖曳排序</div>
                     </div>
                 </div>
             </div>

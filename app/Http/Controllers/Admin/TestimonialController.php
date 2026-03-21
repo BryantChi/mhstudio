@@ -46,7 +46,8 @@ class TestimonialController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $validated['order'] = $validated['order'] ?? Testimonial::max('order') + 1;
+        // 表單送出 1-based，轉為 0-based 儲存
+        $validated['order'] = isset($validated['order']) ? max(0, $validated['order'] - 1) : (Testimonial::max('order') ?? -1) + 1;
 
         $testimonial = Testimonial::create($validated);
         $this->syncOrder(Testimonial::class, $testimonial->id, $testimonial->order);
@@ -75,6 +76,11 @@ class TestimonialController extends Controller
             'order' => 'integer',
             'is_active' => 'boolean',
         ]);
+
+        // 表單送出 1-based，轉為 0-based 儲存
+        if (isset($validated['order'])) {
+            $validated['order'] = max(0, $validated['order'] - 1);
+        }
 
         $testimonial->update($validated);
         $this->syncOrder(Testimonial::class, $testimonial->id, $testimonial->order);

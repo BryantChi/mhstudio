@@ -63,7 +63,8 @@ class ContractTemplateController extends Controller
         ]);
 
         $validated['is_active'] = $request->has('is_active');
-        $validated['order'] = $validated['order'] ?? ContractTemplate::max('order') + 1;
+        // 表單送出 1-based，轉為 0-based 儲存
+        $validated['order'] = isset($validated['order']) ? max(0, $validated['order'] - 1) : (ContractTemplate::max('order') ?? -1) + 1;
 
         $contractTemplate = ContractTemplate::create($validated);
         $this->syncOrder(ContractTemplate::class, $contractTemplate->id, $contractTemplate->order);
@@ -97,6 +98,11 @@ class ContractTemplateController extends Controller
         ]);
 
         $validated['is_active'] = $request->has('is_active');
+
+        // 表單送出 1-based，轉為 0-based 儲存
+        if (isset($validated['order'])) {
+            $validated['order'] = max(0, $validated['order'] - 1);
+        }
 
         $contractTemplate->update($validated);
         $this->syncOrder(ContractTemplate::class, $contractTemplate->id, $contractTemplate->order);

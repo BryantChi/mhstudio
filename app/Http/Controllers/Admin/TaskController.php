@@ -103,7 +103,8 @@ class TaskController extends Controller
             'order' => 'nullable|integer',
         ]);
 
-        $validated['order'] = $validated['order'] ?? Task::max('order') + 1;
+        // 表單送出 1-based，轉為 0-based 儲存
+        $validated['order'] = isset($validated['order']) ? max(0, $validated['order'] - 1) : (Task::max('order') ?? -1) + 1;
 
         if ($validated['status'] === 'completed') {
             $validated['completed_at'] = now();

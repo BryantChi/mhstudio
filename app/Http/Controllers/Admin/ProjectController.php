@@ -113,7 +113,8 @@ class ProjectController extends Controller
             $validated['tech_stack'] = array_map('trim', explode(',', $validated['tech_stack']));
         }
 
-        $validated['order'] = $validated['order'] ?? Project::max('order') + 1;
+        // 表單送出 1-based，轉為 0-based 儲存
+        $validated['order'] = isset($validated['order']) ? max(0, $validated['order'] - 1) : (Project::max('order') ?? -1) + 1;
         $validated['exclude_from_search'] = $request->boolean('exclude_from_search');
 
         $project = Project::create($validated);
@@ -172,6 +173,11 @@ class ProjectController extends Controller
 
         if (!empty($validated['tech_stack'])) {
             $validated['tech_stack'] = array_map('trim', explode(',', $validated['tech_stack']));
+        }
+
+        // 表單送出 1-based，轉為 0-based 儲存
+        if (isset($validated['order'])) {
+            $validated['order'] = max(0, $validated['order'] - 1);
         }
 
         // checkbox 未勾選時不會送出，手動補 false

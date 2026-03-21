@@ -92,7 +92,8 @@ class CategoryController extends Controller
             'order' => 'nullable|integer',
         ]);
 
-        $validated['order'] = $validated['order'] ?? Category::max('order') + 1;
+        // 表單送出 1-based，轉為 0-based 儲存
+        $validated['order'] = isset($validated['order']) ? max(0, $validated['order'] - 1) : (Category::max('order') ?? -1) + 1;
 
         $category = Category::create($validated);
         $this->syncOrder(Category::class, $category->id, $category->order, ['parent_id' => $category->parent_id]);
@@ -153,6 +154,11 @@ class CategoryController extends Controller
                 flash_error('父分類不可設定為自己的子分類');
                 return redirect()->back()->withInput();
             }
+        }
+
+        // 表單送出 1-based，轉為 0-based 儲存
+        if (isset($validated['order'])) {
+            $validated['order'] = max(0, $validated['order'] - 1);
         }
 
         $category->update($validated);
