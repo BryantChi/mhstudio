@@ -164,6 +164,7 @@ class TaskController extends Controller
     public function destroy(Task $task): RedirectResponse
     {
         $task->delete();
+        $this->resequenceAfterDelete(Task::class);
         flash_success('任務已刪除');
 
         return redirect(admin_list_url('admin.tasks.index'));

@@ -265,6 +265,7 @@ class ServiceController extends Controller
     {
         $type = $service->type;
         $service->delete();
+        $this->resequenceAfterDelete(Service::class, $type ? ['type' => $type] : []);
         flash_success('服務項目已刪除');
 
         return redirect(admin_list_url('admin.services.index'), $type ? ['type' => $type] : []);

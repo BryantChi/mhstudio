@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PricingCategory;
 use App\Models\PricingFeature;
+use App\Traits\ReordersItems;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
 class PricingController extends Controller
 {
+    use ReordersItems;
     public function index(): View
     {
         $categories = PricingCategory::ordered()->with(['features' => fn($q) => $q->ordered()])->get();
@@ -30,7 +32,7 @@ class PricingController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $validated['order'] = PricingCategory::max('order') + 1;
+        $validated['order'] = (PricingCategory::max('order') ?? -1) + 1;
         $validated['is_active'] = $request->boolean('is_active', true);
 
         PricingCategory::create($validated);
@@ -58,6 +60,8 @@ class PricingController extends Controller
     public function destroyCategory(PricingCategory $category): RedirectResponse
     {
         $category->delete();
+        $this->resequenceAfterDelete(PricingCategory::class);
+
         return redirect(admin_list_url('admin.pricing.index'))->with('success', '分類已刪除');
     }
 
@@ -73,7 +77,7 @@ class PricingController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $validated['order'] = PricingFeature::where('pricing_category_id', $request->pricing_category_id)->max('order') + 1;
+        $validated['order'] = (PricingFeature::where('pricing_category_id', $request->pricing_category_id)->max('order') ?? -1) + 1;
         $validated['is_active'] = $request->boolean('is_active', true);
 
         PricingFeature::create($validated);
@@ -101,7 +105,10 @@ class PricingController extends Controller
 
     public function destroyFeature(PricingFeature $feature): RedirectResponse
     {
+        $categoryId = $feature->pricing_category_id;
         $feature->delete();
+        $this->resequenceAfterDelete(PricingFeature::class, ['pricing_category_id' => $categoryId]);
+
         return redirect(admin_list_url('admin.pricing.index'))->with('success', '功能項目已刪除');
     }
 

@@ -186,7 +186,9 @@ class CategoryController extends Controller
             return redirect()->back();
         }
 
+        $parentId = $category->parent_id;
         $category->delete();
+        $this->resequenceAfterDelete(Category::class, ['parent_id' => $parentId]);
 
         flash_success('分類刪除成功');
 

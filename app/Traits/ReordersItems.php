@@ -52,4 +52,27 @@ trait ReordersItems
             }
         }
     }
+
+    /**
+     * 刪除項目後重新排序，確保 order 值連續。
+     * 在 destroy() 方法中，刪除後呼叫此方法。
+     */
+    protected function resequenceAfterDelete(string $modelClass, array $scopeWhere = []): void
+    {
+        $query = $modelClass::orderBy('order');
+        foreach ($scopeWhere as $col => $val) {
+            if (is_null($val)) {
+                $query->whereNull($col);
+            } else {
+                $query->where($col, $val);
+            }
+        }
+
+        $items = $query->get();
+        foreach ($items as $index => $item) {
+            if ((int) $item->order !== $index) {
+                $modelClass::where('id', $item->id)->update(['order' => $index]);
+            }
+        }
+    }
 }

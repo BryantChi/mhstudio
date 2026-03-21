@@ -124,6 +124,7 @@ class LegalPageController extends Controller
     public function destroy(LegalPage $legalPage): RedirectResponse
     {
         $legalPage->delete();
+        $this->resequenceAfterDelete(LegalPage::class);
 
         flash_success('法律頁面已刪除');
 

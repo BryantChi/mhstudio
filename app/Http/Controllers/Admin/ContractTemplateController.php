@@ -118,6 +118,7 @@ class ContractTemplateController extends Controller
     public function destroy(ContractTemplate $contractTemplate): RedirectResponse
     {
         $contractTemplate->delete();
+        $this->resequenceAfterDelete(ContractTemplate::class);
 
         flash_success('合約範本已刪除');
 

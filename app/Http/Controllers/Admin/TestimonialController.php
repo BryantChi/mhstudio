@@ -93,6 +93,7 @@ class TestimonialController extends Controller
     public function destroy(Testimonial $testimonial): RedirectResponse
     {
         $testimonial->delete();
+        $this->resequenceAfterDelete(Testimonial::class);
         flash_success('客戶評價已刪除');
 
         return redirect(admin_list_url('admin.testimonials.index'));

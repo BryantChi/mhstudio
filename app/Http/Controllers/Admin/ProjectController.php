@@ -195,6 +195,7 @@ class ProjectController extends Controller
     public function destroy(Project $project): RedirectResponse
     {
         $project->delete();
+        $this->resequenceAfterDelete(Project::class);
         flash_success('作品已刪除');
 
         return redirect(admin_list_url('admin.projects.index'));
