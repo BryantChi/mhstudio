@@ -21,11 +21,9 @@ class ProjectController extends Controller
     use ReordersItems;
     public function index(Request $request): View|JsonResponse
     {
-        // _sortable 模式：回傳 JSON 給拖曳排序面板
+        // _sortable 模式：回傳 JSON 給拖曳排序面板（純 order 排序，與 syncOrder 一致）
         if ($request->has('_sortable')) {
-            $items = Project::orderByDesc('is_featured')
-                ->orderBy('order')
-                ->orderByDesc('created_at')
+            $items = Project::orderBy('order')
                 ->get(['id', 'title', 'order', 'is_featured']);
 
             return response()->json($items);
@@ -71,7 +69,7 @@ class ProjectController extends Controller
             'oldest' => $query->orderBy('created_at'),
             'title' => $query->orderBy('title'),
             'order' => $query->orderBy('order'),
-            default => $query->orderByDesc('is_featured')->orderByDesc('created_at')->orderBy('order'),
+            default => $query->orderBy('order'),
         };
 
         $projects = $query->paginate(15)->withQueryString();
