@@ -30,6 +30,7 @@ class Project extends Model
         'is_featured',
         'visibility',
         'exclude_from_search',
+        'share_token',
         'order',
         'completed_at',
     ];
@@ -48,6 +49,9 @@ class Project extends Model
         static::creating(function ($project) {
             if (empty($project->slug)) {
                 $project->slug = Str::slug($project->title);
+            }
+            if (empty($project->share_token)) {
+                $project->share_token = Str::random(32);
             }
         });
     }

@@ -1,7 +1,7 @@
 @extends('frontend.layouts.app')
 
 @section('title', $project->title . ' | MH Studio 孟衡')
-@if($project->exclude_from_search || $project->visibility === 'unlisted')
+@if($project->exclude_from_search || $project->visibility !== 'public' || ($isSharedView ?? false))
 @section('meta_robots', 'noindex, nofollow')
 @endif
 

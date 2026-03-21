@@ -172,6 +172,29 @@ class PageController extends Controller
     }
 
     /**
+     * 作品集私密分享（透過 token，任何可見性都可看）
+     */
+    public function portfolioShare(string $token): View
+    {
+        $project = Project::where('share_token', $token)
+            ->where('status', 'published')
+            ->with(['images' => fn ($q) => $q->orderBy('order')])
+            ->firstOrFail();
+
+        // 私密分享頁一律 noindex
+        $isSharedView = true;
+
+        // 相關作品只取 public
+        $relatedProjects = Project::publicVisible()
+            ->where('id', '!=', $project->id)
+            ->where('category', $project->category)
+            ->take(3)
+            ->get();
+
+        return view('frontend.portfolio.show', compact('project', 'relatedProjects', 'isSharedView'));
+    }
+
+    /**
      * 服務詳情
      */
     public function serviceShow(string $slug): View

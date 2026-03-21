@@ -28,6 +28,7 @@ Route::get('/blog/{slug}', [PageController::class, 'blogShow'])->name('blog.show
 
 // Portfolio
 Route::get('/portfolio', [PageController::class, 'portfolio'])->name('portfolio');
+Route::get('/portfolio/share/{token}', [PageController::class, 'portfolioShare'])->name('portfolio.share');
 Route::get('/portfolio/{slug}', [PageController::class, 'portfolioShow'])->name('portfolio.show');
 
 // About

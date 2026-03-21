@@ -264,6 +264,24 @@
                         <div class="form-text">勾選後 Google 不會收錄此作品頁面</div>
                     </div>
 
+                    {{-- 私密分享連結 --}}
+                    @if($project->share_token)
+                    <div class="mb-3">
+                        <label class="form-label">私密分享連結</label>
+                        <div class="input-group">
+                            <input type="text"
+                                   class="form-control form-control-sm"
+                                   id="shareUrl"
+                                   value="{{ route('portfolio.share', $project->share_token) }}"
+                                   readonly>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('shareUrl').value);this.textContent='已複製';setTimeout(()=>this.textContent='複製',2000);">
+                                複製
+                            </button>
+                        </div>
+                        <div class="form-text">此連結不受可見性限制，任何人拿到連結都能看到作品（noindex）</div>
+                    </div>
+                    @endif
+
                     @php
                         $currentCat = old('category', $project->category);
                         $isCustomCat = $currentCat && !$categories->contains($currentCat);

@@ -117,9 +117,10 @@
                             @endif
                         </td>
                         <td>
-                            <span class="badge bg-{{ $project->status_color }}">
-                                {{ $project->status_label }}
-                            </span>
+                            <span class="badge bg-{{ $project->status_color }}">{{ $project->status_label }}</span>
+                            @if($project->visibility !== 'public')
+                            <span class="badge bg-{{ $project->visibility_color }}">{{ $project->visibility_label }}</span>
+                            @endif
                         </td>
                         <td>{{ $project->completed_at ? $project->completed_at->format('Y-m-d') : '-' }}</td>
                         <td class="text-end">

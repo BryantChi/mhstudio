@@ -41,8 +41,12 @@
                 <strong>作品內容</strong>
                 <div>
                     <span class="badge bg-{{ $project->status_color }}">{{ $project->status_label }}</span>
+                    <span class="badge bg-{{ $project->visibility_color }} ms-1">{{ $project->visibility_label }}</span>
+                    @if($project->exclude_from_search)
+                        <span class="badge bg-dark ms-1">noindex</span>
+                    @endif
                     @if($project->is_featured)
-                        <span class="badge bg-warning ms-2">精選</span>
+                        <span class="badge bg-warning ms-1">精選</span>
                     @endif
                 </div>
             </div>
