@@ -32,7 +32,10 @@
       @if($projects->isNotEmpty())
         <div class="portfolio-listing-grid">
           @foreach($projects as $project)
-            <a href="{{ route('portfolio.show', $project->slug) }}" class="portfolio-listing-card animate-on-scroll">
+            @php $isShowcase = $project->visibility === 'showcase'; @endphp
+            <{{ $isShowcase ? 'div' : 'a' }}
+              {!! $isShowcase ? '' : 'href="' . route('portfolio.show', $project->slug) . '"' !!}
+              class="portfolio-listing-card animate-on-scroll {{ $isShowcase ? 'portfolio-showcase-only' : '' }}">
               <div class="portfolio-listing-thumb">
                 @if($project->cover_image)
                   <img src="{{ $project->cover_image }}" alt="{{ $project->title }}" loading="lazy">
@@ -47,9 +50,11 @@
                     精選
                   </span>
                 @endif
+                @unless($isShowcase)
                 <div class="portfolio-listing-overlay">
                   <span class="portfolio-overlay-btn">查看詳情</span>
                 </div>
+                @endunless
               </div>
               <div class="portfolio-listing-info">
                 <h3 class="portfolio-listing-title">{{ $project->title }}</h3>
@@ -77,7 +82,7 @@
                   </div>
                 @endif
               </div>
-            </a>
+            </{{ $isShowcase ? 'div' : 'a' }}>
           @endforeach
         </div>
 

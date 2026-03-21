@@ -238,7 +238,8 @@
                         <select class="form-select @error('visibility') is-invalid @enderror"
                                 id="visibility"
                                 name="visibility">
-                            <option value="public" {{ old('visibility', $project->visibility) == 'public' ? 'selected' : '' }}>公開 — 列表+搜尋引擎可見</option>
+                            <option value="public" {{ old('visibility', $project->visibility) == 'public' ? 'selected' : '' }}>公開 — 列表可見+可點擊+搜尋引擎收錄</option>
+                            <option value="showcase" {{ old('visibility', $project->visibility) == 'showcase' ? 'selected' : '' }}>僅展示 — 列表可見但不可點擊，不被收錄</option>
                             <option value="unlisted" {{ old('visibility', $project->visibility) == 'unlisted' ? 'selected' : '' }}>僅限連結 — 不出現在列表，有網址才能看</option>
                             <option value="hidden" {{ old('visibility', $project->visibility) == 'hidden' ? 'selected' : '' }}>隱藏 — 完全不公開</option>
                         </select>

@@ -898,6 +898,15 @@
   border-color: var(--border-glow);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 212, 255, 0.05);
 }
+/* Showcase: 列表可見但不可點擊 */
+.portfolio-listing-card.portfolio-showcase-only {
+  cursor: default;
+}
+.portfolio-listing-card.portfolio-showcase-only:hover {
+  transform: none;
+  border-color: var(--border-subtle);
+  box-shadow: none;
+}
 .portfolio-listing-thumb {
   position: relative;
   width: 100%;

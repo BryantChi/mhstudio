@@ -154,11 +154,11 @@ class Project extends Model
     }
 
     /**
-     * 前台可見（published + public）
+     * 前台列表可見（published + public 或 showcase）
      */
     public function scopePublicVisible(Builder $query): void
     {
-        $query->where('status', 'published')->where('visibility', 'public');
+        $query->where('status', 'published')->whereIn('visibility', ['public', 'showcase']);
     }
 
     public function scopeFeatured(Builder $query): void
@@ -212,6 +212,7 @@ class Project extends Model
     {
         return match ($this->visibility) {
             'public' => '公開',
+            'showcase' => '僅展示',
             'unlisted' => '僅限連結',
             'hidden' => '隱藏',
             default => '公開',
@@ -222,6 +223,7 @@ class Project extends Model
     {
         return match ($this->visibility) {
             'public' => 'success',
+            'showcase' => 'info',
             'unlisted' => 'warning',
             'hidden' => 'secondary',
             default => 'success',
