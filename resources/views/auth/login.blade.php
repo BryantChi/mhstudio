@@ -29,7 +29,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('login') }}">
+        <form method="POST" action="{{ route('login') }}" autocomplete="on">
             @csrf
 
             <div class="mb-3">
@@ -47,6 +47,7 @@
                         name="login"
                         value="{{ old('login') }}"
                         placeholder="請輸入 Email 或使用者名稱"
+                        autocomplete="username"
                         required
                         autofocus
                     >
@@ -70,6 +71,7 @@
                         id="password"
                         name="password"
                         placeholder="請輸入密碼"
+                        autocomplete="current-password"
                         required
                     >
                     @error('password')
