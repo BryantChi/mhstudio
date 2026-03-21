@@ -48,12 +48,21 @@
                     <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>已發布</option>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <select class="form-select" name="category">
                     <option value="">全部分類</option>
                     @foreach($categories as $cat)
                         <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>{{ $cat }}</option>
                     @endforeach
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" name="visibility">
+                    <option value="">全部可見性</option>
+                    <option value="public" {{ request('visibility') == 'public' ? 'selected' : '' }}>公開</option>
+                    <option value="showcase" {{ request('visibility') == 'showcase' ? 'selected' : '' }}>僅展示</option>
+                    <option value="unlisted" {{ request('visibility') == 'unlisted' ? 'selected' : '' }}>僅限連結</option>
+                    <option value="hidden" {{ request('visibility') == 'hidden' ? 'selected' : '' }}>隱藏</option>
                 </select>
             </div>
             <div class="col-md-auto">

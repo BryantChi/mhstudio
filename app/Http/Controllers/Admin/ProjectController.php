@@ -49,6 +49,10 @@ class ProjectController extends Controller
             $query->where('category', $request->category);
         }
 
+        if ($request->filled('visibility')) {
+            $query->where('visibility', $request->visibility);
+        }
+
         $projects = $query->orderByDesc('is_featured')->orderByDesc('created_at')->orderBy('order')->paginate(15);
         $categories = Project::whereNotNull('category')
             ->where('category', '!=', '')
