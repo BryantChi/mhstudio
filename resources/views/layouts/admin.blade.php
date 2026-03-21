@@ -23,10 +23,10 @@
 
     @stack('styles')
 </head>
-{{-- 記錄列表頁 URL（含頁數）供編輯後返回 --}}
+{{-- 記錄列表頁 URL（含頁數）供編輯後返回，排除 AJAX/_sortable 請求 --}}
 @php
     $currentRoute = Route::currentRouteName() ?? '';
-    if (request()->isMethod('get') && str_ends_with($currentRoute, '.index')) {
+    if (request()->isMethod('get') && str_ends_with($currentRoute, '.index') && !request()->ajax() && !request()->has('_sortable')) {
         $prefix = str_replace('.index', '', $currentRoute);
         session()->put("admin_list.{$prefix}", request()->fullUrl());
     }

@@ -14,9 +14,9 @@ class RememberListUrl
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->isMethod('get')) {
+        if ($request->isMethod('get') && ! $request->ajax() && ! $request->wantsJson()) {
             $routeName = $request->route()?->getName();
-            if ($routeName && str_ends_with($routeName, '.index')) {
+            if ($routeName && str_ends_with($routeName, '.index') && ! $request->has('_sortable')) {
                 $prefix = str_replace('.index', '', $routeName);
                 $url = $request->fullUrl();
                 session()->put("admin_list.{$prefix}", $url);
