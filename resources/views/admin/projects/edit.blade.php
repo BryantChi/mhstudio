@@ -73,7 +73,7 @@
                                value="{{ old('slug', $project->slug) }}"
                                maxlength="200">
                         <div class="form-text">
-                            當前網址：{{ url('projects/' . $project->slug) }}
+                            當前網址：<a href="{{ route('portfolio.show', $project->slug) }}" target="_blank">{{ route('portfolio.show', $project->slug) }}</a>
                         </div>
                         @error('slug')
                             <div class="invalid-feedback">{{ $message }}</div>
