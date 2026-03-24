@@ -158,11 +158,13 @@ class Project extends Model
     }
 
     /**
-     * 前台列表可見（published + public 或 showcase）
+     * 前台列表可見（published + public/NULL 或 showcase）
      */
     public function scopePublicVisible(Builder $query): void
     {
-        $query->where('status', 'published')->whereIn('visibility', ['public', 'showcase']);
+        $query->where('status', 'published')->where(function ($q) {
+            $q->whereIn('visibility', ['public', 'showcase'])->orWhereNull('visibility');
+        });
     }
 
     public function scopeFeatured(Builder $query): void

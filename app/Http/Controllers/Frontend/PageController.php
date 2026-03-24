@@ -154,9 +154,11 @@ class PageController extends Controller
      */
     public function portfolioShow(string $slug): View
     {
-        // 允許 public 和 unlisted（有連結就能看），排除 hidden
+        // 允許 public/NULL 和 unlisted（有連結就能看），排除 hidden 和 showcase
         $project = Project::published()
-            ->whereIn('visibility', ['public', 'unlisted'])
+            ->where(function ($q) {
+                $q->whereIn('visibility', ['public', 'unlisted'])->orWhereNull('visibility');
+            })
             ->with(['images' => fn ($q) => $q->orderBy('order')])
             ->where('slug', $slug)
             ->firstOrFail();
