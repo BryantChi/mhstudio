@@ -103,7 +103,7 @@ class Service extends Model
         ];
 
         if ($force || !$this->seoMeta) {
-            $this->seoMeta()->updateOrCreate(
+            SeoMeta::updateOrCreate(
                 ['model_type' => static::class, 'model_id' => $this->id],
                 $data
             );
