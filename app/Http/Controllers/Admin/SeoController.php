@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 
 class SeoController extends Controller
 {
@@ -245,7 +246,7 @@ class SeoController extends Controller
             flash_success('Robots.txt 更新成功（已寫入 ' . $result . ' 位元組，共 ' . $linesWritten . ' 行）');
         } catch (\Exception $e) {
             flash_error('Robots.txt 更新失敗：' . $e->getMessage());
-            \Log::error('Robots.txt 更新失敗', ['error' => $e->getMessage()]);
+            Log::error('Robots.txt 更新失敗', ['error' => $e->getMessage()]);
             return redirect()->back();
         }
 
@@ -313,7 +314,7 @@ class SeoController extends Controller
                 $articleOk++;
             } catch (\Throwable $e) {
                 $errors[] = "文章 [{$article->title}]：{$e->getMessage()}";
-                \Log::error('generateSeoMeta 失敗 (Article)', [
+                Log::error('generateSeoMeta 失敗 (Article)', [
                     'id'      => $article->id,
                     'title'   => $article->title,
                     'error'   => $e->getMessage(),
@@ -334,7 +335,7 @@ class SeoController extends Controller
                 $projectOk++;
             } catch (\Throwable $e) {
                 $errors[] = "作品 [{$project->title}]：{$e->getMessage()}";
-                \Log::error('generateSeoMeta 失敗 (Project)', [
+                Log::error('generateSeoMeta 失敗 (Project)', [
                     'id'      => $project->id,
                     'title'   => $project->title,
                     'error'   => $e->getMessage(),
@@ -355,7 +356,7 @@ class SeoController extends Controller
                 $serviceOk++;
             } catch (\Throwable $e) {
                 $errors[] = "服務 [{$service->title}]：{$e->getMessage()}";
-                \Log::error('generateSeoMeta 失敗 (Service)', [
+                Log::error('generateSeoMeta 失敗 (Service)', [
                     'id'      => $service->id,
                     'title'   => $service->title,
                     'error'   => $e->getMessage(),
