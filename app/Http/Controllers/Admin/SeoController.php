@@ -301,37 +301,77 @@ class SeoController extends Controller
      */
     public function regenerateAllSeoMeta(): RedirectResponse
     {
-        $results = [];
+        $results  = [];
+        $errors   = [];
 
         // 文章
         $articles = Article::published()->with('seoMeta', 'tags')->get();
+        $articleOk = 0;
         foreach ($articles as $article) {
-            $article->generateSeoMeta(true);
+            try {
+                $article->generateSeoMeta(true);
+                $articleOk++;
+            } catch (\Throwable $e) {
+                $errors[] = "文章 [{$article->title}]：{$e->getMessage()}";
+                \Log::error('generateSeoMeta 失敗 (Article)', [
+                    'id'      => $article->id,
+                    'title'   => $article->title,
+                    'error'   => $e->getMessage(),
+                    'sqlstate' => $e instanceof \Illuminate\Database\QueryException ? $e->errorInfo : null,
+                ]);
+            }
         }
-        if ($articles->count() > 0) {
-            $results[] = "文章 {$articles->count()} 篇";
+        if ($articleOk > 0) {
+            $results[] = "文章 {$articleOk} 篇";
         }
 
         // 作品
         $projects = Project::published()->with('seoMeta')->get();
+        $projectOk = 0;
         foreach ($projects as $project) {
-            $project->generateSeoMeta(true);
+            try {
+                $project->generateSeoMeta(true);
+                $projectOk++;
+            } catch (\Throwable $e) {
+                $errors[] = "作品 [{$project->title}]：{$e->getMessage()}";
+                \Log::error('generateSeoMeta 失敗 (Project)', [
+                    'id'      => $project->id,
+                    'title'   => $project->title,
+                    'error'   => $e->getMessage(),
+                    'sqlstate' => $e instanceof \Illuminate\Database\QueryException ? $e->errorInfo : null,
+                ]);
+            }
         }
-        if ($projects->count() > 0) {
-            $results[] = "作品 {$projects->count()} 個";
+        if ($projectOk > 0) {
+            $results[] = "作品 {$projectOk} 個";
         }
 
         // 服務
         $services = Service::active()->with('seoMeta')->get();
+        $serviceOk = 0;
         foreach ($services as $service) {
-            $service->generateSeoMeta(true);
+            try {
+                $service->generateSeoMeta(true);
+                $serviceOk++;
+            } catch (\Throwable $e) {
+                $errors[] = "服務 [{$service->title}]：{$e->getMessage()}";
+                \Log::error('generateSeoMeta 失敗 (Service)', [
+                    'id'      => $service->id,
+                    'title'   => $service->title,
+                    'error'   => $e->getMessage(),
+                    'sqlstate' => $e instanceof \Illuminate\Database\QueryException ? $e->errorInfo : null,
+                ]);
+            }
         }
-        if ($services->count() > 0) {
-            $results[] = "服務 {$services->count()} 個";
+        if ($serviceOk > 0) {
+            $results[] = "服務 {$serviceOk} 個";
         }
 
-        $total = $articles->count() + $projects->count() + $services->count();
-        if ($total > 0) {
+        $total = $articleOk + $projectOk + $serviceOk;
+        if (!empty($errors)) {
+            $firstError = $errors[0];
+            flash_error('部分項目生成失敗（共 ' . count($errors) . ' 個），請查看 Log。第一個錯誤：' . $firstError);
+        } elseif ($total > 0) {
             flash_success("已重新生成全部 SEO Meta：" . implode('、', $results));
         } else {
             flash_info('沒有已發布的內容需要生成');
