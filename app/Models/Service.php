@@ -92,7 +92,7 @@ class Service extends Model
         }
 
         $data = [
-            'meta_title' => $this->title . ' | ' . $siteName,
+            'meta_title' => mb_substr($this->title . ' | ' . $siteName, 0, 250),
             'meta_description' => $description,
             'meta_robots' => 'index, follow',
             'og_title' => $this->title,
@@ -102,10 +102,11 @@ class Service extends Model
             'canonical_url' => route('services.show', $this->slug),
         ];
 
-        if ($force && $this->seoMeta) {
-            $this->seoMeta->update($data);
-        } elseif (!$this->seoMeta) {
-            $this->seoMeta()->create($data);
+        if ($force || !$this->seoMeta) {
+            $this->seoMeta()->updateOrCreate(
+                ['model_type' => static::class, 'model_id' => $this->id],
+                $data
+            );
         }
     }
 

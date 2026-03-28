@@ -85,7 +85,7 @@ class Project extends Model
         }
 
         $data = [
-            'meta_title' => $this->title . ' | ' . $siteName,
+            'meta_title' => mb_substr($this->title . ' | ' . $siteName, 0, 250),
             'meta_description' => $description,
             'meta_keywords' => $keywords,
             'meta_robots' => $this->exclude_from_search ? 'noindex, nofollow' : 'index, follow',
@@ -96,10 +96,11 @@ class Project extends Model
             'canonical_url' => route('portfolio.show', $this->slug),
         ];
 
-        if ($force && $this->seoMeta) {
-            $this->seoMeta->update($data);
-        } elseif (!$this->seoMeta) {
-            $this->seoMeta()->create($data);
+        if ($force || !$this->seoMeta) {
+            $this->seoMeta()->updateOrCreate(
+                ['model_type' => static::class, 'model_id' => $this->id],
+                $data
+            );
         }
     }
 

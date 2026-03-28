@@ -198,7 +198,7 @@ class Article extends Model implements HasMedia
         $description = $this->generateMetaDescription();
 
         $data = [
-            'meta_title' => $this->title . ' | ' . $siteName,
+            'meta_title' => mb_substr($this->title . ' | ' . $siteName, 0, 250),
             'meta_description' => $description,
             'meta_keywords' => $this->generateMetaKeywords(),
             'meta_robots' => 'index, follow',
@@ -209,10 +209,11 @@ class Article extends Model implements HasMedia
             'canonical_url' => route('blog.show', $this->slug),
         ];
 
-        if ($force && $this->seoMeta) {
-            $this->seoMeta->update($data);
-        } elseif (!$this->seoMeta) {
-            $this->seoMeta()->create($data);
+        if ($force || !$this->seoMeta) {
+            $this->seoMeta()->updateOrCreate(
+                ['model_type' => static::class, 'model_id' => $this->id],
+                $data
+            );
         }
     }
 
