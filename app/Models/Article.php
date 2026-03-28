@@ -223,12 +223,12 @@ class Article extends Model implements HasMedia
     protected function generateMetaDescription(): string
     {
         if ($this->excerpt) {
-            return substr($this->excerpt, 0, 160);
+            return mb_substr($this->excerpt, 0, 160);
         }
 
         $content = strip_tags($this->content);
         $content = preg_replace('/\s+/', ' ', $content);
-        return substr(trim($content), 0, 160);
+        return mb_substr(trim($content), 0, 160);
     }
 
     /**
