@@ -141,6 +141,11 @@ class ProjectController extends Controller
             'status' => 'required|in:draft,published',
             'is_featured' => 'boolean',
             'visibility' => 'nullable|in:public,showcase,unlisted,hidden',
+            'display_mode' => 'required|in:normal,blurred,abstract',
+            'hide_client' => 'boolean',
+            'hide_results' => 'boolean',
+            'confidential_label' => 'nullable|string|max:50',
+            'abstract_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
             'exclude_from_search' => 'boolean',
             'order' => 'integer',
             'completed_at' => 'nullable|date',
@@ -154,6 +159,16 @@ class ProjectController extends Controller
         // 表單送出 1-based，轉為 0-based 儲存
         $validated['order'] = isset($validated['order']) ? max(0, $validated['order'] - 1) : (Project::max('order') ?? -1) + 1;
         $validated['exclude_from_search'] = $request->boolean('exclude_from_search');
+        $validated['hide_client'] = $request->boolean('hide_client');
+        $validated['hide_results'] = $request->boolean('hide_results');
+
+        // 正常模式時清除保密相關欄位
+        if ($validated['display_mode'] === 'normal') {
+            $validated['hide_client'] = false;
+            $validated['hide_results'] = false;
+            $validated['confidential_label'] = null;
+            $validated['abstract_color'] = null;
+        }
 
         $project = Project::create($validated);
         $this->syncOrder(Project::class, $project->id, $project->order);
@@ -204,6 +219,11 @@ class ProjectController extends Controller
             'status' => 'required|in:draft,published',
             'is_featured' => 'boolean',
             'visibility' => 'nullable|in:public,showcase,unlisted,hidden',
+            'display_mode' => 'required|in:normal,blurred,abstract',
+            'hide_client' => 'boolean',
+            'hide_results' => 'boolean',
+            'confidential_label' => 'nullable|string|max:50',
+            'abstract_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
             'exclude_from_search' => 'boolean',
             'order' => 'integer',
             'completed_at' => 'nullable|date',
@@ -221,6 +241,16 @@ class ProjectController extends Controller
         // checkbox 未勾選時不會送出，手動補 false
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['exclude_from_search'] = $request->boolean('exclude_from_search');
+        $validated['hide_client'] = $request->boolean('hide_client');
+        $validated['hide_results'] = $request->boolean('hide_results');
+
+        // 正常模式時清除保密相關欄位
+        if ($validated['display_mode'] === 'normal') {
+            $validated['hide_client'] = false;
+            $validated['hide_results'] = false;
+            $validated['confidential_label'] = null;
+            $validated['abstract_color'] = null;
+        }
 
         $project->update($validated);
         $this->syncOrder(Project::class, $project->id, $project->order);

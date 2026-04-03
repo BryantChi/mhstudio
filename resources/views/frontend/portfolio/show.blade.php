@@ -9,6 +9,9 @@
     $galleryImages = $project->images ?? collect();
     $hasGallery = $galleryImages->isNotEmpty();
     $coverUrl = $project->cover_image;
+    $displayMode = $project->display_mode ?? 'normal';
+    $isConfidential = $displayMode !== 'normal';
+    $abstractColor = $project->abstract_color ?? '#00d4ff';
 @endphp
 
 @section('content')
@@ -39,50 +42,107 @@
       <div class="project-detail-wrapper">
         {{-- Main Content --}}
         <div class="project-detail-content">
-          @if($hasGallery)
-            {{-- 大圖：第一張圖片（Fancybox） --}}
-            <div class="project-cover-image">
-              <a href="{{ $galleryImages->first()->image_url }}"
-                 data-fancybox="project-gallery"
-                 data-caption="{{ $galleryImages->first()->caption ?? '' }}">
-                <img src="{{ $galleryImages->first()->image_url }}"
-                     alt="{{ $galleryImages->first()->alt_text ?? $project->title }}"
-                     class="project-gallery-main-img">
-              </a>
-              @if($galleryImages->first()->caption)
-                <div class="project-gallery-main-caption">{{ $galleryImages->first()->caption }}</div>
-              @endif
+          @if($displayMode === 'abstract')
+            {{-- Abstract mode: gradient placeholder, no real images --}}
+            <div class="project-cover-image project-cover--abstract"
+                 style="--abstract-color: {{ $abstractColor }}; --abstract-gradient: linear-gradient(135deg, {{ $abstractColor }}33, {{ $abstractColor }}11, var(--bg-card));">
+              <div class="project-abstract-placeholder">
+                <span class="confidential-badge">
+                  <svg viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="11" width="18" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7 11V7a5 5 0 0110 0v4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                  {{ $project->confidential_label_text }}
+                </span>
+              </div>
             </div>
+          @elseif($displayMode === 'blurred')
+            {{-- Blurred mode: show images with blur effect --}}
+            @if($hasGallery)
+              <div class="project-cover-image project-cover--blurred">
+                <div class="project-blurred-img-wrap">
+                  <img src="{{ $galleryImages->first()->image_url }}"
+                       alt="{{ $galleryImages->first()->alt_text ?? $project->title }}"
+                       class="project-gallery-main-img">
+                </div>
+                <div class="portfolio-confidential-overlay">
+                  <span class="confidential-badge">
+                    <svg viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="11" width="18" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7 11V7a5 5 0 0110 0v4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                    {{ $project->confidential_label_text }}
+                  </span>
+                </div>
+              </div>
 
-            {{-- 縮圖 Grid（第 2 張起） --}}
-            @if($galleryImages->count() > 1)
-            <div class="project-gallery-grid">
-              @foreach($galleryImages->slice(1) as $image)
-                <a href="{{ $image->image_url }}"
-                   data-fancybox="project-gallery"
-                   data-caption="{{ $image->caption ?? '' }}"
-                   class="project-gallery-thumb">
-                  <img src="{{ $image->image_url }}"
-                       alt="{{ $image->alt_text ?? $project->title }}"
-                       loading="lazy">
-                  @if($image->caption)
-                    <div class="project-gallery-caption">{{ $image->caption }}</div>
-                  @endif
-                </a>
-              @endforeach
-            </div>
+              @if($galleryImages->count() > 1)
+              <div class="project-gallery-grid">
+                @foreach($galleryImages->slice(1) as $image)
+                  <div class="project-gallery-thumb project-gallery-thumb--blurred">
+                    <img src="{{ $image->image_url }}"
+                         alt="{{ $image->alt_text ?? $project->title }}"
+                         loading="lazy">
+                  </div>
+                @endforeach
+              </div>
+              @endif
+            @elseif($coverUrl)
+              <div class="project-cover-image project-cover--blurred">
+                <div class="project-blurred-img-wrap">
+                  <img src="{{ $coverUrl }}"
+                       alt="{{ $project->title }}"
+                       class="project-gallery-main-img">
+                </div>
+                <div class="portfolio-confidential-overlay">
+                  <span class="confidential-badge">
+                    <svg viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="11" width="18" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7 11V7a5 5 0 0110 0v4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                    {{ $project->confidential_label_text }}
+                  </span>
+                </div>
+              </div>
             @endif
-          @elseif($coverUrl)
-            {{-- 單張封面（也可點擊放大） --}}
-            <div class="project-cover-image">
-              <a href="{{ $coverUrl }}"
-                 data-fancybox="project-gallery"
-                 data-caption="{{ $project->title }}">
-                <img src="{{ $coverUrl }}"
-                     alt="{{ $project->title }}"
-                     class="project-gallery-main-img">
-              </a>
-            </div>
+          @else
+            {{-- Normal mode --}}
+            @if($hasGallery)
+              {{-- 大圖：第一張圖片（Fancybox） --}}
+              <div class="project-cover-image">
+                <a href="{{ $galleryImages->first()->image_url }}"
+                   data-fancybox="project-gallery"
+                   data-caption="{{ $galleryImages->first()->caption ?? '' }}">
+                  <img src="{{ $galleryImages->first()->image_url }}"
+                       alt="{{ $galleryImages->first()->alt_text ?? $project->title }}"
+                       class="project-gallery-main-img">
+                </a>
+                @if($galleryImages->first()->caption)
+                  <div class="project-gallery-main-caption">{{ $galleryImages->first()->caption }}</div>
+                @endif
+              </div>
+
+              {{-- 縮圖 Grid（第 2 張起） --}}
+              @if($galleryImages->count() > 1)
+              <div class="project-gallery-grid">
+                @foreach($galleryImages->slice(1) as $image)
+                  <a href="{{ $image->image_url }}"
+                     data-fancybox="project-gallery"
+                     data-caption="{{ $image->caption ?? '' }}"
+                     class="project-gallery-thumb">
+                    <img src="{{ $image->image_url }}"
+                         alt="{{ $image->alt_text ?? $project->title }}"
+                         loading="lazy">
+                    @if($image->caption)
+                      <div class="project-gallery-caption">{{ $image->caption }}</div>
+                    @endif
+                  </a>
+                @endforeach
+              </div>
+              @endif
+            @elseif($coverUrl)
+              {{-- 單張封面（也可點擊放大） --}}
+              <div class="project-cover-image">
+                <a href="{{ $coverUrl }}"
+                   data-fancybox="project-gallery"
+                   data-caption="{{ $project->title }}">
+                  <img src="{{ $coverUrl }}"
+                       alt="{{ $project->title }}"
+                       class="project-gallery-main-img">
+                </a>
+              </div>
+            @endif
           @endif
 
           <div class="article-body prose">
@@ -95,10 +155,10 @@
           <div class="project-sidebar-card">
             <h3 class="project-sidebar-title">專案資訊</h3>
 
-            @if($project->client)
+            @if($project->effective_client)
               <div class="project-sidebar-item">
                 <div class="project-sidebar-label">客戶</div>
-                <div class="project-sidebar-value">{{ $project->client }}</div>
+                <div class="project-sidebar-value">{{ $project->effective_client }}</div>
               </div>
             @endif
 
@@ -127,7 +187,7 @@
               </div>
             @endif
 
-            @if($project->results)
+            @if($project->results && !$project->hide_results)
             <div class="project-results">
                 <h4>專案成果</h4>
                 <p>{{ $project->results }}</p>

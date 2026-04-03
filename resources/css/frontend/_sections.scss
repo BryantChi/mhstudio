@@ -192,6 +192,84 @@
   color: var(--accent-cyan);
 }
 
+/* ===== CONFIDENTIAL / BLURRED / ABSTRACT MODE ===== */
+.confidential-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  color: #fff;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.portfolio-confidential-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 15, 30, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Blurred mode — homepage cards */
+.portfolio-thumb--blurred {
+  .portfolio-thumb-bg {
+    filter: blur(8px);
+    transform: scale(1.1);
+  }
+}
+
+/* Abstract mode — homepage cards */
+.portfolio-thumb--abstract {
+  position: relative;
+  overflow: hidden;
+
+  .portfolio-thumb-bg {
+    background: var(--abstract-gradient) !important;
+    font-size: 0;
+    color: transparent;
+  }
+
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.12;
+    z-index: 1;
+    pointer-events: none;
+  }
+  &::before {
+    width: 140px; height: 140px;
+    top: -30px; right: -20px;
+    background: var(--abstract-color, var(--accent-cyan));
+  }
+  &::after {
+    width: 90px; height: 90px;
+    bottom: 10px; left: 20px;
+    background: var(--abstract-color, var(--accent-cyan));
+  }
+}
+
+.portfolio-abstract-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  color: var(--abstract-color, var(--accent-cyan));
+  opacity: 0.4;
+}
+
 /* ===== PROCESS ===== */
 #process { background: var(--bg-primary); position: relative; }
 

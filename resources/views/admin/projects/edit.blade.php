@@ -249,6 +249,91 @@
                         @enderror
                     </div>
 
+                    @php
+                        $currentDisplayMode = old('display_mode', $project->display_mode ?? 'normal');
+                    @endphp
+                    <div class="mb-3">
+                        <label for="display_mode" class="form-label">顯示模式</label>
+                        <select class="form-select @error('display_mode') is-invalid @enderror"
+                                id="display_mode"
+                                name="display_mode">
+                            <option value="normal" {{ $currentDisplayMode == 'normal' ? 'selected' : '' }}>正常展示</option>
+                            <option value="blurred" {{ $currentDisplayMode == 'blurred' ? 'selected' : '' }}>模糊保密 — 截圖模糊+保密徽章</option>
+                            <option value="abstract" {{ $currentDisplayMode == 'abstract' ? 'selected' : '' }}>抽象封面 — 不顯示實際截圖</option>
+                        </select>
+                        <div class="form-text">控制作品圖片的呈現方式（不影響可見性設定）</div>
+                        @error('display_mode')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div id="confidentialOptions" style="{{ in_array($currentDisplayMode, ['blurred', 'abstract']) ? '' : 'display:none;' }}">
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       id="hide_client"
+                                       name="hide_client"
+                                       value="1"
+                                       {{ old('hide_client', $project->hide_client) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="hide_client">
+                                    隱藏客戶名稱
+                                </label>
+                            </div>
+                            <div class="form-text">前台顯示為「機密客戶」</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       id="hide_results"
+                                       name="hide_results"
+                                       value="1"
+                                       {{ old('hide_results', $project->hide_results) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="hide_results">
+                                    隱藏成果數據
+                                </label>
+                            </div>
+                            <div class="form-text">前台不顯示專案成果區塊</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="confidential_label" class="form-label">保密標籤文字</label>
+                            <input type="text"
+                                   class="form-control @error('confidential_label') is-invalid @enderror"
+                                   id="confidential_label"
+                                   name="confidential_label"
+                                   value="{{ old('confidential_label', $project->confidential_label) }}"
+                                   placeholder="留空使用預設「Confidential Project」"
+                                   maxlength="50">
+                            @error('confidential_label')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3" id="abstractColorGroup" style="{{ $currentDisplayMode == 'abstract' ? '' : 'display:none;' }}">
+                            <label for="abstract_color" class="form-label">抽象封面主色</label>
+                            <div class="input-group">
+                                <input type="color"
+                                       class="form-control form-control-color"
+                                       id="abstract_color_picker"
+                                       value="{{ old('abstract_color', $project->abstract_color ?? '#00d4ff') }}">
+                                <input type="text"
+                                       class="form-control @error('abstract_color') is-invalid @enderror"
+                                       id="abstract_color"
+                                       name="abstract_color"
+                                       value="{{ old('abstract_color', $project->abstract_color) }}"
+                                       placeholder="#00d4ff"
+                                       maxlength="7">
+                            </div>
+                            <div class="form-text">用於生成漸層封面的主色調</div>
+                            @error('abstract_color')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <div class="form-check form-switch">
                             <input class="form-check-input"
@@ -449,6 +534,29 @@
             if (container) container.style.display = 'none';
         }
     });
+
+    // 顯示模式切換
+    (function() {
+        const displayMode = document.getElementById('display_mode');
+        const confidentialOptions = document.getElementById('confidentialOptions');
+        const abstractColorGroup = document.getElementById('abstractColorGroup');
+        const colorPicker = document.getElementById('abstract_color_picker');
+        const colorInput = document.getElementById('abstract_color');
+
+        if (displayMode) {
+            displayMode.addEventListener('change', function() {
+                confidentialOptions.style.display = this.value !== 'normal' ? '' : 'none';
+                abstractColorGroup.style.display = this.value === 'abstract' ? '' : 'none';
+            });
+        }
+
+        if (colorPicker && colorInput) {
+            colorPicker.addEventListener('input', function() { colorInput.value = this.value; });
+            colorInput.addEventListener('input', function() {
+                if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) colorPicker.value = this.value;
+            });
+        }
+    })();
 
     // 分類下拉選單 ↔ 自訂輸入切換
     (function() {

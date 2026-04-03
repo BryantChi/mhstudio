@@ -1104,6 +1104,116 @@
   cursor: zoom-in;
 }
 
+/* ===== Confidential / Blurred / Abstract — Listing Cards ===== */
+.portfolio-listing-thumb.portfolio-thumb--blurred {
+  img {
+    filter: blur(8px);
+    transform: scale(1.1);
+  }
+}
+.portfolio-listing-card:hover .portfolio-listing-thumb.portfolio-thumb--blurred img {
+  transform: scale(1.15);
+}
+
+.portfolio-listing-thumb.portfolio-thumb--abstract {
+  background: var(--abstract-gradient);
+  position: relative;
+
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.12;
+    z-index: 1;
+    pointer-events: none;
+  }
+  &::before {
+    width: 160px; height: 160px;
+    top: -40px; right: -30px;
+    background: var(--abstract-color, var(--accent-cyan));
+  }
+  &::after {
+    width: 100px; height: 100px;
+    bottom: 15px; left: 25px;
+    background: var(--abstract-color, var(--accent-cyan));
+  }
+}
+
+.portfolio-listing-overlay--confidential {
+  z-index: 3;
+}
+
+/* ===== Confidential — Detail Page ===== */
+.project-cover--blurred {
+  position: relative;
+  overflow: hidden;
+
+  .project-blurred-img-wrap {
+    overflow: hidden;
+
+    img {
+      filter: blur(10px);
+      transform: scale(1.1);
+    }
+  }
+
+  .portfolio-confidential-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 15, 30, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+}
+
+.project-gallery-thumb--blurred {
+  position: relative;
+  overflow: hidden;
+
+  img {
+    filter: blur(8px);
+    transform: scale(1.1);
+  }
+}
+
+.project-cover--abstract {
+  background: var(--abstract-gradient);
+  border: 1px solid var(--border-subtle);
+  position: relative;
+  overflow: hidden;
+
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.12;
+    z-index: 0;
+    pointer-events: none;
+  }
+  &::before {
+    width: 200px; height: 200px;
+    top: -50px; right: -40px;
+    background: var(--abstract-color, var(--accent-cyan));
+  }
+  &::after {
+    width: 130px; height: 130px;
+    bottom: 20px; left: 40px;
+    background: var(--abstract-color, var(--accent-cyan));
+  }
+}
+
+.project-abstract-placeholder {
+  width: 100%;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
 /* Project sidebar */
 .project-sidebar-card {
   background: var(--bg-card);

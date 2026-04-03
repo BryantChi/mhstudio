@@ -32,43 +32,67 @@
       @if($projects->isNotEmpty())
         <div class="portfolio-listing-grid">
           @foreach($projects as $project)
-            @php $isShowcase = $project->visibility === 'showcase'; @endphp
+            @php
+              $isShowcase = $project->visibility === 'showcase';
+              $displayMode = $project->display_mode ?? 'normal';
+              $isConfidential = $displayMode !== 'normal';
+              $abstractColor = $project->abstract_color ?? '#00d4ff';
+            @endphp
             <{{ $isShowcase ? 'div' : 'a' }}
               {!! $isShowcase ? '' : 'href="' . route('portfolio.show', $project->slug) . '"' !!}
               class="portfolio-listing-card animate-on-scroll {{ $isShowcase ? 'portfolio-showcase-only' : '' }}">
-              <div class="portfolio-listing-thumb">
-                @if($project->cover_image)
+              <div class="portfolio-listing-thumb {{ $displayMode === 'blurred' ? 'portfolio-thumb--blurred' : '' }} {{ $displayMode === 'abstract' ? 'portfolio-thumb--abstract' : '' }}"
+                @if($displayMode === 'abstract')
+                  style="--abstract-color: {{ $abstractColor }}; --abstract-gradient: linear-gradient(135deg, {{ $abstractColor }}33, {{ $abstractColor }}11, var(--bg-card));"
+                @endif
+              >
+                @if($displayMode === 'abstract')
+                  {{-- Abstract mode: gradient background only, no image --}}
+                  <div class="portfolio-abstract-icon">
+                    <svg viewBox="0 0 24 24" width="32" height="32"><rect x="3" y="3" width="7" height="7" rx="1" fill="currentColor" opacity="0.3"/><rect x="14" y="3" width="7" height="7" rx="1" fill="currentColor" opacity="0.2"/><rect x="3" y="14" width="7" height="7" rx="1" fill="currentColor" opacity="0.2"/><rect x="14" y="14" width="7" height="7" rx="1" fill="currentColor" opacity="0.3"/></svg>
+                  </div>
+                @elseif($project->cover_image)
                   <img src="{{ $project->cover_image }}" alt="{{ $project->title }}" loading="lazy">
                 @else
                   <div class="portfolio-listing-placeholder">
                     <span>{{ strtoupper($project->category ?? 'PROJECT') }}</span>
                   </div>
                 @endif
-                @if($project->is_featured)
+
+                @if($isConfidential)
+                  <div class="portfolio-confidential-overlay">
+                    <span class="confidential-badge">
+                      <svg viewBox="0 0 24 24" width="14" height="14"><rect x="3" y="11" width="18" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7 11V7a5 5 0 0110 0v4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                      {{ $project->confidential_label_text }}
+                    </span>
+                  </div>
+                @endif
+
+                @if($project->is_featured && !$isConfidential)
                   <span class="portfolio-featured-badge">
                     <svg viewBox="0 0 24 24" width="12" height="12"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" stroke="none"/></svg>
                     精選
                   </span>
                 @endif
                 @unless($isShowcase)
-                <div class="portfolio-listing-overlay">
+                <div class="portfolio-listing-overlay {{ $isConfidential ? 'portfolio-listing-overlay--confidential' : '' }}">
                   <span class="portfolio-overlay-btn">查看詳情</span>
                 </div>
                 @endunless
               </div>
               <div class="portfolio-listing-info">
                 <h3 class="portfolio-listing-title">{{ $project->title }}</h3>
-                @if($project->client)
+                @if($project->effective_client)
                   <div class="portfolio-listing-client">
                     <svg viewBox="0 0 24 24" width="14" height="14">
                       <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" fill="none" stroke="currentColor" stroke-width="1.5"/>
                       <circle cx="12" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
                     </svg>
-                    {{ $project->client }}
+                    {{ $project->effective_client }}
                   </div>
                 @endif
                 <p class="portfolio-listing-excerpt">{{ Str::limit($project->excerpt, 120) }}</p>
-                @if($project->results)
+                @if($project->results && !$project->hide_results)
                 <small class="portfolio-results">{{ $project->results }}</small>
                 @endif
                 @if($project->tech_stack)

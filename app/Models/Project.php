@@ -29,6 +29,11 @@ class Project extends Model
         'status',
         'is_featured',
         'visibility',
+        'display_mode',
+        'hide_client',
+        'hide_results',
+        'confidential_label',
+        'abstract_color',
         'exclude_from_search',
         'share_token',
         'order',
@@ -38,6 +43,8 @@ class Project extends Model
     protected $casts = [
         'tech_stack' => 'array',
         'is_featured' => 'boolean',
+        'hide_client' => 'boolean',
+        'hide_results' => 'boolean',
         'exclude_from_search' => 'boolean',
         'completed_at' => 'date',
     ];
@@ -235,6 +242,30 @@ class Project extends Model
             'hidden' => 'secondary',
             default => 'success',
         };
+    }
+
+    public function getDisplayModeLabelAttribute(): string
+    {
+        return match ($this->display_mode) {
+            'blurred' => '模糊保密',
+            'abstract' => '抽象封面',
+            default => '正常展示',
+        };
+    }
+
+    public function getEffectiveClientAttribute(): ?string
+    {
+        return $this->hide_client ? '機密客戶' : $this->client;
+    }
+
+    public function getConfidentialLabelTextAttribute(): string
+    {
+        return $this->confidential_label ?: 'Confidential Project';
+    }
+
+    public function isConfidential(): bool
+    {
+        return $this->display_mode !== 'normal';
     }
 
     /**
