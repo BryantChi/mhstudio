@@ -103,7 +103,7 @@
                                 <span class="text-muted">未分類</span>
                             @endif
                         </td>
-                        <td>{{ $article->author->name ?? 'Unknown' }}</td>
+                        <td>{{ $article->display_author_name }}</td>
                         <td>
                             <span class="badge bg-{{ $article->status_color }}">
                                 {{ $article->status_label }}
@@ -184,7 +184,7 @@
                             <span class="badge bg-warning ms-1">精選</span>
                         @endif
                     </h6>
-                    <div class="admin-grid-card-subtitle">{{ $article->author->name ?? 'Unknown' }}</div>
+                    <div class="admin-grid-card-subtitle">{{ $article->display_author_name }}</div>
                     <dl class="admin-grid-card-meta">
                         <dt>瀏覽</dt>
                         <dd>{{ number_format($article->views_count) }}</dd>

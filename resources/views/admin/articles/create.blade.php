@@ -219,6 +219,20 @@
                             </label>
                         </div>
                     </div>
+
+                    <div class="mb-3">
+                        <label for="author_name" class="form-label">作者</label>
+                        <input type="text"
+                               class="form-control @error('author_name') is-invalid @enderror"
+                               id="author_name"
+                               name="author_name"
+                               value="{{ old('author_name', auth()->user()->name) }}"
+                               placeholder="自訂作者名稱">
+                        <div class="form-text">留空將顯示系統使用者名稱</div>
+                        @error('author_name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
                 </div>
             </div>
 

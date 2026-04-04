@@ -62,6 +62,7 @@ class ArticleController extends Controller
     {
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
+            'author_name' => 'nullable|string|max:255',
             'title' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:articles',
             'excerpt' => 'nullable|string',
@@ -126,6 +127,7 @@ class ArticleController extends Controller
     {
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
+            'author_name' => 'nullable|string|max:255',
             'title' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:articles,slug,' . $article->id,
             'excerpt' => 'nullable|string',

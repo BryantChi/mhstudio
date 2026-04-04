@@ -159,7 +159,7 @@ if (!function_exists('generate_schema_article')) {
             'dateModified' => $article->updated_at->toIso8601String(),
             'author' => [
                 '@type' => 'Person',
-                'name' => $article->author->name ?? 'Admin',
+                'name' => $article->display_author_name,
             ],
             'publisher' => [
                 '@type' => 'Organization',

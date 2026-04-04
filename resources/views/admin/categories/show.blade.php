@@ -168,7 +168,7 @@
                             @foreach($category->articles->take(10) as $article)
                             <tr>
                                 <td>{{ $article->title }}</td>
-                                <td>{{ $article->author->name ?? 'Unknown' }}</td>
+                                <td>{{ $article->display_author_name }}</td>
                                 <td>
                                     <span class="badge bg-{{ $article->status_color }}">
                                         {{ $article->status_label }}

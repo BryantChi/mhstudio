@@ -20,6 +20,7 @@ class Article extends Model implements HasMedia
 
     protected $fillable = [
         'user_id',
+        'author_name',
         'category_id',
         'title',
         'slug',
@@ -82,6 +83,14 @@ class Article extends Model implements HasMedia
             ->logOnly(['title', 'status', 'published_at'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    /**
+     * 取得顯示用作者名稱：優先使用自訂 author_name，否則回退到關聯使用者
+     */
+    public function getDisplayAuthorNameAttribute(): string
+    {
+        return $this->author_name ?: ($this->author?->name ?? 'Unknown');
     }
 
     /**

@@ -28,7 +28,7 @@
                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" fill="none" stroke="currentColor" stroke-width="1.5"/>
                 <circle cx="12" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
               </svg>
-              {{ $article->author->name }}
+              {{ $article->display_author_name }}
             </div>
           @endif
           <div class="article-meta-item">
@@ -113,9 +113,9 @@
       <div class="article-wrapper">
         <div class="author-card">
             <div class="author-info">
-                <div class="author-avatar">{{ substr($article->author->name ?? 'A', 0, 1) }}</div>
+                <div class="author-avatar">{{ substr($article->display_author_name, 0, 1) }}</div>
                 <div>
-                    <strong>{{ $article->author->name ?? 'MH Studio' }}</strong>
+                    <strong>{{ $article->display_author_name }}</strong>
                     <p>專注於 Web 與 App 開發的技術團隊</p>
                 </div>
             </div>
@@ -184,7 +184,7 @@
     "headline": "{{ $article->title }}",
     "author": {
         "@type": "Person",
-        "name": "{{ $article->author->name ?? 'MH Studio' }}"
+        "name": "{{ $article->display_author_name }}"
     },
     "datePublished": "{{ $article->created_at->toISOString() }}",
     "dateModified": "{{ $article->updated_at->toISOString() }}",

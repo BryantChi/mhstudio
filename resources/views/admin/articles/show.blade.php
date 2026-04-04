@@ -155,7 +155,7 @@
                         </tr>
                         <tr>
                             <th>作者</th>
-                            <td>{{ $article->author->name ?? 'Unknown' }}</td>
+                            <td>{{ $article->display_author_name }}</td>
                         </tr>
                         <tr>
                             <th>狀態</th>

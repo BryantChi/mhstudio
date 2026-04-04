@@ -378,7 +378,7 @@
                                     <td>
                                         <div class="fw-semibold">{{ $article->title }}</div>
                                         <small class="text-muted">
-                                            {{ $article->author->name ?? 'Unknown' }} •
+                                            {{ $article->display_author_name }} •
                                             {{ $article->created_at->diffForHumans() }}
                                         </small>
                                     </td>
