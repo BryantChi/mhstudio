@@ -522,6 +522,37 @@
   color: var(--text-dim);
 }
 
+/* Hero mobile overrides — must come after all hero base styles */
+@media (max-width: 768px) {
+  .hero { min-height: 100svh; }
+  .hero-content { padding: 72px 20px 60px; }
+  .hero-logo { width: 80px; height: 80px; margin-bottom: 16px; }
+  .hero-badge {
+    letter-spacing: 1px;
+    padding: 5px 14px;
+    font-size: 0.65rem;
+    margin-bottom: 20px;
+  }
+  .hero-title-cn { letter-spacing: 8px; margin-bottom: 16px; }
+  .hero-tagline { letter-spacing: 4px; margin-bottom: 24px; }
+  .hero-desc { margin-bottom: 32px; line-height: 1.7; }
+  .hero-actions { gap: 14px; }
+  .btn-primary,
+  .btn-secondary { padding: 12px 28px; font-size: 0.8rem; letter-spacing: 2px; }
+  .hero-scroll-indicator { bottom: 16px; }
+  .hero-scroll-line { height: 28px; }
+}
+@media (max-width: 374px) {
+  .hero-content { padding: 64px 16px 56px; }
+  .hero-logo { width: 68px; height: 68px; margin-bottom: 12px; }
+  .hero-badge { letter-spacing: 0; font-size: 0.6rem; padding: 4px 10px; margin-bottom: 14px; }
+  .hero-title-cn { letter-spacing: 5px; margin-bottom: 10px; }
+  .hero-tagline { letter-spacing: 3px; margin-bottom: 16px; }
+  .hero-desc { margin-bottom: 24px; }
+  .btn-primary,
+  .btn-secondary { padding: 11px 22px; font-size: 0.75rem; letter-spacing: 1.5px; }
+}
+
 /* ===== STATS BAR ===== */
 .stats-bar {
   display: grid;
