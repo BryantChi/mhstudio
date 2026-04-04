@@ -19,7 +19,7 @@ return [
 
     // Hero
     'hero_badge' => 'SOFTWARE ENGINEER & CREATOR',
-    'hero_cta_consult' => 'Contact Us',
+    'hero_cta_consult' => 'Free Assessment',
     'hero_cta_portfolio' => 'View Portfolio',
     'hero_scroll' => 'SCROLL',
 
@@ -87,15 +87,22 @@ return [
     // Contact section
     'contact_label' => 'GET IN TOUCH',
     'contact_title' => 'Contact Us',
-    'contact_desc' => "Have an idea? Don't wait — let's make it happen",
+    'contact_desc' => 'Free assessment of your needs — we\'ll quickly provide a feasible plan and quote',
     'contact_start_project' => 'Start Your Project',
-    'contact_start_project_desc' => 'Whether it\'s a brand new app, a corporate website, or upgrading an existing system, we provide the most professional solutions.',
-    'contact_free_consult' => 'Free consultation available',
+    'contact_start_project_desc' => '⭐ Just provide your basic requirements<br>
+⭐ We\'ll help you organize direction and feasible solutions<br>
+⭐ Ideal for:<br>
+• Building a website or system<br>
+• Optimizing an existing system<br>
+• Not sure where to start<br>',
+    'contact_free_consult' => 'Free consultation | Initial advice & quote provided',
     'contact_name_placeholder' => 'Your Name',
     'contact_email_placeholder' => 'Email Address',
-    'contact_project_type_placeholder' => 'Project Type (App / Website / Other)',
-    'contact_message_placeholder' => 'Describe your requirements...',
+    'contact_project_type_placeholder' => 'Project Type',
+    'contact_message_placeholder' => 'Briefly describe your needs (e.g., what you want to build, current issues, or initial ideas)',
     'contact_submit' => 'Send Message',
+    'contact_line_consult' => 'LINE Chat (Fastest Response)',
+    'contact_line_qr_text' => 'Scan to add LINE — get a free assessment and advice instantly',
 
     // Newsletter section
     'newsletter_label' => 'NEWSLETTER',

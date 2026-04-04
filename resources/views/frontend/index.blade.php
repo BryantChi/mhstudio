@@ -560,7 +560,7 @@
       <div class="contact-wrapper">
         <div class="contact-info animate-on-scroll">
           <h3>{{ __('frontend.contact_start_project') }}</h3>
-          <p>{{ __('frontend.contact_start_project_desc') }}</p>
+          <p>{!! __('frontend.contact_start_project_desc') !!}</p>
           <div class="contact-detail">
             <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
             <span>{{ setting('contact_email', 'bryantchi.work@gmail.com') }}</span>
@@ -581,14 +581,14 @@
           @endphp
           <div class="contact-detail">
             <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 5.58 2 10c0 2.13 1.07 4.04 2.76 5.47L4 20l3.53-2.12C8.87 18.28 10.4 18.5 12 18.5c5.52 0 10-3.58 10-8S17.52 2 12 2z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
-            <a href="{{ $lineHref }}" target="_blank" rel="noopener" style="color: var(--accent-cyan); text-decoration: none;">LINE 官方帳號 {{ setting('line_id') }}</a>
+            <a href="{{ $lineHref }}" target="_blank" rel="noopener" style="color: var(--accent-cyan); text-decoration: none;">{{ __('frontend.contact_line_consult') }} {{ setting('line_id') }}</a>
           </div>
           @if(setting('line_qrcode_url'))
           <div class="contact-line-qr animate-on-scroll" style="margin-top: 20px; text-align: center;">
             <a href="{{ $lineHref }}" target="_blank" rel="noopener" aria-label="LINE QR Code">
               <img src="{{ setting('line_qrcode_url') }}" alt="LINE 官方帳號 {{ setting('line_id') }} QR Code" loading="lazy" class="line-qr-img">
             </a>
-            <p class="line-qr-text">掃碼加入 LINE 諮詢</p>
+            <p class="line-qr-text">{{ __('frontend.contact_line_qr_text') }}</p>
           </div>
           @endif
           @endif
@@ -628,30 +628,31 @@
           <div class="form-group">
             <select name="project_type" required class="form-input">
                 <option value="">專案類型 *</option>
-                <option value="app">App 開發</option>
-                <option value="web">網頁設計</option>
-                <option value="system">系統架構</option>
-                <option value="uiux">UI/UX 設計</option>
-                <option value="other">其他</option>
+                <option value="website">網站建置（形象 / 官網）</option>
+                <option value="system">系統開發（後台 / 平台）</option>
+                <option value="optimize">網站或系統優化 / 改版</option>
+                <option value="maintain">長期維運 / 技術合作</option>
+                <option value="unsure">不確定，需要建議</option>
             </select>
           </div>
           <div class="form-group">
             <select name="budget" class="form-input">
                 <option value="">預算範圍（選填）</option>
-                <option value="under_100k">10 萬以下</option>
-                <option value="100k_300k">10-30 萬</option>
-                <option value="300k_500k">30-50 萬</option>
-                <option value="over_500k">50 萬以上</option>
-                <option value="discuss">需要討論</option>
+                <option value="under_50k">5萬以下（初步需求）</option>
+                <option value="50k_100k">5–10萬</option>
+                <option value="100k_300k">10–30萬</option>
+                <option value="over_300k">30萬以上</option>
+                <option value="unsure">不確定，需建議</option>
             </select>
           </div>
           <div class="form-group">
             <select name="timeline" class="form-input">
                 <option value="">期望時程（選填）</option>
-                <option value="1month">1 個月內</option>
-                <option value="1_3months">1-3 個月</option>
-                <option value="3_6months">3-6 個月</option>
-                <option value="flexible">彈性</option>
+                <option value="asap">盡快開始</option>
+                <option value="1month">1個月內</option>
+                <option value="1_3months">1–3個月</option>
+                <option value="over_3months">3個月以上</option>
+                <option value="unsure">尚未確定，先了解</option>
             </select>
           </div>
           <div class="form-group">

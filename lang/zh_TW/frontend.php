@@ -18,8 +18,8 @@ return [
     'nav_mobile_contact' => '聯繫我們',
 
     // Hero
-    'hero_badge' => 'SOFTWARE ENGINEER & CREATOR',
-    'hero_cta_consult' => '立即諮詢',
+    'hero_badge' => 'Web Development｜System Integration｜Maintenance',
+    'hero_cta_consult' => '免費評估',
     'hero_cta_portfolio' => '瀏覽作品',
     'hero_scroll' => 'SCROLL',
 
@@ -87,15 +87,22 @@ return [
     // Contact section
     'contact_label' => 'GET IN TOUCH',
     'contact_title' => '聯繫我們',
-    'contact_desc' => '有想法就不要等待，讓我們一起將它實現',
+    'contact_desc' => '免費評估你的需求，快速提供可行方案與報價',
     'contact_start_project' => '開始你的專案',
-    'contact_start_project_desc' => '無論是全新的 App 開發、企業官網建置，或是現有系統的升級優化，我們都能提供最專業的解決方案。',
-    'contact_free_consult' => '可預約免費諮詢',
+    'contact_start_project_desc' => '⭐ 只需提供基本需求<br>
+⭐ 我們將協助你整理方向與可行方案<br>
+⭐ 適合：<br>
+• 想做網站或系統<br>
+• 想優化現有系統<br>
+• 不確定該怎麼開始<br>',
+    'contact_free_consult' => '免費諮詢｜提供初步建議與報價',
     'contact_name_placeholder' => '您的姓名',
-    'contact_email_placeholder' => '電子信箱',
-    'contact_project_type_placeholder' => '專案類型（App / 網站 / 其他）',
-    'contact_message_placeholder' => '請描述您的需求...',
+    'contact_email_placeholder' => '聯絡信箱（Email）',
+    'contact_project_type_placeholder' => '專案類型',
+    'contact_message_placeholder' => '簡單描述您的需求即可（例如：想做什麼、目前遇到的問題或初步想法）',
     'contact_submit' => '送出訊息',
+    'contact_line_consult' => 'LINE 諮詢（最快回覆）',
+    'contact_line_qr_text' => '掃碼加入 LINE，立即獲得免費評估與建議',
 
     // Newsletter section
     'newsletter_label' => 'NEWSLETTER',

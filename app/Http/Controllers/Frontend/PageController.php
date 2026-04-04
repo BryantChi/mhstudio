@@ -411,9 +411,9 @@ class PageController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email:rfc,dns|max:255',
-            'project_type' => 'nullable|string|in:app,web,system,uiux,other',
-            'budget' => 'nullable|string|in:under_100k,100k_300k,300k_500k,over_500k,discuss',
-            'timeline' => 'nullable|string|in:1month,1_3months,3_6months,flexible',
+            'project_type' => 'nullable|string|in:website,system,optimize,maintain,unsure',
+            'budget' => 'nullable|string|in:under_50k,50k_100k,100k_300k,over_300k,unsure',
+            'timeline' => 'nullable|string|in:asap,1month,1_3months,over_3months,unsure',
             'message' => 'nullable|string|max:5000',
         ]);
 
