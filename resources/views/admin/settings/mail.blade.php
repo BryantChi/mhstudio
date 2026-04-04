@@ -27,6 +27,7 @@
 
 <form method="POST" action="{{ route('admin.settings.mail.update') }}">
     @csrf
+    @method('PUT')
 
     <div class="row">
         <div class="col-lg-8">

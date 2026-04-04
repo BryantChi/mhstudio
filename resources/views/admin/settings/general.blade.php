@@ -19,6 +19,7 @@
 
 <form method="POST" action="{{ route('admin.settings.general.update') }}" enctype="multipart/form-data">
     @csrf
+    @method('PUT')
 
     <div class="row">
         <div class="col-lg-8">
