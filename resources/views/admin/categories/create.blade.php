@@ -116,7 +116,7 @@
                                 id="parent_id"
                                 name="parent_id">
                             <option value="">無（頂層分類）</option>
-                            @foreach($categories as $category)
+                            @foreach($parentCategories as $category)
                                 <option value="{{ $category->id }}" {{ old('parent_id') == $category->id ? 'selected' : '' }}>
                                     {{ $category->name }}
                                 </option>
