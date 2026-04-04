@@ -362,6 +362,13 @@
             <p>{{ __('frontend.process_step4_desc') }}</p>
           </div>
         </div>
+        <div class="process-step animate-on-scroll">
+          <div class="process-number">05</div>
+          <div class="process-content">
+            <h3>{{ __('frontend.process_step5_title') }}</h3>
+            <p>{{ __('frontend.process_step5_desc') }}</p>
+          </div>
+        </div>
       </div>
     </section>
     @endif
