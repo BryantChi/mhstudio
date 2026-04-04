@@ -227,6 +227,32 @@ class Article extends Model implements HasMedia
     }
 
     /**
+     * 更新 SEO Meta（使用者輸入優先，空白則自動生成）
+     */
+    public function updateSeoMeta(array $input): void
+    {
+        $siteName = setting('site_name', 'MH Studio 孟衡');
+        $description = $this->generateMetaDescription();
+
+        $data = [
+            'meta_title' => !empty($input['meta_title']) ? $input['meta_title'] : mb_substr($this->title . ' | ' . $siteName, 0, 250),
+            'meta_description' => !empty($input['meta_description']) ? $input['meta_description'] : $description,
+            'meta_keywords' => !empty($input['meta_keywords']) ? $input['meta_keywords'] : $this->generateMetaKeywords(),
+            'meta_robots' => 'index, follow',
+            'og_title' => !empty($input['meta_title']) ? $input['meta_title'] : $this->title,
+            'og_description' => !empty($input['meta_description']) ? $input['meta_description'] : $description,
+            'og_image' => $this->featured_image,
+            'og_type' => 'article',
+            'canonical_url' => route('blog.show', $this->slug),
+        ];
+
+        SeoMeta::updateOrCreate(
+            ['model_type' => static::class, 'model_id' => $this->id],
+            $data
+        );
+    }
+
+    /**
      * 生成 Meta Description
      */
     protected function generateMetaDescription(): string

@@ -106,7 +106,7 @@ class PageController extends Controller
     public function blogShow(string $slug): View
     {
         $article = Article::published()
-            ->with(['author', 'category', 'tags'])
+            ->with(['author', 'category', 'tags', 'seoMeta'])
             ->where('slug', $slug)
             ->firstOrFail();
 

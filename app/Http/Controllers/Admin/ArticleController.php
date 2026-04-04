@@ -91,8 +91,8 @@ class ArticleController extends Controller
             }
         }
 
-        // 生成 SEO Meta
-        $article->generateSeoMeta();
+        // 生成 SEO Meta（使用者輸入優先，空白則自動生成）
+        $article->updateSeoMeta($validated);
 
         flash_success('文章建立成功');
 
@@ -159,6 +159,9 @@ class ArticleController extends Controller
         foreach (array_diff($newTags, $oldTags) as $tagId) {
             Tag::find($tagId)?->incrementCount();
         }
+
+        // 更新 SEO Meta
+        $article->updateSeoMeta($validated);
 
         flash_success('文章更新成功');
 

@@ -1,6 +1,25 @@
 @extends('frontend.layouts.app')
 
-@section('title', $article->meta_title ?? $article->title . ' | MH Studio 孟衡')
+@php
+    $seo = $article->seoMeta;
+    $seoTitle = $seo->meta_title ?? $article->meta_title ?? $article->title . ' | MH Studio 孟衡';
+    $seoDescription = $seo->meta_description ?? $article->meta_description ?? $article->excerpt ?? '';
+    $seoKeywords = $seo->meta_keywords ?? $article->meta_keywords ?? '';
+    $seoImage = $seo->og_image ?? $article->featured_image ?? '';
+@endphp
+
+@section('title', $seoTitle)
+@section('meta_description', $seoDescription)
+@section('meta_keywords', $seoKeywords)
+@section('og_type', 'article')
+@section('og_title', $seo->og_title ?? $article->title)
+@section('og_description', $seo->og_description ?? $seoDescription)
+@if($seoImage)
+    @section('og_image', $seoImage)
+@endif
+@if($seo && $seo->canonical_url)
+    @section('canonical', $seo->canonical_url)
+@endif
 
 @section('content')
     @include('frontend.partials.navigation')
