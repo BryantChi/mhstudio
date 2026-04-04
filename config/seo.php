@@ -64,7 +64,7 @@ return [
     */
     'schema' => [
         'organization' => [
-            'name' => 'MH Studio 孟衡工作室',
+            'name' => 'MH Studio 孟衡數位',
             'logo' => env('APP_URL') . '/images/logo.png',
             'url' => env('APP_URL'),
             'description' => '提供客製化網頁設計、App 開發、系統架構與 UI/UX 設計服務的台中在地技術團隊。',

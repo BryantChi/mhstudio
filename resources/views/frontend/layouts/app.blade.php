@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="@yield('meta_description', __('frontend.meta_description'))">
-    <meta name="keywords" content="@yield('meta_keywords', '網頁設計,App開發,網站製作,系統開發,UI設計,UX設計,台中網頁設計,MH Studio,孟衡工作室')">
-    <meta name="author" content="MH Studio 孟衡工作室">
+    <meta name="keywords" content="@yield('meta_keywords', '網頁設計,App開發,網站製作,系統開發,UI設計,UX設計,台中網頁設計,MH Studio,孟衡數位')">
+    <meta name="author" content="MH Studio 孟衡數位">
     <meta name="robots" content="@yield('meta_robots', 'index, follow')">
     <title>@yield('title', __('frontend.site_title'))</title>
 
@@ -63,8 +63,8 @@
     {
         "@context": "https://schema.org",
         "@type": "ProfessionalService",
-        "name": "MH Studio 孟衡工作室",
-        "alternateName": "孟衡工作室",
+        "name": "MH Studio 孟衡數位",
+        "alternateName": "孟衡數位",
         "url": "{{ config('app.url') }}",
         "logo": "{{ config('app.url') }}/images/logo.png",
         "description": "提供客製化網頁設計、App 開發、系統架構與 UI/UX 設計服務的台中在地技術團隊。",

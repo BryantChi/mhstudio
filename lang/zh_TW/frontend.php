@@ -127,7 +127,7 @@ return [
     'about_slogan' => 'Balance &bull; Precision &bull; Innovation',
     'about_story_label' => 'OUR STORY',
     'about_story_title' => '從熱愛到專業',
-    'about_story_p1' => 'MH Studio（孟衡工作室）創立於對技術的純粹熱愛與對完美產品的不懈追求。從第一行程式碼開始，我們就相信：好的軟體產品不僅是功能的堆疊，更是技術、設計與使用者體驗的精妙平衡。',
+    'about_story_p1' => 'MH Studio（孟衡數位）創立於對技術的純粹熱愛與對完美產品的不懈追求。從第一行程式碼開始，我們就相信：好的軟體產品不僅是功能的堆疊，更是技術、設計與使用者體驗的精妙平衡。',
     'about_story_p2' => '「孟衡」二字取自平衡與衡量之意。在每一個專案中，我們追求技術深度與使用者體驗之間的平衡，在創新與穩定之間找到最佳的衡量點。這個理念貫穿我們所有的工作。',
     'about_story_p3' => '多年來，我們從行動應用開發起步，逐漸拓展到網頁開發、系統架構與 UI/UX 設計，為各行業的客戶打造超越期待的數位產品。無論是金融科技的嚴謹安全、健康管理的精準數據，還是品牌官網的視覺衝擊，我們都全力以赴。',
     'about_milestones_label' => 'MILESTONES',
@@ -139,7 +139,7 @@ return [
     'about_milestone_2022_title' => '拓展 - 全端開發能力',
     'about_milestone_2022_desc' => '將技術觸角延伸至網頁開發與後端架構，精通 Laravel、Vue.js 等技術棧。開始承接企業官網與電商平台開發專案。',
     'about_milestone_2024_title' => '蛻變 - MH Studio 工作室成立',
-    'about_milestone_2024_desc' => '正式成立 MH Studio（孟衡工作室），整合 App 開發、網頁設計、系統架構與 UI/UX 設計的全方位服務，為客戶提供一站式數位解決方案。',
+    'about_milestone_2024_desc' => '正式成立 MH Studio（孟衡數位），整合 App 開發、網頁設計、系統架構與 UI/UX 設計的全方位服務，為客戶提供一站式數位解決方案。',
     'about_milestone_now_title' => '前行 - 持續創新',
     'about_milestone_now_desc' => '持續探索 AI、Jetpack Compose、Flutter 等前沿技術，致力於為每一位客戶打造超越期待的數位產品體驗。',
     'about_skills_label' => 'EXPERTISE',
@@ -246,6 +246,6 @@ return [
     'loading' => '載入中...',
 
     // Meta / Layout
-    'meta_description' => 'MH Studio 孟衡工作室 — 台中客製化網頁設計、App 開發、系統架構與 UI/UX 設計。Balance · Precision · Innovation，為企業打造高品質數位產品，免費諮詢。',
+    'meta_description' => 'MH Studio 孟衡數位 — 台中客製化網頁設計、App 開發、系統架構與 UI/UX 設計。Balance · Precision · Innovation，為企業打造高品質數位產品，免費諮詢。',
     'site_title' => 'MH Studio 孟衡 | 網頁設計·App開發·系統架構 | 台中',
 ];

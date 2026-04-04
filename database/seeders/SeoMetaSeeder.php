@@ -38,7 +38,7 @@ class SeoMetaSeeder extends Seeder
                         'description' => strip_tags($service->excerpt ?? ''),
                         'provider' => [
                             '@type' => 'Organization',
-                            'name' => 'MH Studio 孟衡工作室',
+                            'name' => 'MH Studio 孟衡數位',
                             'url' => $appUrl,
                         ],
                         'areaServed' => ['@type' => 'Country', 'name' => 'Taiwan'],
@@ -116,7 +116,7 @@ class SeoMetaSeeder extends Seeder
             $desc .= ' 方案費用：' . $price . '。';
         }
 
-        return $this->truncate($desc . ' 免費諮詢 | MH Studio 孟衡工作室', 160);
+        return $this->truncate($desc . ' 免費諮詢 | MH Studio 孟衡數位', 160);
     }
 
     /**
@@ -124,7 +124,7 @@ class SeoMetaSeeder extends Seeder
      */
     protected function serviceKeywords(Service $service): string
     {
-        $base = ['MH Studio', '孟衡工作室', '台中'];
+        $base = ['MH Studio', '孟衡數位', '台中'];
 
         $typeKeywords = match ($service->type) {
             'website' => ['網頁設計', '網站製作', '客製化網站', 'RWD響應式', '企業官網'],
