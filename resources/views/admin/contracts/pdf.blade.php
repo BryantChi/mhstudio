@@ -5,7 +5,7 @@
     <title>{{ $contract->contract_number }}</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #333; line-height: 1.6; }
+        body { font-family: 'notosanstc', 'DejaVu Sans', sans-serif; font-size: 11px; color: #333; line-height: 1.6; }
 
         .header { text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 15px; margin-bottom: 20px; }
         .header h1 { font-size: 22px; color: #2c3e50; margin-bottom: 5px; }
