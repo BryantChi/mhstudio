@@ -189,6 +189,20 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+
+                    <div class="mb-3">
+                        <label for="bank_account_holder" class="form-label">匯款戶名</label>
+                        <input type="text"
+                               class="form-control @error('bank_account_holder') is-invalid @enderror"
+                               id="bank_account_holder"
+                               name="bank_account_holder"
+                               value="{{ old('bank_account_holder', setting('bank_account_holder', '')) }}"
+                               placeholder="留空則使用公司全名">
+                        <small class="text-muted">顯示於報價單／合約 PDF 的匯款資訊區塊</small>
+                        @error('bank_account_holder')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
                 </div>
             </div>
 

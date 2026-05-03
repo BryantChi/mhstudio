@@ -291,6 +291,7 @@ class SettingController extends Controller
             'bank_code' => 'nullable|string|max:20',
             'bank_account' => 'nullable|string|max:50',
             'bank_branch' => 'nullable|string|max:255',
+            'bank_account_holder' => 'nullable|string|max:255',
         ]);
 
         Setting::setMany($validated, 'company');

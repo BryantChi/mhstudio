@@ -4,85 +4,136 @@
     <meta charset="UTF-8">
     <title>{{ $quote->quote_number }}</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'notosanstc', 'DejaVu Sans', sans-serif; font-size: 11px; color: #333; line-height: 1.6; }
+        @page { margin: 18mm; }
 
-        .header { text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 15px; margin-bottom: 20px; }
-        .header h1 { font-size: 22px; color: #2c3e50; margin-bottom: 5px; }
-        .header .company-name { font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 3px; }
-        .header .company-info { font-size: 10px; color: #666; }
+        body { margin: 0; padding: 0; }
+        h1, h2, h3, h4, p, ul, ol, li { margin: 0; padding: 0; }
+        table { margin: 0; padding: 0; border-collapse: collapse; }
+        td, th { margin: 0; }
+        * { box-sizing: border-box; }
+        body { font-family: 'notosanstc', 'DejaVu Sans', sans-serif; font-size: 11px; color: #2c3e50; line-height: 1.7; }
 
-        .quote-number { text-align: right; font-size: 12px; color: #666; margin-bottom: 15px; }
-        .quote-number strong { color: #333; }
+        /* Header */
+        .doc-header { text-align: center; padding-bottom: 14px; margin-bottom: 6px; }
+        .doc-title { font-size: 28px; font-weight: bold; color: #2c3e50; letter-spacing: 14px; padding-left: 14px; }
+        .doc-subtitle { font-size: 9px; color: #adb5bd; letter-spacing: 4px; margin-top: 4px; }
 
-        .meta-table { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
-        .meta-table td { padding: 5px 10px; font-size: 11px; vertical-align: top; }
-        .meta-table .label { font-weight: bold; width: 100px; color: #555; }
-        .meta-table .value { color: #333; }
+        .company-bar { border-top: 2px solid #2c3e50; border-bottom: 1px solid #e9ecef; padding: 10px 0; margin-bottom: 18px; text-align: center; }
+        .company-bar .company-name { font-size: 14px; font-weight: bold; color: #2c3e50; letter-spacing: 1px; margin-bottom: 3px; }
+        .company-bar .company-info { font-size: 9.5px; color: #6c757d; line-height: 1.7; }
 
-        .section-title { font-size: 13px; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin: 18px 0 8px 0; }
+        /* Quote info row (number + dates) */
+        .info-row { width: 100%; margin-bottom: 18px; }
+        .info-row td { vertical-align: top; padding: 0; }
+        .info-cell { font-size: 10.5px; color: #6c757d; line-height: 1.9; }
+        .info-cell strong { color: #2c3e50; font-weight: bold; }
+        .info-cell.right { text-align: right; }
 
-        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-        .items-table th { background-color: #2c3e50; color: #fff; padding: 8px 10px; text-align: left; font-size: 10px; }
+        /* Meta table */
+        .meta-table { width: 100%; margin-bottom: 22px; background: #fafbfc; border: 1px solid #e9ecef; }
+        .meta-table td { padding: 9px 14px; font-size: 10.5px; vertical-align: top; border-bottom: 1px solid #e9ecef; }
+        .meta-table tr:last-child td { border-bottom: none; }
+        .meta-table .label { font-weight: bold; width: 90px; color: #6c757d; background: #f1f3f5; }
+        .meta-table .value { color: #2c3e50; }
+
+        /* Section title (with left accent) */
+        .section-title { font-size: 12px; font-weight: bold; color: #2c3e50; padding: 6px 10px; margin: 20px 0 10px 0; letter-spacing: 1.5px; border-left: 4px solid #2c3e50; background: #f8f9fa; }
+
+        /* Items table */
+        .items-table { width: 100%; margin-bottom: 16px; table-layout: fixed; }
+        .items-table th { background-color: #2c3e50; color: #fff; padding: 10px 8px; text-align: left; font-size: 10px; font-weight: bold; letter-spacing: 0.5px; }
         .items-table th.text-right { text-align: right; }
         .items-table th.text-center { text-align: center; }
-        .items-table td { padding: 6px 10px; border-bottom: 1px solid #eee; font-size: 10px; }
+        .items-table td { padding: 9px 8px; border-bottom: 1px solid #e9ecef; font-size: 10px; word-wrap: break-word; }
+        .items-table tbody tr:nth-child(even) td { background-color: #fafbfc; }
         .items-table td.text-right { text-align: right; }
         .items-table td.text-center { text-align: center; }
-        .items-table tfoot td { border-top: 2px solid #ddd; font-size: 11px; }
-        .items-table tfoot .total-row td { font-weight: bold; font-size: 12px; border-top: 2px solid #2c3e50; }
+        .items-table .col-no { width: 6%; }
+        .items-table .col-desc { width: 44%; }
+        .items-table .col-qty { width: 9%; }
+        .items-table .col-unit { width: 9%; }
+        .items-table .col-price { width: 16%; }
+        .items-table .col-amount { width: 16%; }
 
-        .summary-table { width: 50%; margin-left: auto; margin-bottom: 20px; border-collapse: collapse; }
-        .summary-table td { padding: 4px 10px; font-size: 11px; }
-        .summary-table .total-row td { font-weight: bold; font-size: 13px; border-top: 2px solid #2c3e50; padding-top: 8px; }
+        /* Summary table */
+        .summary-table { width: 55%; margin-left: 45%; margin-bottom: 22px; }
+        .summary-table td { padding: 7px 14px; font-size: 11px; }
+        .summary-table tr td:first-child { color: #6c757d; text-align: right; }
+        .summary-table tr td:last-child { text-align: right; width: 130px; color: #2c3e50; }
+        .summary-table .total-row td { font-weight: bold; font-size: 14px; color: #fff; background: #2c3e50; border-top: 2px solid #2c3e50; padding-top: 10px; padding-bottom: 10px; }
+        .summary-table .total-row td:first-child { color: #fff; }
 
-        .clause-section { margin-bottom: 12px; }
-        .clause-section h3 { font-size: 11px; font-weight: bold; color: #2c3e50; margin-bottom: 4px; }
-        .clause-section p, .clause-section li { font-size: 10px; line-height: 1.7; color: #555; }
-        .clause-section ul { padding-left: 16px; margin: 0; }
+        /* Clauses */
+        .clause-section { margin-bottom: 14px; }
+        .clause-section h3 { font-size: 11.5px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; letter-spacing: 0.5px; }
+        .clause-section p, .clause-section li { font-size: 10px; line-height: 1.85; color: #495057; }
+        .clause-section ul { padding-left: 18px; }
 
-        .payment-info { background-color: #f8f9fa; padding: 10px 15px; margin: 15px 0; border-radius: 4px; border-left: 3px solid #2c3e50; }
-        .payment-info h3 { font-size: 12px; color: #2c3e50; margin-bottom: 5px; }
-        .payment-info p { font-size: 10px; margin-bottom: 2px; }
+        /* Payment info */
+        .payment-info { background-color: #f8f9fa; padding: 12px 16px; margin: 18px 0; border-left: 3px solid #2c3e50; }
+        .payment-info h3 { font-size: 12px; color: #2c3e50; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .payment-info p { font-size: 10px; margin-bottom: 4px; line-height: 1.6; }
 
-        .notes-section { margin-top: 15px; padding: 10px 15px; background: #fafafa; border: 1px solid #eee; }
-        .notes-section h3 { font-size: 11px; color: #2c3e50; margin-bottom: 6px; }
-        .notes-section ol { padding-left: 16px; margin: 0; }
-        .notes-section li { font-size: 9px; color: #777; line-height: 1.8; }
+        /* Notes */
+        .notes-section { margin-top: 18px; padding: 12px 16px; background: #fafafa; border: 1px solid #e9ecef; }
+        .notes-section h3 { font-size: 11px; color: #2c3e50; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .notes-section ol { padding-left: 20px; }
+        .notes-section li { font-size: 9.5px; color: #6c757d; line-height: 1.9; }
 
-        .signature-section { margin-top: 30px; page-break-inside: avoid; }
-        .signature-row { display: table; width: 100%; margin-top: 20px; }
-        .signature-col { display: table-cell; width: 48%; vertical-align: top; }
-        .signature-col.right { text-align: right; padding-left: 4%; }
-        .signature-line { border-bottom: 1px solid #333; width: 200px; margin: 30px 0 5px 0; display: inline-block; }
-        .signature-label { font-size: 10px; color: #666; }
-        .signature-name { font-size: 11px; font-weight: bold; margin-top: 5px; }
+        /* Signature */
+        .signature-section { margin-top: 32px; page-break-inside: avoid; }
+        .signature-row { width: 100%; margin-top: 20px; }
+        .signature-col { display: table-cell; width: 48%; vertical-align: top; padding: 0 6px; }
+        .signature-col.right { padding-left: 4%; }
+        .signature-block { padding: 12px 14px; border: 1px solid #e9ecef; background: #fafbfc; min-height: 130px; }
+        .signature-block .party-label { font-size: 10px; color: #6c757d; letter-spacing: 1px; margin-bottom: 6px; }
+        .signature-block .party-name { font-size: 12px; font-weight: bold; color: #2c3e50; margin-bottom: 4px; }
+        .signature-block .party-info { font-size: 9px; color: #6c757d; line-height: 1.7; margin-bottom: 12px; }
+        .signature-line { border-bottom: 1px solid #2c3e50; height: 28px; margin-top: 8px; }
+        .signature-line-label { font-size: 9px; color: #6c757d; margin-top: 3px; }
 
-        .footer { position: fixed; bottom: 20px; left: 0; right: 0; text-align: center; font-size: 9px; color: #999; border-top: 1px solid #eee; padding-top: 10px; }
+        .footer { position: fixed; bottom: -10mm; left: 0; right: 0; text-align: center; font-size: 8.5px; color: #adb5bd; }
     </style>
 </head>
 <body>
-    {{-- 公司 Header --}}
-    <div class="header">
-        <div class="company-name">{{ setting('company_name', 'MH Studio') }}</div>
-        <div class="company-info">
-            承攬人：{{ setting('company_owner', '') }} | TEL：{{ setting('company_phone', '') }}
-            <br>
-            Email: {{ setting('company_email', '') }} | Web: {{ setting('company_website', '') }}
-        </div>
-        <h1>報 價 單</h1>
+    {{-- 報價單 標題 --}}
+    <div class="doc-header">
+        <div class="doc-title">報 價 單</div>
+        <div class="doc-subtitle">Q U O T A T I O N</div>
     </div>
 
-    {{-- 報價編號 --}}
-    <div class="quote-number">
-        <strong>報價編號：</strong>{{ $quote->quote_number }}
-        <br>
-        <strong>報價日期：</strong>{{ $quote->created_at->format('Y-m-d') }}
-        @if($quote->valid_until)
-        <br>
-        <strong>有效期限：</strong>{{ $quote->valid_until->format('Y-m-d') }}
-        @endif
+    {{-- 公司資訊 Bar --}}
+    <div class="company-bar">
+        <div class="company-name">{{ setting('company_name', 'MH Studio') }}</div>
+        <div class="company-info">
+            承攬人：{{ setting('company_owner', '') }} ｜ TEL：{{ setting('company_phone', '') }} ｜ Email：{{ setting('company_email', '') }}
+            @if(setting('company_website'))
+                ｜ {{ setting('company_website') }}
+            @endif
+        </div>
     </div>
+
+    {{-- 報價編號 / 日期 --}}
+    <table class="info-row">
+        <tr>
+            <td class="info-cell">
+                <strong>客戶 / </strong>{{ $quote->client->name }}
+                @if($quote->client->company)
+                <br><strong>公司 / </strong>{{ $quote->client->company }}
+                @endif
+                @if($quote->client->tax_id)
+                <br><strong>統編 / </strong>{{ $quote->client->tax_id }}
+                @endif
+            </td>
+            <td class="info-cell right">
+                <strong>報價編號 / </strong>{{ $quote->quote_number }}<br>
+                <strong>報價日期 / </strong>{{ $quote->created_at->format('Y-m-d') }}
+                @if($quote->valid_until)
+                <br><strong>有效期限 / </strong>{{ $quote->valid_until->format('Y-m-d') }}
+                @endif
+            </td>
+        </tr>
+    </table>
 
     {{-- 客戶/合約元資料 --}}
     <table class="meta-table">
@@ -92,12 +143,16 @@
             <td class="label">簽約日期</td>
             <td class="value">{{ $quote->created_at->format('Y-m-d') }}</td>
         </tr>
-        @if($quote->client->company)
+        @if($quote->client->company || $quote->client->tax_id)
         <tr>
-            <td class="label">公司/統編</td>
-            <td class="value">{{ $quote->client->company }}</td>
+            <td class="label">公司</td>
+            <td class="value">{{ $quote->client->company ?: '-' }}</td>
+            <td class="label">統一編號</td>
+            <td class="value">{{ $quote->client->tax_id ?: '-' }}</td>
+        </tr>
+        <tr>
             <td class="label">幣別</td>
-            <td class="value">{{ $quote->currency ?? 'TWD' }}</td>
+            <td class="value" colspan="3">{{ $quote->currency ?? 'TWD' }}</td>
         </tr>
         @endif
         @if($quote->project)
@@ -113,23 +168,23 @@
     <table class="items-table">
         <thead>
             <tr>
-                <th width="30">#</th>
-                <th>服務項目 / 內容</th>
-                <th class="text-center" width="60">數量</th>
-                <th class="text-center" width="50">單位</th>
-                <th class="text-right" width="100">單價</th>
-                <th class="text-right" width="100">小計</th>
+                <th class="col-no">#</th>
+                <th class="col-desc">服務項目 / 內容</th>
+                <th class="col-qty text-center">數量</th>
+                <th class="col-unit text-center">單位</th>
+                <th class="col-price text-right">單價</th>
+                <th class="col-amount text-right">小計</th>
             </tr>
         </thead>
         <tbody>
             @foreach($quote->items as $i => $item)
             <tr>
-                <td>{{ $i + 1 }}</td>
-                <td>{{ $item->description }}</td>
-                <td class="text-center">{{ $item->quantity }}</td>
-                <td class="text-center">{{ $item->unit }}</td>
-                <td class="text-right">NT$ {{ number_format($item->unit_price) }}</td>
-                <td class="text-right">NT$ {{ number_format($item->amount) }}</td>
+                <td class="col-no">{{ $i + 1 }}</td>
+                <td class="col-desc">{{ $item->description }}</td>
+                <td class="col-qty text-center">{{ $item->quantity }}</td>
+                <td class="col-unit text-center">{{ $item->unit }}</td>
+                <td class="col-price text-right">NT$ {{ number_format($item->unit_price) }}</td>
+                <td class="col-amount text-right">NT$ {{ number_format($item->amount) }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -237,7 +292,7 @@
         @if(setting('bank_account'))
         <p><strong>帳號：</strong>{{ setting('bank_account') }}</p>
         @endif
-        <p><strong>戶名：</strong>{{ setting('company_name_full', setting('company_name', 'MH Studio')) }}</p>
+        <p><strong>戶名：</strong>{{ setting('bank_account_holder') ?: setting('company_name_full', setting('company_name', 'MH Studio')) }}</p>
     </div>
     @endif
 
@@ -252,29 +307,35 @@
     {{-- 雙方簽名區 --}}
     <div class="signature-section">
         <div class="section-title">確認簽署</div>
-        <div class="signature-row">
-            <div class="signature-col">
-                <p><strong>甲方（委託方）</strong></p>
-                <div class="signature-name">{{ $quote->client->name }}</div>
-                <div class="signature-line"></div>
-                <div class="signature-label">簽名 / 蓋章</div>
-                <br>
-                <div class="signature-line"></div>
-                <div class="signature-label">日期</div>
-            </div>
-            <div class="signature-col right">
-                <p><strong>乙方（受託方）</strong></p>
-                <div class="signature-name">{{ setting('company_owner', '') }}</div>
-                <div class="signature-label">{{ setting('company_name', 'MH Studio') }}</div>
-                <div class="signature-label">{{ setting('company_address', '') }}</div>
-                <div class="signature-label">TEL: {{ setting('company_phone', '') }}</div>
-                <div class="signature-line"></div>
-                <div class="signature-label">簽名 / 蓋章</div>
-                <br>
-                <div class="signature-line"></div>
-                <div class="signature-label">日期</div>
-            </div>
-        </div>
+        <table class="signature-row" style="width:100%;">
+            <tr>
+                <td class="signature-col" style="width:48%;">
+                    <div class="signature-block">
+                        <div class="party-label">甲方（委託方）</div>
+                        <div class="party-name">{{ $quote->client->name }}</div>
+                        @if($quote->client->company)
+                        <div class="party-info">{{ $quote->client->company }}</div>
+                        @endif
+                        <div class="signature-line"></div>
+                        <div class="signature-line-label">簽名 / 蓋章 ＋ 日期</div>
+                    </div>
+                </td>
+                <td style="width:4%;"></td>
+                <td class="signature-col" style="width:48%;">
+                    <div class="signature-block">
+                        <div class="party-label">乙方（受託方）</div>
+                        <div class="party-name">{{ setting('company_owner', '') ?: setting('company_name', 'MH Studio') }}</div>
+                        <div class="party-info">
+                            {{ setting('company_name', 'MH Studio') }}<br>
+                            @if(setting('company_address')){{ setting('company_address') }}<br>@endif
+                            TEL: {{ setting('company_phone', '') }}
+                        </div>
+                        <div class="signature-line"></div>
+                        <div class="signature-line-label">簽名 / 蓋章 ＋ 日期</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
     </div>
 
     {{-- 頁尾 --}}

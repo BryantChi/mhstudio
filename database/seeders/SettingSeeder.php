@@ -641,6 +641,15 @@ class SettingSeeder extends Seeder
                 'is_public' => false,
                 'is_editable' => true,
             ],
+            [
+                'group' => 'company',
+                'key' => 'bank_account_holder',
+                'value' => '',
+                'type' => 'string',
+                'description' => '匯款戶名（PDF 顯示用）',
+                'is_public' => false,
+                'is_editable' => true,
+            ],
         ];
 
         foreach ($settings as $setting) {

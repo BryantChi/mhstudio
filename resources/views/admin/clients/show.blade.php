@@ -293,6 +293,7 @@
                 <table class="table">
                     <tbody>
                         <tr><th width="100">公司</th><td>{{ $client->company ?? '-' }}</td></tr>
+                        <tr><th>統一編號</th><td>{{ $client->tax_id ?? '-' }}</td></tr>
                         <tr><th>聯繫人</th><td>{{ $client->contact_person ?? '-' }}</td></tr>
                         <tr><th>Email</th><td>{{ $client->email ? '<a href="mailto:' . $client->email . '">' . $client->email . '</a>' : '-' }}</td></tr>
                         <tr><th>電話</th><td>{{ $client->phone ?? '-' }}</td></tr>

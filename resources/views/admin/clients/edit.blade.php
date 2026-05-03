@@ -49,6 +49,12 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
+                            <label for="tax_id" class="form-label">統一編號</label>
+                            <input type="text" class="form-control @error('tax_id') is-invalid @enderror"
+                                   id="tax_id" name="tax_id" value="{{ old('tax_id', $client->tax_id) }}" placeholder="例如：12345678" maxlength="20">
+                            @error('tax_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-6 mb-3">
                             <label for="contact_person" class="form-label">聯繫人</label>
                             <input type="text" class="form-control @error('contact_person') is-invalid @enderror"
                                    id="contact_person" name="contact_person" value="{{ old('contact_person', $client->contact_person) }}" placeholder="主要聯繫人姓名">
