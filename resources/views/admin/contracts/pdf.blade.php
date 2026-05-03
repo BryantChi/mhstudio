@@ -11,40 +11,41 @@
         table { margin: 0; padding: 0; border-collapse: collapse; }
         td, th { margin: 0; }
         * { box-sizing: border-box; }
-        body { font-family: 'notosanstc', 'DejaVu Sans', sans-serif; font-size: 11px; color: #2c3e50; line-height: 1.7; }
+        body { font-family: 'notosanstc', 'DejaVu Sans', sans-serif; font-size: 12px; color: #2c3e50; line-height: 1.7; }
 
         /* Header */
         .doc-header { text-align: center; padding-bottom: 14px; margin-bottom: 6px; }
         .doc-title { font-size: 28px; font-weight: bold; color: #2c3e50; letter-spacing: 14px; padding-left: 14px; }
-        .doc-subtitle { font-size: 9px; color: #adb5bd; letter-spacing: 4px; margin-top: 4px; }
+        .doc-subtitle { font-size: 10px; color: #adb5bd; letter-spacing: 4px; margin-top: 4px; }
+        .doc-name { text-align: center; font-size: 16px; font-weight: bold; color: #495057; margin: 12px 0 4px; }
 
         .company-bar { border-top: 2px solid #2c3e50; border-bottom: 1px solid #e9ecef; padding: 10px 0; margin-bottom: 18px; text-align: center; }
-        .company-bar .company-name { font-size: 14px; font-weight: bold; color: #2c3e50; letter-spacing: 1px; margin-bottom: 3px; }
-        .company-bar .company-info { font-size: 9.5px; color: #6c757d; line-height: 1.7; }
+        .company-bar .company-name { font-size: 15px; font-weight: bold; color: #2c3e50; letter-spacing: 1px; margin-bottom: 3px; }
+        .company-bar .company-info { font-size: 10.5px; color: #6c757d; line-height: 1.7; }
 
         /* Info row */
         .info-row { width: 100%; margin-bottom: 18px; }
         .info-row td { vertical-align: top; padding: 0; }
-        .info-cell { font-size: 10.5px; color: #6c757d; line-height: 1.9; }
+        .info-cell { font-size: 11.5px; color: #6c757d; line-height: 1.9; }
         .info-cell strong { color: #2c3e50; font-weight: bold; }
         .info-cell.right { text-align: right; }
 
         /* Meta table */
         .meta-table { width: 100%; margin-bottom: 22px; background: #fafbfc; border: 1px solid #e9ecef; }
-        .meta-table td { padding: 9px 14px; font-size: 10.5px; vertical-align: top; border-bottom: 1px solid #e9ecef; }
+        .meta-table td { padding: 9px 14px; font-size: 11.5px; vertical-align: top; border-bottom: 1px solid #e9ecef; }
         .meta-table tr:last-child td { border-bottom: none; }
         .meta-table .label { font-weight: bold; width: 90px; color: #6c757d; background: #f1f3f5; }
         .meta-table .value { color: #2c3e50; }
 
         /* Section title */
-        .section-title { font-size: 12px; font-weight: bold; color: #2c3e50; padding: 6px 10px; margin: 20px 0 10px 0; letter-spacing: 1.5px; border-left: 4px solid #2c3e50; background: #f8f9fa; }
+        .section-title { font-size: 13px; font-weight: bold; color: #2c3e50; padding: 6px 10px; margin: 20px 0 10px 0; letter-spacing: 1.5px; border-left: 4px solid #2c3e50; background: #f8f9fa; }
 
         /* Items table */
         .items-table { width: 100%; margin-bottom: 16px; table-layout: fixed; }
-        .items-table th { background-color: #2c3e50; color: #fff; padding: 10px 8px; text-align: left; font-size: 10px; font-weight: bold; letter-spacing: 0.5px; }
+        .items-table th { background-color: #2c3e50; color: #fff; padding: 10px 8px; text-align: left; font-size: 11px; font-weight: bold; letter-spacing: 0.5px; }
         .items-table th.text-right { text-align: right; }
         .items-table th.text-center { text-align: center; }
-        .items-table td { padding: 9px 8px; border-bottom: 1px solid #e9ecef; font-size: 10px; word-wrap: break-word; }
+        .items-table td { padding: 9px 8px; border-bottom: 1px solid #e9ecef; font-size: 11px; word-wrap: break-word; }
         .items-table tbody tr:nth-child(even) td { background-color: #fafbfc; }
         .items-table td.text-right { text-align: right; }
         .items-table td.text-center { text-align: center; }
@@ -57,35 +58,35 @@
 
         /* Summary */
         .summary-table { width: 55%; margin-left: 45%; margin-bottom: 22px; }
-        .summary-table td { padding: 7px 14px; font-size: 11px; }
+        .summary-table td { padding: 7px 14px; font-size: 12px; }
         .summary-table tr td:first-child { color: #6c757d; text-align: right; }
         .summary-table tr td:last-child { text-align: right; width: 130px; color: #2c3e50; }
-        .summary-table .total-row td { font-weight: bold; font-size: 14px; color: #fff; background: #2c3e50; border-top: 2px solid #2c3e50; padding-top: 10px; padding-bottom: 10px; }
+        .summary-table .total-row td { font-weight: bold; font-size: 15px; color: #fff; background: #2c3e50; border-top: 2px solid #2c3e50; padding-top: 10px; padding-bottom: 10px; }
         .summary-table .total-row td:first-child { color: #fff; }
 
         /* Contract content */
         .content-section { margin-bottom: 24px; }
-        .content-section .content-body { white-space: pre-line; font-size: 11px; line-height: 1.95; color: #495057; }
+        .content-section .content-body { white-space: pre-line; font-size: 12px; line-height: 1.95; color: #495057; }
 
         /* Payment info */
         .payment-section { background-color: #f8f9fa; padding: 12px 16px; margin: 18px 0; border-left: 3px solid #2c3e50; }
-        .payment-section h3 { font-size: 12px; color: #2c3e50; margin-bottom: 8px; letter-spacing: 0.5px; }
-        .payment-section p { font-size: 10px; margin-bottom: 4px; line-height: 1.6; }
+        .payment-section h3 { font-size: 13px; color: #2c3e50; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .payment-section p { font-size: 11px; margin-bottom: 4px; line-height: 1.6; }
 
         /* Signature */
         .signature-section { margin-top: 32px; page-break-inside: avoid; }
         .signature-row { width: 100%; margin-top: 20px; }
         .signature-col { display: table-cell; width: 48%; vertical-align: top; padding: 0 6px; }
         .signature-block { padding: 12px 14px; border: 1px solid #e9ecef; background: #fafbfc; min-height: 130px; }
-        .signature-block .party-label { font-size: 10px; color: #6c757d; letter-spacing: 1px; margin-bottom: 6px; }
-        .signature-block .party-name { font-size: 12px; font-weight: bold; color: #2c3e50; margin-bottom: 4px; }
-        .signature-block .party-info { font-size: 9px; color: #6c757d; line-height: 1.7; margin-bottom: 12px; }
+        .signature-block .party-label { font-size: 11px; color: #6c757d; letter-spacing: 1px; margin-bottom: 6px; }
+        .signature-block .party-name { font-size: 13px; font-weight: bold; color: #2c3e50; margin-bottom: 4px; }
+        .signature-block .party-info { font-size: 10px; color: #6c757d; line-height: 1.7; margin-bottom: 12px; }
         .signature-line { border-bottom: 1px solid #2c3e50; height: 28px; margin-top: 8px; }
-        .signature-line-label { font-size: 9px; color: #6c757d; margin-top: 3px; }
+        .signature-line-label { font-size: 10px; color: #6c757d; margin-top: 3px; }
 
-        .footer { position: fixed; bottom: -10mm; left: 0; right: 0; text-align: center; font-size: 8.5px; color: #adb5bd; }
+        .footer { position: fixed; bottom: -10mm; left: 0; right: 0; text-align: center; font-size: 9.5px; color: #adb5bd; }
 
-        .badge { display: inline-block; padding: 3px 10px; font-size: 9px; font-weight: bold; letter-spacing: 0.5px; }
+        .badge { display: inline-block; padding: 3px 10px; font-size: 10px; font-weight: bold; letter-spacing: 0.5px; }
         .badge-type { background-color: #e3f2fd; color: #1565c0; }
         .badge-status { background-color: #e8f5e9; color: #2e7d32; }
     </style>
@@ -95,6 +96,9 @@
     <div class="doc-header">
         <div class="doc-title">合 約 書</div>
         <div class="doc-subtitle">C O N T R A C T</div>
+        @if(!empty($contract->title))
+        <div class="doc-name">{{ $contract->title }}</div>
+        @endif
     </div>
 
     {{-- 公司資訊 Bar --}}
