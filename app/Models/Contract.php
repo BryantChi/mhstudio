@@ -174,6 +174,43 @@ class Contract extends Model
         $this->save();
     }
 
+    /**
+     * 正文佔位符對應的實際值（僅供有值者替換）。
+     */
+    public function placeholderVariables(): array
+    {
+        $this->loadMissing(['client', 'project']);
+        $amount = (float) $this->total;
+
+        return [
+            'client_name' => $this->client?->name,
+            'project_name' => $this->project?->title,
+            'amount' => $amount > 0 ? number_format($amount) : null,
+            'deposit_amount' => $amount > 0 ? number_format($amount * 0.5) : null,
+            'warranty_months' => $this->warranty_months,
+            'start_date' => $this->start_date?->format('Y-m-d'),
+            'end_date' => $this->end_date?->format('Y-m-d'),
+            'company_name' => setting('company_name'),
+            'company_name_full' => setting('company_name_full'),
+            'company_owner' => setting('company_owner'),
+            'company_address' => setting('company_address'),
+            'company_phone' => setting('company_phone'),
+            'company_email' => setting('company_email'),
+        ];
+    }
+
+    /**
+     * 以合約資料填入正文佔位符（僅替換有值者，無對應值則原樣保留）。
+     */
+    public function applyContentPlaceholders(): void
+    {
+        $filled = ContractTemplate::fillPlaceholders((string) $this->content, $this->placeholderVariables());
+
+        if ($filled !== $this->content) {
+            $this->update(['content' => $filled]);
+        }
+    }
+
     /* ===== Accessors ===== */
 
     public function getStatusColorAttribute(): string

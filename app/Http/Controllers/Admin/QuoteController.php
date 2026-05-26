@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\Contract;
 use App\Models\ContractItem;
+use App\Models\ContractTemplate;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Project;
@@ -215,7 +216,7 @@ class QuoteController extends Controller
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.quotes.pdf', compact('quote'));
         $pdf->setPaper('A4', 'portrait');
 
-        return $pdf->download($quote->quote_number . '.pdf');
+        return $pdf->download($quote->quote_number.'.pdf');
     }
 
     /**
@@ -292,6 +293,13 @@ class QuoteController extends Controller
                 'order' => $item->order,
             ]);
         }
+
+        // 依合約類型套用合約範本正文，再以合約資料替換佔位符（找不到範本則保留預設說明）
+        $template = ContractTemplate::active()->where('type', $contract->type)->ordered()->first();
+        if ($template) {
+            $contract->update(['content' => $template->content]);
+        }
+        $contract->applyContentPlaceholders();
 
         flash_success('已從報價單建立合約草稿');
 
