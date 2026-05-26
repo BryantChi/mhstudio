@@ -38,12 +38,13 @@
                     <label class="form-label fw-bold">網站設計方案</label>
                     <div class="d-flex flex-wrap gap-2">
                         @foreach($servicePlans['website'] as $plan)
-                        <button type="button" class="btn btn-sm {{ $plan->is_featured ? 'btn-primary' : 'btn-outline-primary' }} quick-plan-btn"
+                        <button type="button" class="btn btn-sm btn-outline-primary quick-plan-btn"
                                 data-plan-id="{{ $plan->id }}"
                                 data-plan-name="{{ $plan->title }}"
                                 data-plan-price="{{ $plan->price }}"
                                 data-plan-items='@json($plan->items->map(fn($i) => $i->name)->toArray())'>
-                            {{ $plan->name }}
+                            {{ $plan->title }}
+                            @if($plan->is_featured)<span class="badge bg-warning text-dark ms-1">推薦</span>@endif
                             <small class="d-block">{{ $plan->formatted_price }}</small>
                         </button>
                         @endforeach
@@ -64,7 +65,7 @@
                                            data-plan-price="{{ $plan->price }}"
                                            data-plan-price-label="{{ $plan->price_label }}"
                                            data-plan-cycle="{{ $plan->billing_cycle_label }}">
-                                    {{ $plan->name }}
+                                    {{ $plan->title }}
                                     <small class="d-block">{{ $plan->formatted_price }}</small>
                                 </label>
                                 @endforeach
@@ -329,9 +330,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // 點選網站方案按鈕（單選）
     document.querySelectorAll('.quick-plan-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
-            document.querySelectorAll('.quick-plan-btn').forEach(function(b) { b.classList.remove('active'); b.classList.remove('btn-success'); });
-            btn.classList.add('active');
-            btn.classList.add('btn-success');
+            document.querySelectorAll('.quick-plan-btn').forEach(function(b) {
+                b.classList.remove('active', 'btn-success');
+                b.classList.add('btn-outline-primary');
+            });
+            btn.classList.remove('btn-outline-primary');
+            btn.classList.add('active', 'btn-success');
             selectedPlanBtn = btn;
         });
     });
