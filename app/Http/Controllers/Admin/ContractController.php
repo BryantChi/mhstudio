@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\Contract;
 use App\Models\ContractTemplate;
 use App\Models\Project;
+use App\Models\Service;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -61,6 +62,13 @@ class ContractController extends Controller
         $projects = Project::orderBy('title')->get();
         $templates = ContractTemplate::active()->ordered()->get();
 
+        // 服務方案（供「從服務方案快速建立」面板帶入項目）
+        $servicePlans = Service::active()->ordered()
+            ->whereNotNull('type')
+            ->with(['items' => fn ($q) => $q->active()->ordered()])
+            ->get()
+            ->groupBy('type');
+
         // 從範本建立
         $selectedTemplate = null;
         if ($request->filled('template_id')) {
@@ -74,6 +82,7 @@ class ContractController extends Controller
             'clients',
             'projects',
             'templates',
+            'servicePlans',
             'selectedTemplate',
             'selectedClientId'
         ));

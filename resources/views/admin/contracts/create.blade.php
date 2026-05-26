@@ -11,9 +11,15 @@
 
 @section('content')
 <div class="row mb-4">
-    <div class="col-12">
+    <div class="col-md-6">
         <h2 class="mb-0">新增合約</h2>
         <p class="text-muted">建立新的合約</p>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <button type="button" class="btn btn-outline-primary" data-coreui-toggle="collapse" data-coreui-target="#quickCreatePanel">
+            <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-speedometer"></use></svg>
+            從服務方案快速建立
+        </button>
     </div>
 </div>
 
@@ -34,6 +40,8 @@
     </div>
 </div>
 @endif
+
+@include('admin.partials.service-plan-panel', ['titleSuffix' => '網站設計合約'])
 
 <form method="POST" action="{{ route('admin.contracts.store') }}" id="contractForm" onsubmit="showLoading()">
     @csrf
@@ -303,98 +311,16 @@
 </form>
 
 @push('scripts')
+@include('admin.partials.line-items-script')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    let itemIndex = 1;
-    const itemsBody = document.getElementById('itemsBody');
-
+document.addEventListener('DOMContentLoaded', function () {
     // 自動續約 toggle
-    document.getElementById('auto_renew').addEventListener('change', function() {
-        document.getElementById('renewalNoticeDaysGroup').style.display = this.checked ? '' : 'none';
-    });
-
-    document.getElementById('addItem').addEventListener('click', function() {
-        const row = document.createElement('tr');
-        row.className = 'item-row';
-        row.innerHTML = `
-            <td class="align-middle text-center item-number"></td>
-            <td><input type="text" class="form-control form-control-sm" name="items[${itemIndex}][description]" placeholder="項目名稱，例如：首頁設計" required></td>
-            <td><input type="number" class="form-control form-control-sm item-qty" name="items[${itemIndex}][quantity]" value="1" min="0.01" step="0.01" required></td>
-            <td>
-                <select class="form-select form-select-sm" name="items[${itemIndex}][unit]">
-                    <option value="項" selected>項</option>
-                    <option value="小時">小時</option>
-                    <option value="天">天</option>
-                    <option value="月">月</option>
-                    <option value="頁">頁</option>
-                    <option value="個">個</option>
-                </select>
-            </td>
-            <td><input type="number" class="form-control form-control-sm item-price" name="items[${itemIndex}][unit_price]" placeholder="0" min="0" step="0.01" required></td>
-            <td class="item-amount text-end align-middle">NT$ 0</td>
-            <td><button type="button" class="btn btn-sm btn-outline-danger remove-item" data-coreui-toggle="tooltip" title="移除此項目">✕</button></td>
-        `;
-        itemsBody.appendChild(row);
-        itemIndex++;
-        updateRemoveButtons();
-        updateRowNumbers();
-        bindCalculation();
-        row.querySelector('input[name$="[description]"]').focus();
-    });
-
-    itemsBody.addEventListener('click', function(e) {
-        if (e.target.classList.contains('remove-item')) {
-            e.target.closest('tr').remove();
-            updateRemoveButtons();
-            updateRowNumbers();
-            calculateTotal();
-        }
-    });
-
-    function updateRowNumbers() {
-        document.querySelectorAll('.item-row').forEach((row, index) => {
-            row.querySelector('.item-number').textContent = index + 1;
+    var autoRenew = document.getElementById('auto_renew');
+    if (autoRenew) {
+        autoRenew.addEventListener('change', function () {
+            document.getElementById('renewalNoticeDaysGroup').style.display = this.checked ? '' : 'none';
         });
     }
-
-    function updateRemoveButtons() {
-        const rows = itemsBody.querySelectorAll('.item-row');
-        rows.forEach(row => {
-            row.querySelector('.remove-item').disabled = rows.length <= 1;
-        });
-    }
-
-    function bindCalculation() {
-        document.querySelectorAll('.item-qty, .item-price').forEach(input => {
-            input.removeEventListener('input', calculateTotal);
-            input.addEventListener('input', calculateTotal);
-        });
-    }
-
-    function calculateTotal() {
-        let subtotal = 0;
-        document.querySelectorAll('.item-row').forEach(row => {
-            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-            const price = parseFloat(row.querySelector('.item-price').value) || 0;
-            const amount = qty * price;
-            row.querySelector('.item-amount').textContent = 'NT$ ' + amount.toLocaleString();
-            subtotal += amount;
-        });
-
-        const discount = parseFloat(document.getElementById('discount').value) || 0;
-        const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
-        const taxable = subtotal - discount;
-        const tax = Math.round(taxable * (taxRate / 100));
-        const total = taxable + tax;
-
-        document.getElementById('subtotal').textContent = 'NT$ ' + subtotal.toLocaleString();
-        document.getElementById('taxAmount').textContent = 'NT$ ' + tax.toLocaleString();
-        document.getElementById('totalAmount').textContent = 'NT$ ' + total.toLocaleString();
-    }
-
-    bindCalculation();
-    document.getElementById('discount').addEventListener('input', calculateTotal);
-    document.getElementById('taxRate').addEventListener('input', calculateTotal);
 });
 </script>
 @endpush
