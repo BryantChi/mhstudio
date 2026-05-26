@@ -127,7 +127,7 @@
             <div class="card-header"><strong>合約正文</strong></div>
             <div class="card-body">
                 <div class="content-preview">
-                    {!! $contract->content !!}
+                    {{ $contract->content }}
                 </div>
             </div>
         </div>
@@ -302,7 +302,7 @@
 
 @push('styles')
 <style>
-    .content-preview { line-height: 1.8; font-size: 1.05rem; color: #333; }
+    .content-preview { line-height: 1.8; font-size: 1.05rem; color: #333; white-space: pre-line; }
 </style>
 @endpush
 @endsection

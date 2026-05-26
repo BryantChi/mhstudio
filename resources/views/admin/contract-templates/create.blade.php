@@ -39,7 +39,8 @@
                     <div class="mb-3">
                         <label for="content" class="form-label">範本內容 <span class="text-danger">*</span></label>
                         <textarea class="form-control @error('content') is-invalid @enderror"
-                                  id="content" name="content" rows="16" required
+                                  id="content" name="content" rows="20" required
+                                  style="font-family: 'Menlo', 'Consolas', 'Courier New', monospace; line-height: 1.7;"
                                   placeholder="合約正文。可使用佔位符：&#10;{{client_name}} - 客戶名稱&#10;{{project_name}} - 專案名稱&#10;{{start_date}} - 開始日期&#10;{{end_date}} - 結束日期&#10;{{amount}} - 金額">{{ old('content') }}</textarea>
                         @error('content') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         <small class="text-muted">
@@ -98,7 +99,4 @@
         </div>
     </div>
 </form>
-@push('scripts')
-@include('admin.partials.tinymce', ['selector' => 'content'])
-@endpush
 @endsection

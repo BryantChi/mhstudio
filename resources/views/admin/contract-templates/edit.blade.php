@@ -38,7 +38,8 @@
                     <div class="mb-3">
                         <label for="content" class="form-label">範本內容 <span class="text-danger">*</span></label>
                         <textarea class="form-control @error('content') is-invalid @enderror"
-                                  id="content" name="content" rows="16" required>{{ old('content', $contractTemplate->content) }}</textarea>
+                                  id="content" name="content" rows="20" required
+                                  style="font-family: 'Menlo', 'Consolas', 'Courier New', monospace; line-height: 1.7;">{{ old('content', $contractTemplate->content) }}</textarea>
                         @error('content') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         <small class="text-muted">
                             可用佔位符：<code>@{{client_name}}</code>、<code>@{{project_name}}</code>、<code>@{{start_date}}</code>、<code>@{{end_date}}</code>、<code>@{{amount}}</code>
@@ -96,7 +97,4 @@
         </div>
     </div>
 </form>
-@push('scripts')
-@include('admin.partials.tinymce', ['selector' => 'content'])
-@endpush
 @endsection

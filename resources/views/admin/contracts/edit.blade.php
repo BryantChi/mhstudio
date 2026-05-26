@@ -129,7 +129,8 @@
                     <div class="mb-3">
                         <label for="content" class="form-label">合約內容 <span class="text-danger">*</span></label>
                         <textarea class="form-control @error('content') is-invalid @enderror"
-                                  id="content" name="content" rows="12" required>{{ old('content', $contract->content) }}</textarea>
+                                  id="content" name="content" rows="20" required
+                                  style="font-family: 'Menlo', 'Consolas', 'Courier New', monospace; line-height: 1.7;">{{ old('content', $contract->content) }}</textarea>
                         @error('content') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         <small class="text-muted">支援純文字，可貼上合約全文</small>
                     </div>
@@ -318,7 +319,6 @@
 </form>
 
 @push('scripts')
-@include('admin.partials.tinymce', ['selector' => 'content'])
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     let itemIndex = {{ $contract->items->count() ?: 1 }};
