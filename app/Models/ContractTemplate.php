@@ -49,16 +49,27 @@ class ContractTemplate extends Model
     }
 
     /**
+     * 將內容中的佔位符替換為實際值。
+     * 僅替換「有值」的佔位符；值為 null 或空字串者原樣保留，方便人工填寫。
+     */
+    public static function fillPlaceholders(string $content, array $variables): string
+    {
+        foreach ($variables as $key => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $content = str_replace('{{'.$key.'}}', (string) $value, $content);
+        }
+
+        return $content;
+    }
+
+    /**
      * 將範本內容替換佔位符
      */
     public function renderContent(array $variables = []): string
     {
-        $content = $this->content;
-
-        foreach ($variables as $key => $value) {
-            $content = str_replace('{{'.$key.'}}', $value, $content);
-        }
-
-        return $content;
+        return static::fillPlaceholders($this->content, $variables);
     }
 }
