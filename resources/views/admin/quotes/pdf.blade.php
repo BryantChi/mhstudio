@@ -256,40 +256,6 @@
     </div>
     @endif
 
-    {{-- 雙方簽名區 --}}
-    <div class="signature-section">
-        <div class="section-title">確認簽署</div>
-        <table class="signature-row" style="width:100%;">
-            <tr>
-                <td class="signature-col" style="width:48%;">
-                    <div class="signature-block">
-                        <div class="party-label">甲方（委託方）</div>
-                        <div class="party-name">{{ $quote->client->name }}</div>
-                        @if($quote->client->company)
-                        <div class="party-info">{{ $quote->client->company }}</div>
-                        @endif
-                        <div class="signature-line"></div>
-                        <div class="signature-line-label">簽名 / 蓋章 ＋ 日期</div>
-                    </div>
-                </td>
-                <td style="width:4%;"></td>
-                <td class="signature-col" style="width:48%;">
-                    <div class="signature-block">
-                        <div class="party-label">乙方（受託方）</div>
-                        <div class="party-name">{{ setting('company_owner', '') ?: setting('company_name', 'MH Studio') }}</div>
-                        <div class="party-info">
-                            {{ setting('company_name', 'MH Studio') }}<br>
-                            @if(setting('company_address')){{ setting('company_address') }}<br>@endif
-                            TEL: {{ setting('company_phone', '') }}
-                        </div>
-                        <div class="signature-line"></div>
-                        <div class="signature-line-label">簽名 / 蓋章 ＋ 日期</div>
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </div>
-
     {{-- 頁尾 --}}
     <div class="footer">
         {{ $quote->quote_number }} | {{ setting('company_name', 'MH Studio') }} | Generated on {{ now()->format('Y-m-d H:i') }}
