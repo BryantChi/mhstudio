@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Setting;
+use Illuminate\Database\Seeder;
 
 class SettingSeeder extends Seeder
 {
@@ -650,6 +650,54 @@ class SettingSeeder extends Seeder
                 'is_public' => false,
                 'is_editable' => true,
             ],
+            // 單據條款設定
+            [
+                'group' => 'document',
+                'key' => 'quote_standard_terms',
+                'value' => <<<'EOT'
+一、付款方式
+簽約金 50%，驗收完成後付尾款 50%。
+
+二、驗收方式
+1. 乙方完成製作後，甲方應於 7 個工作日內進行驗收。
+2. 驗收期間如有 Bug 或功能異常，乙方應於 7 日內修正完畢。
+3. 上線後 7 日內提供後台操作教育訓練。
+
+三、保固範圍
+包含程式錯誤修正、系統問題排除（不含新功能開發）。
+
+四、修改定義
+每次修改以不超過原設計 30% 為原則，超出規格另行報價。
+
+五、注意事項
+1. 以上報價有效期為 30 天。
+2. 網站設計製作不含文案撰寫，如需文案服務請另行報價。
+3. 網站圖片如需購買圖庫素材，費用由甲方負擔。
+4. 網域名稱註冊費用不包含在本報價中（約 NT$ 800/年）。
+5. 客戶需提供網站所需文字、圖片素材。
+6. 本報價未含營業稅，如需開立發票另加 5% 營業稅。
+EOT,
+                'type' => 'text',
+                'description' => '報價單「帶入標準條款」按鈕填入的內容',
+                'is_public' => false,
+                'is_editable' => true,
+            ],
+            [
+                'group' => 'document',
+                'key' => 'quote_pdf_notes',
+                'value' => <<<'EOT'
+以上報價有效期為 30 天。
+網站設計製作不含文案撰寫，如需文案服務請另行報價。
+網站圖片如需購買圖庫素材，費用由甲方負擔。
+網域名稱註冊費用不包含在本報價中。
+如需多語系版本，依語系數量另行報價。
+本報價未含營業稅，如需開立發票另加 5% 營業稅。
+EOT,
+                'type' => 'text',
+                'description' => '報價單 PDF 固定備註（每行一條）',
+                'is_public' => false,
+                'is_editable' => true,
+            ],
         ];
 
         foreach ($settings as $setting) {
@@ -660,6 +708,6 @@ class SettingSeeder extends Seeder
         }
 
         $this->command->info('系統設定已建立完成');
-        $this->command->info('設定數量: ' . count($settings));
+        $this->command->info('設定數量: '.count($settings));
     }
 }

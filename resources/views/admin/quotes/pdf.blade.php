@@ -273,18 +273,21 @@
         <p>甲方全額付清後，網站設計之智慧財產權歸甲方所有，乙方保留作品集展示權利。</p>
     </div>
 
-    {{-- 備註 --}}
+    {{-- 備註（集中於「單據條款設定」管理，每行一條） --}}
+    @php
+        $pdfNotes = collect(preg_split('/\r\n|\r|\n/', (string) setting('quote_pdf_notes', '')))
+            ->map(fn ($l) => trim($l))->filter()->values();
+    @endphp
+    @if($pdfNotes->isNotEmpty())
     <div class="notes-section">
         <h3>備註</h3>
         <ol>
-            <li>以上報價有效期為 30 天。</li>
-            <li>網站設計製作不含文案撰寫，如需文案服務請另行報價。</li>
-            <li>網站圖片如需購買圖庫素材，費用由甲方負擔。</li>
-            <li>網域名稱註冊費用不包含在本報價中。</li>
-            <li>如需多語系版本，依語系數量另行報價。</li>
-            <li>本報價未含營業稅，如需開立發票另加 5% 營業稅。</li>
+            @foreach($pdfNotes as $note)
+            <li>{{ $note }}</li>
+            @endforeach
         </ol>
     </div>
+    @endif
 
     {{-- 匯款資訊 --}}
     @if(setting('bank_name') || setting('bank_account'))

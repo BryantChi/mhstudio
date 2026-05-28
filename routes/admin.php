@@ -116,6 +116,10 @@ Route::prefix(config('admin.prefix', 'admin'))
             Route::get('/company', [SettingController::class, 'company'])->name('company');
             Route::put('/company', [SettingController::class, 'updateCompany'])->name('company.update');
 
+            // 單據條款
+            Route::get('/documents', [SettingController::class, 'documents'])->name('documents');
+            Route::put('/documents', [SettingController::class, 'updateDocuments'])->name('documents.update');
+
             // 快取管理
             Route::post('/clear-cache', [SettingController::class, 'clearCache'])->name('clear-cache');
 

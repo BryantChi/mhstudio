@@ -437,6 +437,12 @@
                     公司資訊
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {{ active_route('admin.settings.documents') }}" href="{{ route('admin.settings.documents') }}">
+                    <span class="nav-icon"><span class="nav-icon-bullet"></span></span>
+                    單據條款
+                </a>
+            </li>
         </ul>
     </li>
 

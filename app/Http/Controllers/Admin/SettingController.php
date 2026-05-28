@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class SettingController extends Controller
@@ -75,35 +75,35 @@ class SettingController extends Controller
     {
         $validated = $request->validate([
             // 預設 Meta Tags
-            'default_meta_title'       => 'nullable|string|max:60',
+            'default_meta_title' => 'nullable|string|max:60',
             'default_meta_description' => 'nullable|string|max:160',
-            'default_meta_keywords'    => 'nullable|string|max:500',
-            'default_og_image'         => 'nullable|url|max:500',
+            'default_meta_keywords' => 'nullable|string|max:500',
+            'default_og_image' => 'nullable|url|max:500',
             // 社群媒體
-            'facebook_app_id'          => 'nullable|string|max:50',
-            'twitter_username'         => 'nullable|string|max:50',
-            'twitter_card_type'        => 'nullable|string|in:summary,summary_large_image',
+            'facebook_app_id' => 'nullable|string|max:50',
+            'twitter_username' => 'nullable|string|max:50',
+            'twitter_card_type' => 'nullable|string|in:summary,summary_large_image',
             // 搜尋引擎驗證
-            'google_verification'      => 'nullable|string|max:100',
-            'bing_verification'        => 'nullable|string|max:100',
-            'yandex_verification'      => 'nullable|string|max:100',
+            'google_verification' => 'nullable|string|max:100',
+            'bing_verification' => 'nullable|string|max:100',
+            'yandex_verification' => 'nullable|string|max:100',
             // Schema.org
-            'enable_schema'            => 'nullable|boolean',
-            'schema_type'              => 'nullable|string|in:Article,BlogPosting,NewsArticle',
-            'organization_name'        => 'nullable|string|max:255',
-            'organization_logo'        => 'nullable|url|max:500',
+            'enable_schema' => 'nullable|boolean',
+            'schema_type' => 'nullable|string|in:Article,BlogPosting,NewsArticle',
+            'organization_name' => 'nullable|string|max:255',
+            'organization_logo' => 'nullable|url|max:500',
             // 索引設定
-            'allow_indexing'           => 'nullable|boolean',
-            'auto_generate_meta'       => 'nullable|boolean',
-            'generate_canonical'       => 'nullable|boolean',
+            'allow_indexing' => 'nullable|boolean',
+            'auto_generate_meta' => 'nullable|boolean',
+            'generate_canonical' => 'nullable|boolean',
             // Sitemap
-            'sitemap_priority'         => 'nullable|numeric|between:0,1',
-            'sitemap_changefreq'       => 'nullable|string|in:always,hourly,daily,weekly,monthly,yearly,never',
+            'sitemap_priority' => 'nullable|numeric|between:0,1',
+            'sitemap_changefreq' => 'nullable|string|in:always,hourly,daily,weekly,monthly,yearly,never',
         ]);
 
         // 處理 checkbox — 未勾選時不會出現在 request 中
         foreach (['enable_schema', 'allow_indexing', 'auto_generate_meta', 'generate_canonical'] as $boolKey) {
-            if (!$request->has($boolKey)) {
+            if (! $request->has($boolKey)) {
                 $validated[$boolKey] = '0';
             } else {
                 $validated[$boolKey] = '1';
@@ -195,45 +195,45 @@ class SettingController extends Controller
     public function updateFrontend(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'hero_title'              => 'required|string|max:255',
-            'hero_subtitle'           => 'required|string|max:255',
-            'hero_tagline'            => 'required|string|max:255',
-            'hero_description'        => 'required|string',
-            'stats_years_experience'  => 'required|integer|min:0',
-            'stats_projects_completed'=> 'required|integer|min:0',
-            'stats_happy_clients'     => 'required|integer|min:0',
-            'stats_ontime_delivery'   => 'required|integer|min:0|max:100',
-            'contact_email'           => 'required|email',
-            'contact_location'        => 'required|string|max:255',
-            'social_github'           => 'nullable|string|max:500',
-            'social_github_enabled'   => 'nullable|boolean',
-            'social_linkedin'         => 'nullable|string|max:500',
+            'hero_title' => 'required|string|max:255',
+            'hero_subtitle' => 'required|string|max:255',
+            'hero_tagline' => 'required|string|max:255',
+            'hero_description' => 'required|string',
+            'stats_years_experience' => 'required|integer|min:0',
+            'stats_projects_completed' => 'required|integer|min:0',
+            'stats_happy_clients' => 'required|integer|min:0',
+            'stats_ontime_delivery' => 'required|integer|min:0|max:100',
+            'contact_email' => 'required|email',
+            'contact_location' => 'required|string|max:255',
+            'social_github' => 'nullable|string|max:500',
+            'social_github_enabled' => 'nullable|boolean',
+            'social_linkedin' => 'nullable|string|max:500',
             'social_linkedin_enabled' => 'nullable|boolean',
-            'social_line'             => 'nullable|string|max:500',
-            'social_line_enabled'     => 'nullable|boolean',
-            'line_id'                 => 'nullable|string|max:100',
-            'line_qrcode_url'         => 'nullable|string|max:500',
-            'social_facebook'         => 'nullable|string|max:500',
+            'social_line' => 'nullable|string|max:500',
+            'social_line_enabled' => 'nullable|boolean',
+            'line_id' => 'nullable|string|max:100',
+            'line_qrcode_url' => 'nullable|string|max:500',
+            'social_facebook' => 'nullable|string|max:500',
             'social_facebook_enabled' => 'nullable|boolean',
-            'social_twitter'          => 'nullable|string|max:500',
-            'social_twitter_enabled'  => 'nullable|boolean',
-            'social_instagram'        => 'nullable|string|max:500',
-            'social_instagram_enabled'=> 'nullable|boolean',
-            'social_youtube'          => 'nullable|string|max:500',
-            'social_youtube_enabled'  => 'nullable|boolean',
-            'section_stats_enabled'     => 'nullable|boolean',
-            'section_services_enabled'  => 'nullable|boolean',
+            'social_twitter' => 'nullable|string|max:500',
+            'social_twitter_enabled' => 'nullable|boolean',
+            'social_instagram' => 'nullable|string|max:500',
+            'social_instagram_enabled' => 'nullable|boolean',
+            'social_youtube' => 'nullable|string|max:500',
+            'social_youtube_enabled' => 'nullable|boolean',
+            'section_stats_enabled' => 'nullable|boolean',
+            'section_services_enabled' => 'nullable|boolean',
             'section_portfolio_enabled' => 'nullable|boolean',
-            'section_process_enabled'   => 'nullable|boolean',
+            'section_process_enabled' => 'nullable|boolean',
             'section_techstack_enabled' => 'nullable|boolean',
-            'newsletter_enabled'        => 'nullable|boolean',
-            'social_embed_enabled'      => 'nullable|boolean',
-            'social_youtube_embed'    => 'nullable|string|max:500',
-            'social_instagram_embed'  => 'nullable|string|max:500',
-            'tech_stack_names'        => 'nullable|array',
-            'tech_stack_names.*'      => 'nullable|string|max:100',
-            'tech_stack_types'        => 'nullable|array',
-            'tech_stack_types.*'      => 'nullable|string|max:100',
+            'newsletter_enabled' => 'nullable|boolean',
+            'social_embed_enabled' => 'nullable|boolean',
+            'social_youtube_embed' => 'nullable|string|max:500',
+            'social_instagram_embed' => 'nullable|string|max:500',
+            'tech_stack_names' => 'nullable|array',
+            'tech_stack_names.*' => 'nullable|string|max:100',
+            'tech_stack_types' => 'nullable|array',
+            'tech_stack_types.*' => 'nullable|string|max:100',
         ]);
 
         // Remove tech_stack fields from validated (handled separately)
@@ -302,6 +302,31 @@ class SettingController extends Controller
     }
 
     /**
+     * 顯示單據條款設定
+     */
+    public function documents(): View
+    {
+        return view('admin.settings.documents');
+    }
+
+    /**
+     * 更新單據條款設定
+     */
+    public function updateDocuments(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'quote_standard_terms' => 'nullable|string|max:10000',
+            'quote_pdf_notes' => 'nullable|string|max:10000',
+        ]);
+
+        Setting::setMany($validated, 'document');
+
+        flash_success('單據條款設定更新成功');
+
+        return redirect()->back();
+    }
+
+    /**
      * 清除快取
      */
     public function clearCache(): RedirectResponse
@@ -356,8 +381,9 @@ class SettingController extends Controller
      */
     public function update(Request $request, Setting $setting): RedirectResponse
     {
-        if (!$setting->is_editable) {
+        if (! $setting->is_editable) {
             flash_error('此設定不可編輯');
+
             return redirect()->back();
         }
 
@@ -378,8 +404,9 @@ class SettingController extends Controller
      */
     public function destroy(Setting $setting): RedirectResponse
     {
-        if (!$setting->is_editable) {
+        if (! $setting->is_editable) {
             flash_error('此設定不可刪除');
+
             return redirect()->back();
         }
 
