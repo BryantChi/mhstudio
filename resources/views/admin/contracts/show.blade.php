@@ -305,6 +305,9 @@
                             <td class="small">NT$ {{ number_format($payment->amount) }}</td>
                             <td class="small text-muted">{{ $payment->payment_method ?: '-' }}</td>
                             <td class="text-end">
+                                @if($payment->proof_path)
+                                <a href="{{ $payment->proof_url }}" target="_blank" class="btn btn-sm btn-link p-0 me-2" title="檢視收款憑證">憑證</a>
+                                @endif
                                 <form method="POST" action="{{ route('admin.contracts.destroy-payment', [$contract, $payment]) }}" class="d-inline">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-link text-danger p-0" data-confirm-delete title="刪除此筆收款">✕</button>
@@ -385,7 +388,7 @@
 <div class="modal fade" id="recordPaymentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="{{ route('admin.contracts.record-payment', $contract) }}">
+            <form method="POST" action="{{ route('admin.contracts.record-payment', $contract) }}" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">登記收款</h5>
@@ -412,6 +415,11 @@
                     <div class="mb-3">
                         <label class="form-label">備註</label>
                         <input type="text" name="note" class="form-control" placeholder="選填">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">收款憑證</label>
+                        <input type="file" name="proof" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                        <div class="form-text">選填，可上傳轉帳截圖或收據（PDF／圖檔，10MB 內）</div>
                     </div>
                 </div>
                 <div class="modal-footer">

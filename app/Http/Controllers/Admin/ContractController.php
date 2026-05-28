@@ -448,13 +448,22 @@ class ContractController extends Controller
             'payment_method' => 'nullable|string|max:255',
             'paid_on' => 'nullable|date',
             'note' => 'nullable|string|max:500',
+            'proof' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
+
+        // 收款憑證（轉帳截圖／收據，選填）
+        $proofPath = null;
+        if ($request->hasFile('proof')) {
+            $file = $request->file('proof');
+            $proofPath = $file->storeAs('uploads/'.date('Y/m'), \Illuminate\Support\Str::uuid().'.'.$file->getClientOriginalExtension(), 'public');
+        }
 
         $contract->recordPayment(
             (float) $validated['amount'],
             $validated['payment_method'] ?? null,
             $validated['paid_on'] ?? null,
             $validated['note'] ?? null,
+            $proofPath,
         );
         flash_success('收款已登記');
 
@@ -468,6 +477,10 @@ class ContractController extends Controller
     {
         if ($payment->payable_type !== Contract::class || (int) $payment->payable_id !== $contract->id) {
             abort(404);
+        }
+
+        if ($payment->proof_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($payment->proof_path);
         }
 
         $payment->delete();

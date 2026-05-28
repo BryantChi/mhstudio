@@ -13,6 +13,7 @@ class Payment extends Model
         'payment_method',
         'paid_on',
         'note',
+        'proof_path',
         'created_by',
     ];
 
@@ -24,6 +25,14 @@ class Payment extends Model
     public function payable(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    /**
+     * 憑證檔的可存取網址（靠 /storage 後備路由）。
+     */
+    public function getProofUrlAttribute(): ?string
+    {
+        return $this->proof_path ? '/storage/'.$this->proof_path : null;
     }
 
     public function creator(): BelongsTo

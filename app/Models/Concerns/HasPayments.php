@@ -17,6 +17,11 @@ trait HasPayments
     public static function bootHasPayments(): void
     {
         static::deleting(function ($model) {
+            foreach ($model->payments as $payment) {
+                if ($payment->proof_path) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($payment->proof_path);
+                }
+            }
             $model->payments()->delete();
         });
     }
@@ -31,13 +36,14 @@ trait HasPayments
     /**
      * 登記一筆收款並重新同步 paid_amount。
      */
-    public function recordPayment(float $amount, ?string $method = null, ?string $paidOn = null, ?string $note = null): Payment
+    public function recordPayment(float $amount, ?string $method = null, ?string $paidOn = null, ?string $note = null, ?string $proofPath = null): Payment
     {
         $payment = $this->payments()->create([
             'amount' => round($amount, 2),
             'payment_method' => $method,
             'paid_on' => $paidOn ?: now()->toDateString(),
             'note' => $note,
+            'proof_path' => $proofPath,
             'created_by' => auth()->id(),
         ]);
 
