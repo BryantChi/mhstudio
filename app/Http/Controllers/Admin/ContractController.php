@@ -117,6 +117,7 @@ class ContractController extends Controller
             'auto_renew' => 'nullable|boolean',
             'renewal_notice_days' => 'nullable|integer|min:1',
             'warranty_months' => 'nullable|integer|min:0',
+            'yearly_fee' => 'nullable|numeric|min:0',
             'ip_ownership' => 'nullable|in:client,shared,studio',
             // 簽署方
             'client_signer_name' => 'nullable|string|max:255',
@@ -152,6 +153,7 @@ class ContractController extends Controller
             'auto_renew' => $validated['auto_renew'] ?? false,
             'renewal_notice_days' => $validated['renewal_notice_days'] ?? 30,
             'warranty_months' => $validated['warranty_months'] ?? null,
+            'yearly_fee' => $validated['yearly_fee'] ?? null,
             'ip_ownership' => $validated['ip_ownership'] ?? 'client',
             'client_signer_name' => $validated['client_signer_name'] ?? null,
             'client_signer_title' => $validated['client_signer_title'] ?? null,
@@ -241,6 +243,7 @@ class ContractController extends Controller
             'auto_renew' => 'nullable|boolean',
             'renewal_notice_days' => 'nullable|integer|min:1',
             'warranty_months' => 'nullable|integer|min:0',
+            'yearly_fee' => 'nullable|numeric|min:0',
             'ip_ownership' => 'nullable|in:client,shared,studio',
             // 簽署方
             'client_signer_name' => 'nullable|string|max:255',
@@ -278,6 +281,7 @@ class ContractController extends Controller
             'auto_renew' => $validated['auto_renew'] ?? false,
             'renewal_notice_days' => $validated['renewal_notice_days'] ?? 30,
             'warranty_months' => $validated['warranty_months'] ?? null,
+            'yearly_fee' => $validated['yearly_fee'] ?? null,
             'ip_ownership' => $validated['ip_ownership'] ?? 'client',
             'client_signer_name' => $validated['client_signer_name'] ?? null,
             'client_signer_title' => $validated['client_signer_title'] ?? null,

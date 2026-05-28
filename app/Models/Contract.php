@@ -59,6 +59,7 @@ class Contract extends Model
         'auto_renew',
         'renewal_notice_days',
         'warranty_months',
+        'yearly_fee',
         'ip_ownership',
         // 簽署方
         'client_signer_name',
@@ -79,6 +80,7 @@ class Contract extends Model
         'discount' => 'decimal:2',
         'total' => 'decimal:2',
         'paid_amount' => 'decimal:2',
+        'yearly_fee' => 'decimal:2',
         'start_date' => 'date',
         'end_date' => 'date',
         'due_date' => 'date',
@@ -204,6 +206,7 @@ class Contract extends Model
             'project_name' => $this->project?->title,
             'amount' => $amount > 0 ? number_format($amount) : null,
             'deposit_amount' => $amount > 0 ? number_format($amount * 0.5) : null,
+            'yearly_fee' => $this->yearly_fee > 0 ? number_format($this->yearly_fee) : null,
             'warranty_months' => $this->warranty_months,
             'start_date' => $this->start_date?->format('Y-m-d'),
             'end_date' => $this->end_date?->format('Y-m-d'),

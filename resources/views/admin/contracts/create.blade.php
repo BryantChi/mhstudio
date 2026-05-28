@@ -249,6 +249,15 @@
                                value="{{ old('warranty_months') }}" min="0" placeholder="例如：12">
                     </div>
                     <div class="mb-3">
+                        <label for="yearly_fee" class="form-label">年度費用</label>
+                        <div class="input-group">
+                            <span class="input-group-text">NT$</span>
+                            <input type="number" class="form-control" id="yearly_fee" name="yearly_fee"
+                                   value="{{ old('yearly_fee') }}" min="0" step="0.01" placeholder="例如：7000">
+                        </div>
+                        <div class="form-text">年度維護／主機等經常性費用，供條款 @{{yearly_fee}} 帶入；不計入合約總額與收款。</div>
+                    </div>
+                    <div class="mb-3">
                         <label for="ip_ownership" class="form-label">智慧財產歸屬</label>
                         <select class="form-select" id="ip_ownership" name="ip_ownership">
                             <option value="client" {{ old('ip_ownership', 'client') == 'client' ? 'selected' : '' }}>客戶擁有</option>
