@@ -128,6 +128,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 window.LineItems.addItemRow(addonName + (priceLabel ? '（' + priceLabel + '）' : ''), 1, unit, addonPrice);
             });
 
+            // 月/年附加項目依合約期間自動帶入數量（合約頁有起迄日期時）
+            if (window.LineItems.applyPeriodToRecurring) {
+                window.LineItems.applyPeriodToRecurring();
+            }
+
             // 標題：有選主方案才自動帶入
             var titleInput = document.getElementById('title');
             if (titleInput && !titleInput.value && selectedPlanBtn) {

@@ -176,7 +176,7 @@
             <div class="card-header"><strong>合約正文</strong></div>
             <div class="card-body">
                 <div class="content-preview">
-                    {{ $contract->content }}
+                    {{ $contract->renderedContent() }}
                 </div>
             </div>
         </div>

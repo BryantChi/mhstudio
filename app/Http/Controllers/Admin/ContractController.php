@@ -177,9 +177,6 @@ class ContractController extends Controller
             $contract->recalculate();
         }
 
-        // 以合約資料填入正文佔位符
-        $contract->applyContentPlaceholders();
-
         flash_success('合約建立成功');
 
         return redirect(admin_list_url('admin.contracts.index'));
@@ -305,9 +302,6 @@ class ContractController extends Controller
 
             $contract->recalculate();
         }
-
-        // 以合約資料填入正文佔位符
-        $contract->applyContentPlaceholders();
 
         flash_success('合約更新成功');
 

@@ -216,7 +216,7 @@
     {{-- 合約正文 --}}
     <div class="section-title">合約條款</div>
     <div class="content-section">
-        <div class="content-body">{{ $contract->content }}</div>
+        <div class="content-body">{{ $contract->renderedContent() }}</div>
     </div>
 
     {{-- 付款條件 --}}

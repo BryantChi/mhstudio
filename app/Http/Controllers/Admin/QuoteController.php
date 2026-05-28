@@ -339,7 +339,6 @@ class QuoteController extends Controller
             if ($template) {
                 $contract->update(['content' => $template->content]);
             }
-            $contract->applyContentPlaceholders();
 
             // 標記報價單為已接受（與轉發票一致）
             $quote->update(['status' => 'accepted', 'accepted_at' => $quote->accepted_at ?? now()]);

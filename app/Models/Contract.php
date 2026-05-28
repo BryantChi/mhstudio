@@ -217,15 +217,13 @@ class Contract extends Model
     }
 
     /**
-     * 以合約資料填入正文佔位符（僅替換有值者，無對應值則原樣保留）。
+     * 即時帶入佔位符後的合約正文（供詳情頁／PDF 顯示，不寫回資料庫）。
+     * 內容保留 {{...}} 佔位符，於顯示時才依目前的金額／日期／項目資料即時替換，
+     * 因此編輯項目價格或合約起迄後，條款會自動反映最新值。
      */
-    public function applyContentPlaceholders(): void
+    public function renderedContent(): string
     {
-        $filled = ContractTemplate::fillPlaceholders((string) $this->content, $this->placeholderVariables());
-
-        if ($filled !== $this->content) {
-            $this->update(['content' => $filled]);
-        }
+        return ContractTemplate::fillPlaceholders((string) $this->content, $this->placeholderVariables());
     }
 
     /* ===== Status workflow ===== */

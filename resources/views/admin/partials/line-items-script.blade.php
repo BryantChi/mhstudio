@@ -116,10 +116,54 @@ document.addEventListener('DOMContentLoaded', function () {
     var t = document.getElementById('taxRate'); if (t) t.addEventListener('input', calculateTotal);
     calculateTotal();
 
+    // ===== 月/年項目依合約期間自動計算數量（僅頁面有 #start_date/#end_date 時生效，報價單無此欄位故略過）=====
+    function periodUnits() {
+        var sEl = document.getElementById('start_date');
+        var eEl = document.getElementById('end_date');
+        if (!sEl || !eEl || !sEl.value || !eEl.value) return null;
+        var s = new Date(sEl.value), e = new Date(eEl.value);
+        if (isNaN(s.getTime()) || isNaN(e.getTime()) || e <= s) return null;
+        var days = (e - s) / 86400000;
+        return {
+            months: Math.max(1, Math.round(days / 30.44)),
+            years: Math.max(1, Math.round(days / 365)),
+        };
+    }
+
+    function applyPeriodToRecurring() {
+        var p = periodUnits();
+        if (!p) return;
+        document.querySelectorAll('#itemsBody .item-row').forEach(function (row) {
+            var unitSel = row.querySelector('select[name$="[unit]"]');
+            var qty = row.querySelector('.item-qty');
+            if (!unitSel || !qty) return;
+            if (unitSel.value === '月') qty.value = p.months;
+            else if (unitSel.value === '年') qty.value = p.years;
+        });
+        calculateTotal();
+    }
+
+    var startEl = document.getElementById('start_date');
+    var endEl = document.getElementById('end_date');
+    if (startEl) startEl.addEventListener('change', applyPeriodToRecurring);
+    if (endEl) endEl.addEventListener('change', applyPeriodToRecurring);
+
+    // 將某列單位改為月/年時，依合約期間帶入該列數量
+    itemsBody.addEventListener('change', function (e) {
+        if (e.target.matches && e.target.matches('select[name$="[unit]"]')) {
+            var p = periodUnits();
+            if (!p) return;
+            var qty = e.target.closest('.item-row').querySelector('.item-qty');
+            if (e.target.value === '月') { qty.value = p.months; calculateTotal(); }
+            else if (e.target.value === '年') { qty.value = p.years; calculateTotal(); }
+        }
+    });
+
     // 對外 API（供「快速建立」面板呼叫）
     window.LineItems = {
         addItemRow: addItemRow,
         calculateTotal: calculateTotal,
+        applyPeriodToRecurring: applyPeriodToRecurring,
         reset: function () { itemsBody.innerHTML = ''; itemIndex = 0; },
         refresh: function () { updateRemoveButtons(); updateRowNumbers(); calculateTotal(); }
     };
