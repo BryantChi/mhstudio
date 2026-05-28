@@ -437,12 +437,14 @@
                     公司資訊
                 </a>
             </li>
+            @if(Route::has('admin.settings.documents'))
             <li class="nav-item">
                 <a class="nav-link {{ active_route('admin.settings.documents') }}" href="{{ route('admin.settings.documents') }}">
                     <span class="nav-icon"><span class="nav-icon-bullet"></span></span>
                     單據條款
                 </a>
             </li>
+            @endif
         </ul>
     </li>
 
