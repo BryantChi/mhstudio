@@ -14,6 +14,7 @@ use App\Models\Quote;
 use App\Models\Service;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class QuoteController extends Controller
@@ -23,7 +24,7 @@ class QuoteController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Quote::with(['client', 'project']);
+        $query = Quote::with(['client', 'project', 'invoice', 'contract']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -84,33 +85,33 @@ class QuoteController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
 
-        $quote = Quote::create([
-            'client_id' => $validated['client_id'],
-            'project_id' => $validated['project_id'] ?? null,
-            'title' => $validated['title'],
-            'description' => $validated['description'] ?? null,
-            'status' => $validated['status'],
-            'tax_rate' => $validated['tax_rate'],
-            'discount' => $validated['discount'] ?? 0,
-            'currency' => $validated['currency'] ?? 'TWD',
-            'valid_until' => $validated['valid_until'] ?? null,
-            'notes' => $validated['notes'] ?? null,
-        ]);
-
-        // 建立項目
-        foreach ($validated['items'] as $index => $item) {
-            $quote->items()->create([
-                'description' => $item['description'],
-                'quantity' => $item['quantity'],
-                'unit' => $item['unit'] ?? '項',
-                'unit_price' => $item['unit_price'],
-                'amount' => round($item['quantity'] * $item['unit_price'], 2),
-                'order' => $index,
+        DB::transaction(function () use ($validated) {
+            $quote = Quote::create([
+                'client_id' => $validated['client_id'],
+                'project_id' => $validated['project_id'] ?? null,
+                'title' => $validated['title'],
+                'description' => $validated['description'] ?? null,
+                'status' => $validated['status'],
+                'tax_rate' => $validated['tax_rate'],
+                'discount' => $validated['discount'] ?? 0,
+                'currency' => $validated['currency'] ?? 'TWD',
+                'valid_until' => $validated['valid_until'] ?? null,
+                'notes' => $validated['notes'] ?? null,
             ]);
-        }
 
-        // 重新計算金額
-        $quote->recalculate();
+            foreach ($validated['items'] as $index => $item) {
+                $quote->items()->create([
+                    'description' => $item['description'],
+                    'quantity' => $item['quantity'],
+                    'unit' => $item['unit'] ?? '項',
+                    'unit_price' => $item['unit_price'],
+                    'amount' => round($item['quantity'] * $item['unit_price'], 2),
+                    'order' => $index,
+                ]);
+            }
+
+            $quote->recalculate();
+        });
 
         flash_success('報價單建立成功');
 
@@ -162,33 +163,35 @@ class QuoteController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
 
-        $quote->update([
-            'client_id' => $validated['client_id'],
-            'project_id' => $validated['project_id'] ?? null,
-            'title' => $validated['title'],
-            'description' => $validated['description'] ?? null,
-            'status' => $validated['status'],
-            'tax_rate' => $validated['tax_rate'],
-            'discount' => $validated['discount'] ?? 0,
-            'currency' => $validated['currency'] ?? 'TWD',
-            'valid_until' => $validated['valid_until'] ?? null,
-            'notes' => $validated['notes'] ?? null,
-        ]);
-
-        // 刪除舊項目並重建
-        $quote->items()->delete();
-        foreach ($validated['items'] as $index => $item) {
-            $quote->items()->create([
-                'description' => $item['description'],
-                'quantity' => $item['quantity'],
-                'unit' => $item['unit'] ?? '項',
-                'unit_price' => $item['unit_price'],
-                'amount' => round($item['quantity'] * $item['unit_price'], 2),
-                'order' => $index,
+        DB::transaction(function () use ($quote, $validated) {
+            $quote->update([
+                'client_id' => $validated['client_id'],
+                'project_id' => $validated['project_id'] ?? null,
+                'title' => $validated['title'],
+                'description' => $validated['description'] ?? null,
+                'status' => $validated['status'],
+                'tax_rate' => $validated['tax_rate'],
+                'discount' => $validated['discount'] ?? 0,
+                'currency' => $validated['currency'] ?? 'TWD',
+                'valid_until' => $validated['valid_until'] ?? null,
+                'notes' => $validated['notes'] ?? null,
             ]);
-        }
 
-        $quote->recalculate();
+            // 刪除舊項目並重建
+            $quote->items()->delete();
+            foreach ($validated['items'] as $index => $item) {
+                $quote->items()->create([
+                    'description' => $item['description'],
+                    'quantity' => $item['quantity'],
+                    'unit' => $item['unit'] ?? '項',
+                    'unit_price' => $item['unit_price'],
+                    'amount' => round($item['quantity'] * $item['unit_price'], 2),
+                    'order' => $index,
+                ]);
+            }
+
+            $quote->recalculate();
+        });
 
         flash_success('報價單更新成功');
 
@@ -204,6 +207,35 @@ class QuoteController extends Controller
         flash_success('報價單已刪除');
 
         return redirect(admin_list_url('admin.quotes.index'));
+    }
+
+    /**
+     * 快速變更報價單狀態（接受/拒絕時自動記錄時間）
+     */
+    public function updateStatus(Request $request, Quote $quote): RedirectResponse
+    {
+        $request->validate([
+            'status' => 'required|in:draft,sent,accepted,rejected,expired',
+        ]);
+
+        if (! $quote->canTransitionTo($request->status)) {
+            flash_error("無法從「{$quote->status_label}」轉為該狀態");
+
+            return redirect()->route('admin.quotes.show', $quote);
+        }
+
+        $data = ['status' => $request->status];
+        if ($request->status === 'accepted' && ! $quote->accepted_at) {
+            $data['accepted_at'] = now();
+        }
+        if ($request->status === 'rejected' && ! $quote->rejected_at) {
+            $data['rejected_at'] = now();
+        }
+
+        $quote->update($data);
+        flash_success('報價單狀態已更新');
+
+        return redirect()->route('admin.quotes.show', $quote);
     }
 
     /**
@@ -262,44 +294,51 @@ class QuoteController extends Controller
         $quote->load('items');
 
         // 建立合約
-        $contract = Contract::create([
-            'client_id' => $quote->client_id,
-            'project_id' => $quote->project_id,
-            'quote_id' => $quote->id,
-            'title' => $quote->title.' — 合約',
-            'content' => "依據報價單 {$quote->quote_number} 之內容，雙方同意以下合約條款。",
-            'type' => 'service',
-            'status' => 'draft',
-            'subtotal' => $quote->subtotal,
-            'tax_rate' => $quote->tax_rate,
-            'tax_amount' => $quote->tax_amount,
-            'discount' => $quote->discount,
-            'total' => $quote->total,
-            'amount' => $quote->total,
-            'currency' => $quote->currency,
-            'start_date' => now(),
-            'notes' => '來源報價單：'.$quote->quote_number,
-        ]);
-
-        // 複製項目
-        foreach ($quote->items as $item) {
-            ContractItem::create([
-                'contract_id' => $contract->id,
-                'description' => $item->description,
-                'quantity' => $item->quantity,
-                'unit' => $item->unit,
-                'unit_price' => $item->unit_price,
-                'amount' => $item->amount,
-                'order' => $item->order,
+        $contract = DB::transaction(function () use ($quote) {
+            $contract = Contract::create([
+                'client_id' => $quote->client_id,
+                'project_id' => $quote->project_id,
+                'quote_id' => $quote->id,
+                'title' => $quote->title.' — 合約',
+                'content' => "依據報價單 {$quote->quote_number} 之內容，雙方同意以下合約條款。",
+                'type' => 'service',
+                'status' => 'draft',
+                'subtotal' => $quote->subtotal,
+                'tax_rate' => $quote->tax_rate,
+                'tax_amount' => $quote->tax_amount,
+                'discount' => $quote->discount,
+                'total' => $quote->total,
+                'amount' => $quote->total,
+                'currency' => $quote->currency,
+                'start_date' => now(),
+                'notes' => '來源報價單：'.$quote->quote_number,
             ]);
-        }
 
-        // 依合約類型套用合約範本正文，再以合約資料替換佔位符（找不到範本則保留預設說明）
-        $template = ContractTemplate::active()->where('type', $contract->type)->ordered()->first();
-        if ($template) {
-            $contract->update(['content' => $template->content]);
-        }
-        $contract->applyContentPlaceholders();
+            // 複製項目
+            foreach ($quote->items as $item) {
+                ContractItem::create([
+                    'contract_id' => $contract->id,
+                    'description' => $item->description,
+                    'quantity' => $item->quantity,
+                    'unit' => $item->unit,
+                    'unit_price' => $item->unit_price,
+                    'amount' => $item->amount,
+                    'order' => $item->order,
+                ]);
+            }
+
+            // 依合約類型套用合約範本正文，再以合約資料替換佔位符（找不到範本則保留預設說明）
+            $template = ContractTemplate::active()->where('type', $contract->type)->ordered()->first();
+            if ($template) {
+                $contract->update(['content' => $template->content]);
+            }
+            $contract->applyContentPlaceholders();
+
+            // 標記報價單為已接受（與轉發票一致）
+            $quote->update(['status' => 'accepted', 'accepted_at' => $quote->accepted_at ?? now()]);
+
+            return $contract;
+        });
 
         flash_success('已從報價單建立合約草稿');
 
@@ -321,38 +360,42 @@ class QuoteController extends Controller
         $quote->load('items');
 
         // 建立發票
-        $invoice = Invoice::create([
-            'client_id' => $quote->client_id,
-            'project_id' => $quote->project_id,
-            'quote_id' => $quote->id,
-            'title' => $quote->title,
-            'status' => 'draft',
-            'subtotal' => $quote->subtotal,
-            'tax_rate' => $quote->tax_rate,
-            'tax_amount' => $quote->tax_amount,
-            'discount' => $quote->discount,
-            'total' => $quote->total,
-            'currency' => $quote->currency,
-            'issued_date' => now(),
-            'due_date' => now()->addDays(30),
-            'notes' => $quote->notes,
-        ]);
-
-        // 複製項目
-        foreach ($quote->items as $item) {
-            InvoiceItem::create([
-                'invoice_id' => $invoice->id,
-                'description' => $item->description,
-                'quantity' => $item->quantity,
-                'unit' => $item->unit,
-                'unit_price' => $item->unit_price,
-                'amount' => $item->amount,
-                'order' => $item->order,
+        $invoice = DB::transaction(function () use ($quote) {
+            $invoice = Invoice::create([
+                'client_id' => $quote->client_id,
+                'project_id' => $quote->project_id,
+                'quote_id' => $quote->id,
+                'title' => $quote->title,
+                'status' => 'draft',
+                'subtotal' => $quote->subtotal,
+                'tax_rate' => $quote->tax_rate,
+                'tax_amount' => $quote->tax_amount,
+                'discount' => $quote->discount,
+                'total' => $quote->total,
+                'currency' => $quote->currency,
+                'issued_date' => now(),
+                'due_date' => now()->addDays(30),
+                'notes' => $quote->notes,
             ]);
-        }
 
-        // 更新報價單狀態
-        $quote->update(['status' => 'accepted', 'accepted_at' => now()]);
+            // 複製項目
+            foreach ($quote->items as $item) {
+                InvoiceItem::create([
+                    'invoice_id' => $invoice->id,
+                    'description' => $item->description,
+                    'quantity' => $item->quantity,
+                    'unit' => $item->unit,
+                    'unit_price' => $item->unit_price,
+                    'amount' => $item->amount,
+                    'order' => $item->order,
+                ]);
+            }
+
+            // 更新報價單狀態
+            $quote->update(['status' => 'accepted', 'accepted_at' => $quote->accepted_at ?? now()]);
+
+            return $invoice;
+        });
 
         flash_success('已成功將報價單轉換為發票');
 

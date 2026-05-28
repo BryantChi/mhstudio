@@ -10,6 +10,17 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Quote extends Model
 {
+    /**
+     * 報價單狀態的合法轉換路徑（expired 通常由排程自動標記）。
+     */
+    public const STATUS_TRANSITIONS = [
+        'draft' => ['sent'],
+        'sent' => ['accepted', 'rejected'],
+        'accepted' => [],
+        'rejected' => ['sent'],
+        'expired' => ['sent'],
+    ];
+
     protected $fillable = [
         'quote_number',
         'client_id',
@@ -130,6 +141,18 @@ class Quote extends Model
         $this->tax_amount = round($taxable * ($this->tax_rate / 100), 2);
         $this->total = $taxable + $this->tax_amount;
         $this->save();
+    }
+
+    /* ===== Status workflow ===== */
+
+    public function allowedNextStatuses(): array
+    {
+        return self::STATUS_TRANSITIONS[$this->status] ?? [];
+    }
+
+    public function canTransitionTo(string $status): bool
+    {
+        return in_array($status, $this->allowedNextStatuses(), true);
     }
 
     /* ===== Accessors ===== */

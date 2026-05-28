@@ -25,7 +25,7 @@
             </button>
         </form>
         @endif
-        @if(!$quote->contract)
+        @if($quote->status === 'accepted' && !$quote->contract)
         <form method="POST" action="{{ route('admin.quotes.convert-to-contract', $quote) }}" class="d-inline"
               onsubmit="return confirm('確定要將報價單「{{ $quote->quote_number }}」轉換為合約嗎？');">
             @csrf
@@ -101,6 +101,26 @@
     </div>
 
     <div class="col-lg-4">
+        {{-- 狀態變更 --}}
+        @php $quoteStatusLabels = ['draft' => '草稿', 'sent' => '已送出', 'accepted' => '已接受', 'rejected' => '已拒絕', 'expired' => '已過期']; @endphp
+        @if(count($quote->allowedNextStatuses()))
+        <div class="card mb-3">
+            <div class="card-header"><strong>狀態變更</strong></div>
+            <div class="card-body d-flex align-items-center gap-2 flex-wrap">
+                <span class="badge bg-{{ $quote->status_color }} fs-6">{{ $quote->status_label }}</span>
+                <span class="text-muted">→</span>
+                @foreach($quote->allowedNextStatuses() as $next)
+                <form method="POST" action="{{ route('admin.quotes.update-status', $quote) }}" class="d-inline">
+                    @csrf @method('PUT')
+                    <input type="hidden" name="status" value="{{ $next }}">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary"
+                            onclick="return confirm('確定變更為「{{ $quoteStatusLabels[$next] }}」嗎？')">{{ $quoteStatusLabels[$next] }}</button>
+                </form>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
         <div class="card">
             <div class="card-header"><strong>報價資訊</strong></div>
             <div class="card-body">

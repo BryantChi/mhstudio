@@ -93,6 +93,15 @@
                                     </button>
                                 </form>
                                 @endif
+                                @if($quote->status === 'accepted' && !$quote->contract)
+                                <form method="POST" action="{{ route('admin.quotes.convert-to-contract', $quote) }}" class="d-inline"
+                                      onsubmit="return confirm('確定要將此報價單轉換為合約嗎？');">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline-primary" data-coreui-toggle="tooltip" title="轉為合約">
+                                        <svg class="icon"><use xlink:href="/assets/icons/free.svg#cil-description"></use></svg>
+                                    </button>
+                                </form>
+                                @endif
                                 <form method="POST" action="{{ route('admin.quotes.destroy', $quote) }}" class="d-inline">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-light text-danger" data-coreui-toggle="tooltip" title="刪除" data-confirm-delete>
@@ -152,6 +161,15 @@
                             @csrf
                             <button type="submit" class="btn btn-sm btn-success" data-coreui-toggle="tooltip" title="轉為發票" data-confirm-delete>
                                 <svg class="icon"><use xlink:href="/assets/icons/free.svg#cil-arrow-right"></use></svg>
+                            </button>
+                        </form>
+                        @endif
+                        @if($quote->status === 'accepted' && !$quote->contract)
+                        <form method="POST" action="{{ route('admin.quotes.convert-to-contract', $quote) }}" class="d-inline"
+                              onsubmit="return confirm('確定要將此報價單轉換為合約嗎？');">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-outline-primary" data-coreui-toggle="tooltip" title="轉為合約">
+                                <svg class="icon"><use xlink:href="/assets/icons/free.svg#cil-description"></use></svg>
                             </button>
                         </form>
                         @endif

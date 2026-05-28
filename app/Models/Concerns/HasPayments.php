@@ -11,6 +11,16 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  */
 trait HasPayments
 {
+    /**
+     * 主檔刪除時一併刪除其收款帳本列，避免孤兒資料。
+     */
+    public static function bootHasPayments(): void
+    {
+        static::deleting(function ($model) {
+            $model->payments()->delete();
+        });
+    }
+
     public function payments(): MorphMany
     {
         return $this->morphMany(Payment::class, 'payable')

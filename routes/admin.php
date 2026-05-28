@@ -208,6 +208,7 @@ Route::prefix(config('admin.prefix', 'admin'))
         Route::post('quotes/{quote}/convert', [QuoteController::class, 'convertToInvoice'])->name('quotes.convert');
         Route::post('quotes/{quote}/convert-to-contract', [QuoteController::class, 'convertToContract'])->name('quotes.convert-to-contract');
         Route::post('quotes/{quote}/duplicate', [QuoteController::class, 'duplicate'])->name('quotes.duplicate');
+        Route::put('quotes/{quote}/status', [QuoteController::class, 'updateStatus'])->name('quotes.update-status');
         Route::resource('quotes', QuoteController::class);
 
         // 發票管理

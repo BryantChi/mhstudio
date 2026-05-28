@@ -319,6 +319,11 @@ class ContractController extends Controller
      */
     public function destroy(Contract $contract): RedirectResponse
     {
+        // 刪除客戶回簽檔（避免遺留孤兒檔案）；收款帳本由 HasPayments 連帶刪除
+        if ($contract->signed_document_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($contract->signed_document_path);
+        }
+
         $contract->delete();
         flash_success('合約已刪除');
 
@@ -477,8 +482,11 @@ class ContractController extends Controller
         $newContract->title = $contract->title.' (複本)';
         $newContract->status = 'draft';
         $newContract->contract_number = null; // Will auto-generate
+        $newContract->quote_id = null; // 複本不沿用來源報價單關聯
         $newContract->signed_at = null;
         $newContract->sent_at = null;
+        $newContract->signed_document_path = null; // 不沿用原合約的客戶回簽檔
+        $newContract->signed_document_uploaded_at = null;
         $newContract->paid_at = null;
         $newContract->paid_amount = 0;
         $newContract->created_by = auth()->id();
