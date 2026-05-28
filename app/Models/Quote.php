@@ -7,9 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Quote extends Model
 {
+    use LogsActivity;
+
     /**
      * 報價單狀態的合法轉換路徑（expired 通常由排程自動標記）。
      */
@@ -64,6 +68,17 @@ class Quote extends Model
                 $quote->created_by = auth()->id();
             }
         });
+    }
+
+    /**
+     * Activity Log 配置
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['title', 'status', 'total', 'tax_rate', 'discount', 'valid_until', 'accepted_at', 'rejected_at'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 
     /**

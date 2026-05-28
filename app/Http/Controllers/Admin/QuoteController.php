@@ -16,6 +16,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Spatie\Activitylog\Models\Activity;
 
 class QuoteController extends Controller
 {
@@ -125,7 +126,13 @@ class QuoteController extends Controller
     {
         $quote->load(['client', 'project', 'creator', 'items', 'invoice', 'contract']);
 
-        return view('admin.quotes.show', compact('quote'));
+        $activities = Activity::where('subject_type', Quote::class)
+            ->where('subject_id', $quote->id)
+            ->latest()
+            ->take(20)
+            ->get();
+
+        return view('admin.quotes.show', compact('quote', 'activities'));
     }
 
     /**

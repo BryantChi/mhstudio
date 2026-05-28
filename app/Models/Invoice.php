@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Invoice extends Model
 {
-    use HasPayments;
+    use HasPayments, LogsActivity;
 
     protected $fillable = [
         'invoice_number',
@@ -58,6 +60,17 @@ class Invoice extends Model
                 $invoice->created_by = auth()->id();
             }
         });
+    }
+
+    /**
+     * Activity Log 配置
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['title', 'status', 'total', 'paid_amount', 'due_date', 'paid_at'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 
     /**

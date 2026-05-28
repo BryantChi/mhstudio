@@ -10,6 +10,7 @@ use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Spatie\Activitylog\Models\Activity;
 
 class InvoiceController extends Controller
 {
@@ -119,7 +120,13 @@ class InvoiceController extends Controller
     {
         $invoice->load(['client', 'project', 'creator', 'items', 'quote']);
 
-        return view('admin.invoices.show', compact('invoice'));
+        $activities = Activity::where('subject_type', Invoice::class)
+            ->where('subject_id', $invoice->id)
+            ->latest()
+            ->take(20)
+            ->get();
+
+        return view('admin.invoices.show', compact('invoice', 'activities'));
     }
 
     /**

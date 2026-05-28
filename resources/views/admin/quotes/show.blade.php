@@ -98,6 +98,40 @@
             <div class="card-body" style="white-space: pre-line;">{{ $quote->notes }}</div>
         </div>
         @endif
+
+        {{-- 活動紀錄 --}}
+        @if($activities->isNotEmpty())
+        <div class="card mt-3">
+            <div class="card-header"><strong>活動紀錄</strong></div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr><th>時間</th><th>操作者</th><th>描述</th><th>變更內容</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach($activities as $activity)
+                            <tr>
+                                <td class="text-nowrap">{{ $activity->created_at->format('Y-m-d H:i') }}</td>
+                                <td>{{ $activity->causer?->name ?? '系統' }}</td>
+                                <td>{{ $activity->description }}</td>
+                                <td>
+                                    @if($activity->properties->has('old'))
+                                        @foreach($activity->properties['attributes'] ?? [] as $key => $value)
+                                            @if(isset($activity->properties['old'][$key]) && $activity->properties['old'][$key] != $value)
+                                                <span class="badge bg-light text-dark me-1">{{ $key }}: {{ $activity->properties['old'][$key] }} → {{ $value }}</span>
+                                            @endif
+                                        @endforeach
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        @endif
     </div>
 
     <div class="col-lg-4">
