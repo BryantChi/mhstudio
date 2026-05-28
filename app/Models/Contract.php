@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPayments;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,20 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Contract extends Model
 {
-    use LogsActivity;
+    use HasPayments, LogsActivity;
+
+    /**
+     * 合約狀態的合法轉換路徑（狀態機守衛）。
+     * 註：簽署（signed）僅能透過上傳客戶回簽檔達成，不在此自由轉換清單中。
+     */
+    public const STATUS_TRANSITIONS = [
+        'draft' => ['sent', 'cancelled'],
+        'sent' => ['draft', 'cancelled'],
+        'signed' => ['active', 'cancelled'],
+        'active' => ['completed', 'cancelled'],
+        'completed' => [],
+        'cancelled' => ['draft'],
+    ];
 
     protected $fillable = [
         'contract_number',
@@ -53,6 +67,8 @@ class Contract extends Model
         'company_signer_name',
         'execution_method',
         'sent_at',
+        'signed_document_path',
+        'signed_document_uploaded_at',
     ];
 
     protected $casts = [
@@ -69,6 +85,7 @@ class Contract extends Model
         'signed_at' => 'datetime',
         'paid_at' => 'datetime',
         'sent_at' => 'datetime',
+        'signed_document_uploaded_at' => 'datetime',
         'auto_renew' => 'boolean',
     ];
 
@@ -92,7 +109,7 @@ class Contract extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['title', 'status', 'total', 'paid_amount', 'signed_at'])
+            ->logOnly(['title', 'status', 'total', 'paid_amount', 'sent_at', 'signed_at', 'signed_document_path'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -208,6 +225,36 @@ class Contract extends Model
 
         if ($filled !== $this->content) {
             $this->update(['content' => $filled]);
+        }
+    }
+
+    /* ===== Status workflow ===== */
+
+    /**
+     * 目前狀態可合法轉換的下一步狀態清單。
+     */
+    public function allowedNextStatuses(): array
+    {
+        return self::STATUS_TRANSITIONS[$this->status] ?? [];
+    }
+
+    /**
+     * 是否可從目前狀態轉換到指定狀態。
+     */
+    public function canTransitionTo(string $status): bool
+    {
+        return in_array($status, $this->allowedNextStatuses(), true);
+    }
+
+    /**
+     * 收款同步後：付清則設 paid_at，否則清空（HasPayments 呼叫）。
+     */
+    protected function afterPaymentsSynced(): void
+    {
+        if ($this->total > 0 && $this->paid_amount >= $this->total) {
+            $this->paid_at = $this->paid_at ?: now();
+        } else {
+            $this->paid_at = null;
         }
     }
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\Contract;
 use App\Models\ContractTemplate;
+use App\Models\Payment;
 use App\Models\Project;
 use App\Models\Service;
 use Illuminate\Http\RedirectResponse;
@@ -189,7 +190,7 @@ class ContractController extends Controller
      */
     public function show(Contract $contract): View
     {
-        $contract->load(['client', 'project', 'creator', 'items', 'quote']);
+        $contract->load(['client', 'project', 'creator', 'items', 'quote', 'payments']);
 
         // 活動紀錄
         $activities = Activity::where('subject_type', Contract::class)
@@ -329,23 +330,138 @@ class ContractController extends Controller
      */
     public function updateStatus(Request $request, Contract $contract): RedirectResponse
     {
+        // 簽署（signed）僅能透過上傳客戶回簽檔達成，不開放此處直接設定
         $request->validate([
-            'status' => 'required|in:draft,sent,signed,active,completed,cancelled',
+            'status' => 'required|in:draft,sent,active,completed,cancelled',
         ]);
 
-        $updateData = ['status' => $request->status];
+        if (! $contract->canTransitionTo($request->status)) {
+            flash_error("無法從「{$contract->status_label}」轉為該狀態");
 
-        if ($request->status === 'signed' && ! $contract->signed_at) {
-            $updateData['signed_at'] = now();
+            return redirect()->route('admin.contracts.show', $contract);
         }
 
+        $updateData = ['status' => $request->status];
         if ($request->status === 'sent' && ! $contract->sent_at) {
             $updateData['sent_at'] = now();
         }
 
         $contract->update($updateData);
-
         flash_success('合約狀態已更新');
+
+        return redirect()->route('admin.contracts.show', $contract);
+    }
+
+    /**
+     * 標記為已送出（使用者自行下載 PDF 寄送給客戶）
+     */
+    public function markAsSent(Contract $contract): RedirectResponse
+    {
+        if ($contract->status !== 'sent' && ! $contract->canTransitionTo('sent')) {
+            flash_error('目前狀態無法標記為已送出');
+
+            return redirect()->route('admin.contracts.show', $contract);
+        }
+
+        $contract->update([
+            'status' => 'sent',
+            'sent_at' => $contract->sent_at ?: now(),
+        ]);
+        flash_success('合約已標記為已送出');
+
+        return redirect()->route('admin.contracts.show', $contract);
+    }
+
+    /**
+     * 將合約 PDF 以 Email 寄給客戶
+     */
+    public function emailToClient(Contract $contract): RedirectResponse
+    {
+        $email = $contract->client_signer_email ?: $contract->client->email;
+        if (! $email) {
+            flash_error('找不到客戶 Email，請先於合約簽署人或客戶資料填寫');
+
+            return redirect()->route('admin.contracts.show', $contract);
+        }
+
+        \Illuminate\Support\Facades\Mail::to($email)->send(
+            new \App\Mail\ContractToClient($contract)
+        );
+
+        $contract->update([
+            'status' => $contract->canTransitionTo('sent') ? 'sent' : $contract->status,
+            'sent_at' => $contract->sent_at ?: now(),
+        ]);
+        flash_success("合約已寄送至 {$email}");
+
+        return redirect()->route('admin.contracts.show', $contract);
+    }
+
+    /**
+     * 上傳客戶回簽合約 → 標記為已簽署
+     */
+    public function uploadSignedDocument(Request $request, Contract $contract): RedirectResponse
+    {
+        $request->validate([
+            'signed_document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
+        ]);
+
+        if (in_array($contract->status, ['completed', 'cancelled'], true)) {
+            flash_error('此合約狀態無法上傳簽署檔');
+
+            return redirect()->route('admin.contracts.show', $contract);
+        }
+
+        $file = $request->file('signed_document');
+        $filename = \Illuminate\Support\Str::uuid().'.'.$file->getClientOriginalExtension();
+        $path = $file->storeAs('uploads/'.date('Y/m'), $filename, 'public');
+
+        $contract->update([
+            'signed_document_path' => $path,
+            'signed_document_uploaded_at' => now(),
+            'signed_at' => $contract->signed_at ?: now(),
+            'status' => 'signed',
+        ]);
+        flash_success('已上傳客戶回簽合約，狀態更新為「已簽署」');
+
+        return redirect()->route('admin.contracts.show', $contract);
+    }
+
+    /**
+     * 登記一筆收款
+     */
+    public function recordPayment(Request $request, Contract $contract): RedirectResponse
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01|max:'.$contract->balance_due,
+            'payment_method' => 'nullable|string|max:255',
+            'paid_on' => 'nullable|date',
+            'note' => 'nullable|string|max:500',
+        ]);
+
+        $contract->recordPayment(
+            (float) $validated['amount'],
+            $validated['payment_method'] ?? null,
+            $validated['paid_on'] ?? null,
+            $validated['note'] ?? null,
+        );
+        flash_success('收款已登記');
+
+        return redirect()->route('admin.contracts.show', $contract);
+    }
+
+    /**
+     * 刪除一筆收款並重算已收金額
+     */
+    public function destroyPayment(Contract $contract, Payment $payment): RedirectResponse
+    {
+        if ($payment->payable_type !== Contract::class || (int) $payment->payable_id !== $contract->id) {
+            abort(404);
+        }
+
+        $payment->delete();
+        $contract->syncPaidAmount();
+        flash_success('收款紀錄已刪除');
 
         return redirect()->route('admin.contracts.show', $contract);
     }

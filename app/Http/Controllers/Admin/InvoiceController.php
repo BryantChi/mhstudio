@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -205,12 +206,30 @@ class InvoiceController extends Controller
     public function recordPayment(Request $request, Invoice $invoice): RedirectResponse
     {
         $request->validate([
-            'amount' => 'required|numeric|min:0.01|max:' . $invoice->balance_due,
+            'amount' => 'required|numeric|min:0.01|max:'.$invoice->balance_due,
             'payment_method' => 'nullable|string|max:255',
+            'paid_on' => 'nullable|date',
+            'note' => 'nullable|string|max:500',
         ]);
 
-        $invoice->recordPayment($request->amount, $request->payment_method);
+        $invoice->recordPayment($request->amount, $request->payment_method, $request->paid_on, $request->note);
         flash_success('付款已記錄');
+
+        return redirect()->route('admin.invoices.show', $invoice);
+    }
+
+    /**
+     * 刪除一筆收款並重算
+     */
+    public function destroyPayment(Invoice $invoice, Payment $payment): RedirectResponse
+    {
+        if ($payment->payable_type !== Invoice::class || (int) $payment->payable_id !== $invoice->id) {
+            abort(404);
+        }
+
+        $payment->delete();
+        $invoice->syncPaidAmount();
+        flash_success('收款紀錄已刪除');
 
         return redirect()->route('admin.invoices.show', $invoice);
     }

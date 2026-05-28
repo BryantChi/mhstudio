@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasPayments;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Invoice extends Model
 {
+    use HasPayments;
+
     protected $fillable = [
         'invoice_number',
         'client_id',
@@ -62,8 +65,8 @@ class Invoice extends Model
      */
     public static function generateNumber(): string
     {
-        $prefix = 'INV-' . now()->format('Ym') . '-';
-        $latest = static::where('invoice_number', 'like', $prefix . '%')
+        $prefix = 'INV-'.now()->format('Ym').'-';
+        $latest = static::where('invoice_number', 'like', $prefix.'%')
             ->orderByDesc('invoice_number')
             ->value('invoice_number');
 
@@ -73,7 +76,7 @@ class Invoice extends Model
             $number = 1;
         }
 
-        return $prefix . str_pad($number, 3, '0', STR_PAD_LEFT);
+        return $prefix.str_pad($number, 3, '0', STR_PAD_LEFT);
     }
 
     /* ===== Relations ===== */
@@ -136,26 +139,30 @@ class Invoice extends Model
     }
 
     /**
-     * 記錄付款
+     * 收款同步後（存檔前）：更新發票狀態與 paid_at。
+     * recordPayment() / syncPaidAmount() 由 HasPayments trait 提供。
      */
-    public function recordPayment(float $amount, ?string $method = null): void
+    protected function afterPaymentsSynced(): void
     {
-        $this->paid_amount = round((float) $this->paid_amount + $amount, 2);
-        $this->payment_method = $method ?? $this->payment_method;
-
-        if ($this->paid_amount >= $this->total) {
+        if ($this->total > 0 && $this->paid_amount >= $this->total) {
             $this->status = 'paid';
-            $this->paid_at = now();
-        } else {
+            $this->paid_at = $this->paid_at ?: now();
+        } elseif ($this->paid_amount > 0) {
             $this->status = 'partially_paid';
+            $this->paid_at = null;
+        } elseif (in_array($this->status, ['paid', 'partially_paid', 'overdue'], true)) {
+            // 收款被刪光，回到已送出
+            $this->status = 'sent';
+            $this->paid_at = null;
         }
+    }
 
-        $this->save();
-
-        // 更新客戶累計營收
-        if ($this->status === 'paid') {
-            $this->client->recalculateRevenue();
-        }
+    /**
+     * 存檔後：重算客戶累計營收（只計已付款發票）。
+     */
+    protected function afterPaymentsSaved(): void
+    {
+        $this->client->recalculateRevenue();
     }
 
     /**

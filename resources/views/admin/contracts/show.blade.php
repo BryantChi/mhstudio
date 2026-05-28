@@ -65,24 +65,73 @@
 
 <div class="row">
     <div class="col-lg-8">
-        {{-- 狀態變更 --}}
+        {{-- 合約狀態與動作 --}}
+        @php $statusLabels = ['draft' => '草稿', 'sent' => '已送出', 'signed' => '已簽署', 'active' => '執行中', 'completed' => '已完成', 'cancelled' => '已取消']; @endphp
         <div class="card mb-3">
-            <div class="card-header"><strong>合約狀態</strong></div>
+            <div class="card-header"><strong>合約狀態與動作</strong></div>
             <div class="card-body">
                 <div class="d-flex align-items-center gap-2 flex-wrap">
                     <span class="badge bg-{{ $contract->status_color }} fs-6">{{ $contract->status_label }}</span>
+                    @if(count($contract->allowedNextStatuses()))
                     <span class="text-muted mx-2">變更為：</span>
-                    @foreach(['draft' => '草稿', 'sent' => '已送出', 'signed' => '已簽署', 'active' => '執行中', 'completed' => '已完成', 'cancelled' => '已取消'] as $val => $label)
-                        @if($val !== $contract->status)
+                    @foreach($contract->allowedNextStatuses() as $val)
                         <form method="POST" action="{{ route('admin.contracts.update-status', $contract) }}" class="d-inline">
                             @csrf @method('PUT')
                             <input type="hidden" name="status" value="{{ $val }}">
                             <button type="submit" class="btn btn-sm btn-outline-secondary"
-                                    onclick="return confirm('確定要變更為「{{ $label }}」嗎？')">{{ $label }}</button>
+                                    onclick="return confirm('確定要變更為「{{ $statusLabels[$val] }}」嗎？')">{{ $statusLabels[$val] }}</button>
                         </form>
-                        @endif
                     @endforeach
+                    @endif
                 </div>
+
+                {{-- 送出給客戶 --}}
+                @if(in_array($contract->status, ['draft', 'sent']))
+                <hr>
+                <div class="d-flex gap-2 flex-wrap">
+                    <form method="POST" action="{{ route('admin.contracts.send', $contract) }}" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                            <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-check"></use></svg> 標記為已送出
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('admin.contracts.email', $contract) }}" class="d-inline"
+                          onsubmit="return confirm('確定要將合約 PDF Email 給客戶嗎？')">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline-info">
+                            <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-envelope-closed"></use></svg> Email 給客戶
+                        </button>
+                    </form>
+                </div>
+                @endif
+
+                {{-- 上傳客戶回簽合約 → 已簽署 --}}
+                @if(in_array($contract->status, ['draft', 'sent', 'signed']))
+                <hr>
+                <form method="POST" action="{{ route('admin.contracts.sign', $contract) }}" enctype="multipart/form-data" class="row g-2 align-items-center">
+                    @csrf
+                    <div class="col-12"><label class="form-label small text-muted mb-1">上傳客戶回簽合約（PDF / 掃描圖檔）→ 標記為已簽署</label></div>
+                    <div class="col-auto">
+                        <input type="file" name="signed_document" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png" required>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-sm btn-success">上傳並標記已簽署</button>
+                    </div>
+                </form>
+                @endif
+
+                {{-- 已簽署檔案 --}}
+                @if($contract->signed_document_path)
+                <hr>
+                <div class="small">
+                    <svg class="icon text-success me-1"><use xlink:href="/assets/icons/free.svg#cil-check-circle"></use></svg>
+                    <span class="text-muted">客戶回簽合約：</span>
+                    <a href="/storage/{{ $contract->signed_document_path }}" target="_blank">檢視 / 下載</a>
+                    @if($contract->signed_document_uploaded_at)
+                    <span class="text-muted ms-2">（{{ $contract->signed_document_uploaded_at->format('Y-m-d H:i') }} 上傳）</span>
+                    @endif
+                </div>
+                @endif
             </div>
         </div>
 
@@ -238,6 +287,37 @@
                 @if($contract->paid_at)
                 <div class="small text-success">付清時間：{{ $contract->paid_at->format('Y-m-d H:i') }}</div>
                 @endif
+
+                @if($contract->total > 0 && $contract->balance_due > 0)
+                <button type="button" class="btn btn-sm btn-primary w-100 mt-2" data-coreui-toggle="modal" data-coreui-target="#recordPaymentModal">
+                    <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-plus"></use></svg> 登記收款
+                </button>
+                @endif
+
+                @if($contract->payments->isNotEmpty())
+                <hr>
+                <div class="small fw-bold mb-1">收款明細</div>
+                <table class="table table-sm mb-0 align-middle">
+                    <tbody>
+                        @foreach($contract->payments as $payment)
+                        <tr>
+                            <td class="text-nowrap small">{{ $payment->paid_on->format('Y-m-d') }}</td>
+                            <td class="small">NT$ {{ number_format($payment->amount) }}</td>
+                            <td class="small text-muted">{{ $payment->payment_method ?: '-' }}</td>
+                            <td class="text-end">
+                                <form method="POST" action="{{ route('admin.contracts.destroy-payment', [$contract, $payment]) }}" class="d-inline">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" data-confirm-delete title="刪除此筆收款">✕</button>
+                                </form>
+                            </td>
+                        </tr>
+                        @if($payment->note)
+                        <tr><td colspan="4" class="small text-muted pt-0">{{ $payment->note }}</td></tr>
+                        @endif
+                        @endforeach
+                    </tbody>
+                </table>
+                @endif
             </div>
         </div>
 
@@ -299,6 +379,50 @@
         </div>
     </div>
 </div>
+
+{{-- 登記收款 Modal --}}
+@if($contract->total > 0 && $contract->balance_due > 0)
+<div class="modal fade" id="recordPaymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.contracts.record-payment', $contract) }}">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">登記收款</h5>
+                    <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">收款金額 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">NT$</span>
+                            <input type="number" name="amount" class="form-control" step="0.01" min="0.01"
+                                   max="{{ $contract->balance_due }}" value="{{ $contract->balance_due }}" required>
+                        </div>
+                        <div class="form-text">尚餘 NT$ {{ number_format($contract->balance_due) }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">付款方式</label>
+                        <input type="text" name="payment_method" class="form-control" placeholder="例如：銀行轉帳、現金" value="{{ $contract->payment_method }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">收款日期</label>
+                        <input type="date" name="paid_on" class="form-control" value="{{ now()->format('Y-m-d') }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">備註</label>
+                        <input type="text" name="note" class="form-control" placeholder="選填">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-coreui-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">確認收款</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 
 @push('styles')
 <style>

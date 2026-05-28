@@ -188,6 +188,11 @@ Route::prefix(config('admin.prefix', 'admin'))
         Route::post('contracts/{contract}/duplicate', [ContractController::class, 'duplicate'])->name('contracts.duplicate');
         Route::get('contracts/{contract}/pdf', [ContractController::class, 'exportPdf'])->name('contracts.pdf');
         Route::put('contracts/{contract}/status', [ContractController::class, 'updateStatus'])->name('contracts.update-status');
+        Route::post('contracts/{contract}/send', [ContractController::class, 'markAsSent'])->name('contracts.send');
+        Route::post('contracts/{contract}/email', [ContractController::class, 'emailToClient'])->name('contracts.email');
+        Route::post('contracts/{contract}/sign', [ContractController::class, 'uploadSignedDocument'])->name('contracts.sign');
+        Route::post('contracts/{contract}/payments', [ContractController::class, 'recordPayment'])->name('contracts.record-payment');
+        Route::delete('contracts/{contract}/payments/{payment}', [ContractController::class, 'destroyPayment'])->name('contracts.destroy-payment');
         Route::resource('contracts', ContractController::class);
 
         // 合約範本
@@ -203,6 +208,7 @@ Route::prefix(config('admin.prefix', 'admin'))
 
         // 發票管理
         Route::post('invoices/{invoice}/payment', [InvoiceController::class, 'recordPayment'])->name('invoices.record-payment');
+        Route::delete('invoices/{invoice}/payments/{payment}', [InvoiceController::class, 'destroyPayment'])->name('invoices.destroy-payment');
         Route::resource('invoices', InvoiceController::class);
 
         // 任務管理
