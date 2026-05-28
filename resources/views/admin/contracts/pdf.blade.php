@@ -141,12 +141,10 @@
         </tr>
         <tr>
             <td class="label">合約期間</td>
-            <td class="value">
+            <td class="value" colspan="3">
                 {{ $contract->start_date?->format('Y-m-d') ?? '-' }}
                 @if($contract->end_date) ~ {{ $contract->end_date->format('Y-m-d') }} @endif
             </td>
-            <td class="label">狀態</td>
-            <td class="value"><span class="badge badge-status">{{ $contract->status_label }}</span></td>
         </tr>
         @if($contract->client_signer_name || $contract->company_signer_name)
         <tr>
