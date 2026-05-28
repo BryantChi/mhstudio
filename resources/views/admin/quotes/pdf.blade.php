@@ -143,9 +143,7 @@
     <table class="meta-table">
         <tr>
             <td class="label">客戶名稱</td>
-            <td class="value">{{ $quote->client->name }}</td>
-            <td class="label">簽約日期</td>
-            <td class="value">{{ $quote->created_at->format('Y-m-d') }}</td>
+            <td class="value" colspan="3">{{ $quote->client->name }}</td>
         </tr>
         @if($quote->client->company || $quote->client->tax_id)
         <tr>
@@ -218,60 +216,7 @@
         </tr>
     </table>
 
-    {{-- 標的物總價 --}}
-    <div class="clause-section">
-        <h3>一、標的物總價</h3>
-        <p>本報價單所列服務項目，總金額為新台幣 {{ number_format($quote->total) }} 元整（{{ $quote->tax_rate > 0 ? '含稅' : '未稅' }}）。</p>
-    </div>
-
-    {{-- 驗收方式 --}}
-    <div class="clause-section">
-        <h3>二、驗收方式</h3>
-        <ul>
-            <li>乙方完成製作後，應通知甲方於 7 個工作日內進行驗收。</li>
-            <li>驗收期間如有 Bug 或功能異常，乙方應於 7 日內修正完畢。</li>
-            <li>網站上線後 7 日內，乙方應提供甲方後台操作之教育訓練。</li>
-        </ul>
-    </div>
-
-    {{-- 付款辦法 --}}
-    <div class="clause-section">
-        <h3>三、付款辦法</h3>
-        <ul>
-            <li>簽約時：支付總額之 50% 作為訂金，計新台幣 {{ number_format(round($quote->total * 0.5)) }} 元整。</li>
-            <li>尾款：驗收完成後 7 日內，支付剩餘 50% 尾款。</li>
-        </ul>
-    </div>
-
-    {{-- 技術支援 --}}
-    <div class="clause-section">
-        <h3>四、技術支援</h3>
-        <p>網站驗收完成後 7 日內，乙方提供免費修改服務。超過免費修改期間之修改需求，依雙方另行議定之費用計算。</p>
-    </div>
-
-    {{-- 規格變更 --}}
-    <div class="clause-section">
-        <h3>五、規格變更</h3>
-        <p>甲方修改次數依合約方案規定，超出修改次數之需求，乙方得另行報價。重大規格變更（如新增頁面、功能模組等），雙方應另行議定費用與時程。</p>
-    </div>
-
-    {{-- 保固維護 --}}
-    <div class="clause-section">
-        <h3>六、保固維護</h3>
-        <p>乙方提供免費保固服務。保固範圍包含：Bug 修復、安全性更新、瀏覽器相容性問題。保固不含：甲方自行修改程式碼導致之問題、第三方外掛衝突、主機商問題。</p>
-    </div>
-
-    {{-- 保密約定 --}}
-    <div class="clause-section">
-        <h3>七、保密約定</h3>
-        <p>雙方對於合作過程中知悉之對方商業機密，負有保密義務。未經對方書面同意，不得將保密資訊揭露予第三方。</p>
-    </div>
-
-    {{-- 其他 --}}
-    <div class="clause-section">
-        <h3>八、其他</h3>
-        <p>甲方全額付清後，網站設計之智慧財產權歸甲方所有，乙方保留作品集展示權利。</p>
-    </div>
+    {{-- 條款已改由「單據條款設定」與報價單備註（附加備註）集中管理，不再於此寫死 --}}
 
     {{-- 備註（集中於「單據條款設定」管理，每行一條） --}}
     @php
