@@ -132,7 +132,9 @@ class QuoteController extends Controller
             ->take(20)
             ->get();
 
-        return view('admin.quotes.show', compact('quote', 'activities'));
+        $contractTemplates = ContractTemplate::active()->ordered()->get();
+
+        return view('admin.quotes.show', compact('quote', 'activities', 'contractTemplates'));
     }
 
     /**
@@ -289,7 +291,7 @@ class QuoteController extends Controller
     /**
      * 將報價單轉換為合約
      */
-    public function convertToContract(Quote $quote): RedirectResponse
+    public function convertToContract(Request $request, Quote $quote): RedirectResponse
     {
         // 檢查是否已轉換
         if ($quote->contract) {
@@ -300,15 +302,25 @@ class QuoteController extends Controller
 
         $quote->load('items');
 
+        // 選擇的合約範本：有提交 template_id 則依選擇（空值＝不套範本）；
+        // 未提交（列表快速轉換）則預設套用服務範本
+        if ($request->has('template_id')) {
+            $template = $request->filled('template_id')
+                ? ContractTemplate::active()->find($request->input('template_id'))
+                : null;
+        } else {
+            $template = ContractTemplate::active()->where('type', 'service')->ordered()->first();
+        }
+
         // 建立合約
-        $contract = DB::transaction(function () use ($quote) {
+        $contract = DB::transaction(function () use ($quote, $template) {
             $contract = Contract::create([
                 'client_id' => $quote->client_id,
                 'project_id' => $quote->project_id,
                 'quote_id' => $quote->id,
                 'title' => $quote->title.' — 合約',
-                'content' => "依據報價單 {$quote->quote_number} 之內容，雙方同意以下合約條款。",
-                'type' => 'service',
+                'content' => $template?->content ?? "依據報價單 {$quote->quote_number} 之內容，雙方同意以下合約條款。",
+                'type' => $template?->type ?? 'service',
                 'status' => 'draft',
                 'subtotal' => $quote->subtotal,
                 'tax_rate' => $quote->tax_rate,
@@ -332,12 +344,6 @@ class QuoteController extends Controller
                     'amount' => $item->amount,
                     'order' => $item->order,
                 ]);
-            }
-
-            // 依合約類型套用合約範本正文，再以合約資料替換佔位符（找不到範本則保留預設說明）
-            $template = ContractTemplate::active()->where('type', $contract->type)->ordered()->first();
-            if ($template) {
-                $contract->update(['content' => $template->content]);
             }
 
             // 標記報價單為已接受（與轉發票一致）

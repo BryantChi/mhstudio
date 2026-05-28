@@ -26,13 +26,9 @@
         </form>
         @endif
         @if($quote->status === 'accepted' && !$quote->contract)
-        <form method="POST" action="{{ route('admin.quotes.convert-to-contract', $quote) }}" class="d-inline"
-              onsubmit="return confirm('確定要將報價單「{{ $quote->quote_number }}」轉換為合約嗎？');">
-            @csrf
-            <button type="submit" class="btn btn-outline-primary">
-                <svg class="icon me-2"><use xlink:href="/assets/icons/free.svg#cil-description"></use></svg> 轉為合約
-            </button>
-        </form>
+        <button type="button" class="btn btn-outline-primary" data-coreui-toggle="modal" data-coreui-target="#convertContractModal">
+            <svg class="icon me-2"><use xlink:href="/assets/icons/free.svg#cil-description"></use></svg> 轉為合約
+        </button>
         @endif
         <a href="{{ route('admin.quotes.pdf', $quote) }}" class="btn btn-outline-danger" data-coreui-toggle="tooltip" title="匯出 PDF">
             <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-file"></use></svg>
@@ -194,4 +190,37 @@
         </div>
     </div>
 </div>
+
+{{-- 轉為合約 Modal --}}
+@if($quote->status === 'accepted' && !$quote->contract)
+<div class="modal fade" id="convertContractModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.quotes.convert-to-contract', $quote) }}">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">轉為合約</h5>
+                    <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">將報價單「{{ $quote->quote_number }}」的項目與金額帶入新合約草稿，並套用所選合約範本的正文（合約類型依範本自動設定）。</p>
+                    <div class="mb-2">
+                        <label for="convertTemplateId" class="form-label">合約範本</label>
+                        <select name="template_id" id="convertTemplateId" class="form-select">
+                            @foreach($contractTemplates as $tpl)
+                                <option value="{{ $tpl->id }}" {{ $loop->first ? 'selected' : '' }}>{{ $tpl->name }}（{{ $tpl->type_label }}）</option>
+                            @endforeach
+                            <option value="">（不套用範本，使用預設說明）</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-coreui-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">建立合約</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 @endsection
