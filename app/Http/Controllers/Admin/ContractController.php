@@ -408,26 +408,32 @@ class ContractController extends Controller
     public function uploadSignedDocument(Request $request, Contract $contract): RedirectResponse
     {
         $request->validate([
-            'signed_document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'signed_document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
 
         if (in_array($contract->status, ['completed', 'cancelled'], true)) {
-            flash_error('此合約狀態無法上傳簽署檔');
+            flash_error('此合約狀態無法標記為已簽署');
 
             return redirect()->route('admin.contracts.show', $contract);
         }
 
-        $file = $request->file('signed_document');
-        $filename = \Illuminate\Support\Str::uuid().'.'.$file->getClientOriginalExtension();
-        $path = $file->storeAs('uploads/'.date('Y/m'), $filename, 'public');
-
-        $contract->update([
-            'signed_document_path' => $path,
-            'signed_document_uploaded_at' => now(),
+        $data = [
             'signed_at' => $contract->signed_at ?: now(),
             'status' => 'signed',
-        ]);
-        flash_success('已上傳客戶回簽合約，狀態更新為「已簽署」');
+        ];
+
+        // 紙本簽署可不附檔；若有客戶回簽 PDF／掃描圖則一併保存
+        if ($request->hasFile('signed_document')) {
+            $file = $request->file('signed_document');
+            $filename = \Illuminate\Support\Str::uuid().'.'.$file->getClientOriginalExtension();
+            $data['signed_document_path'] = $file->storeAs('uploads/'.date('Y/m'), $filename, 'public');
+            $data['signed_document_uploaded_at'] = now();
+        }
+
+        $contract->update($data);
+        flash_success($request->hasFile('signed_document')
+            ? '已上傳客戶回簽合約，狀態更新為「已簽署」'
+            : '合約已標記為「已簽署」');
 
         return redirect()->route('admin.contracts.show', $contract);
     }
@@ -487,6 +493,8 @@ class ContractController extends Controller
         $newContract->sent_at = null;
         $newContract->signed_document_path = null; // 不沿用原合約的客戶回簽檔
         $newContract->signed_document_uploaded_at = null;
+        $newContract->start_date = null; // 複本重新設定合約期間
+        $newContract->end_date = null;
         $newContract->paid_at = null;
         $newContract->paid_amount = 0;
         $newContract->created_by = auth()->id();

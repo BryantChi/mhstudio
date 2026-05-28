@@ -163,6 +163,7 @@
                         <tr><th width="100">報價編號</th><td>{{ $quote->quote_number }}</td></tr>
                         <tr><th>客戶</th><td><a href="{{ route('admin.clients.show', $quote->client) }}">{{ $quote->client->name }}</a></td></tr>
                         <tr><th>狀態</th><td><span class="badge bg-{{ $quote->status_color }}">{{ $quote->status_label }}</span></td></tr>
+                        <tr><th>總金額</th><td class="fw-bold fs-5 text-primary">NT$ {{ number_format($quote->total) }}</td></tr>
                         <tr><th>有效期限</th><td>{{ $quote->valid_until?->format('Y-m-d') ?? '-' }}</td></tr>
                         @if($quote->project)
                         <tr><th>關聯專案</th><td><a href="{{ route('admin.projects.show', $quote->project) }}">{{ $quote->project->title }}</a></td></tr>

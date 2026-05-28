@@ -86,9 +86,10 @@
                                     <svg class="icon"><use xlink:href="/assets/icons/free.svg#cil-pencil"></use></svg>
                                 </a>
                                 @if($quote->status === 'accepted' && !$quote->invoice)
-                                <form method="POST" action="{{ route('admin.quotes.convert', $quote) }}" class="d-inline">
+                                <form method="POST" action="{{ route('admin.quotes.convert', $quote) }}" class="d-inline"
+                                      onsubmit="return confirm('確定要將此報價單轉換為發票嗎？');">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-success" data-coreui-toggle="tooltip" title="轉為發票" data-confirm-delete>
+                                    <button type="submit" class="btn btn-sm btn-success" data-coreui-toggle="tooltip" title="轉為發票">
                                         <svg class="icon"><use xlink:href="/assets/icons/free.svg#cil-arrow-right"></use></svg>
                                     </button>
                                 </form>
@@ -157,9 +158,10 @@
                             <svg class="icon"><use xlink:href="/assets/icons/free.svg#cil-pencil"></use></svg>
                         </a>
                         @if($quote->status === 'accepted' && !$quote->invoice)
-                        <form method="POST" action="{{ route('admin.quotes.convert', $quote) }}" class="d-inline">
+                        <form method="POST" action="{{ route('admin.quotes.convert', $quote) }}" class="d-inline"
+                                      onsubmit="return confirm('確定要將此報價單轉換為發票嗎？');">
                             @csrf
-                            <button type="submit" class="btn btn-sm btn-success" data-coreui-toggle="tooltip" title="轉為發票" data-confirm-delete>
+                            <button type="submit" class="btn btn-sm btn-success" data-coreui-toggle="tooltip" title="轉為發票">
                                 <svg class="icon"><use xlink:href="/assets/icons/free.svg#cil-arrow-right"></use></svg>
                             </button>
                         </form>

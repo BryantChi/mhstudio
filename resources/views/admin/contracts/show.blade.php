@@ -110,12 +110,12 @@
                 <hr>
                 <form method="POST" action="{{ route('admin.contracts.sign', $contract) }}" enctype="multipart/form-data" class="row g-2 align-items-center">
                     @csrf
-                    <div class="col-12"><label class="form-label small text-muted mb-1">上傳客戶回簽合約（PDF / 掃描圖檔）→ 標記為已簽署</label></div>
+                    <div class="col-12"><label class="form-label small text-muted mb-1">標記為已簽署（紙本可不附檔；如有客戶回簽 PDF／掃描圖可一併上傳）</label></div>
                     <div class="col-auto">
-                        <input type="file" name="signed_document" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png" required>
+                        <input type="file" name="signed_document" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png">
                     </div>
                     <div class="col-auto">
-                        <button type="submit" class="btn btn-sm btn-success">上傳並標記已簽署</button>
+                        <button type="submit" class="btn btn-sm btn-success">標記為已簽署</button>
                     </div>
                 </form>
                 @endif
