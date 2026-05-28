@@ -118,7 +118,7 @@ class InvoiceController extends Controller
      */
     public function show(Invoice $invoice): View
     {
-        $invoice->load(['client', 'project', 'creator', 'items', 'quote']);
+        $invoice->load(['client', 'project', 'creator', 'items', 'quote', 'payments']);
 
         $activities = Activity::where('subject_type', Invoice::class)
             ->where('subject_id', $invoice->id)
@@ -217,9 +217,17 @@ class InvoiceController extends Controller
             'payment_method' => 'nullable|string|max:255',
             'paid_on' => 'nullable|date',
             'note' => 'nullable|string|max:500',
+            'proof' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
 
-        $invoice->recordPayment($request->amount, $request->payment_method, $request->paid_on, $request->note);
+        // 收款憑證（轉帳截圖／收據，選填）
+        $proofPath = null;
+        if ($request->hasFile('proof')) {
+            $file = $request->file('proof');
+            $proofPath = $file->storeAs('uploads/'.date('Y/m'), \Illuminate\Support\Str::uuid().'.'.$file->getClientOriginalExtension(), 'public');
+        }
+
+        $invoice->recordPayment($request->amount, $request->payment_method, $request->paid_on, $request->note, $proofPath);
         flash_success('付款已記錄');
 
         return redirect()->route('admin.invoices.show', $invoice);
@@ -232,6 +240,10 @@ class InvoiceController extends Controller
     {
         if ($payment->payable_type !== Invoice::class || (int) $payment->payable_id !== $invoice->id) {
             abort(404);
+        }
+
+        if ($payment->proof_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($payment->proof_path);
         }
 
         $payment->delete();

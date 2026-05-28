@@ -63,7 +63,7 @@
         <div class="card mt-3">
             <div class="card-header"><strong>記錄付款</strong></div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.invoices.record-payment', $invoice) }}">
+                <form method="POST" action="{{ route('admin.invoices.record-payment', $invoice) }}" enctype="multipart/form-data">
                     @csrf
                     <div class="row g-3">
                         <div class="col-md-4">
@@ -82,14 +82,27 @@
                             <label class="form-label">付款方式</label>
                             <select class="form-select" name="payment_method">
                                 <option value="">選擇方式</option>
-                                <option value="bank_transfer">銀行轉帳</option>
-                                <option value="credit_card">信用卡</option>
-                                <option value="cash">現金</option>
-                                <option value="check">支票</option>
-                                <option value="other">其他</option>
+                                <option value="銀行轉帳">銀行轉帳</option>
+                                <option value="信用卡">信用卡</option>
+                                <option value="現金">現金</option>
+                                <option value="支票">支票</option>
+                                <option value="其他">其他</option>
                             </select>
                         </div>
-                        <div class="col-md-4 d-flex align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label">收款日期</label>
+                            <input type="date" class="form-control" name="paid_on" value="{{ now()->format('Y-m-d') }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">備註</label>
+                            <input type="text" class="form-control" name="note" placeholder="選填">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">收款憑證</label>
+                            <input type="file" class="form-control" name="proof" accept=".pdf,.jpg,.jpeg,.png">
+                            <div class="form-text">選填，可上傳轉帳截圖或收據（PDF／圖檔，10MB 內）</div>
+                        </div>
+                        <div class="col-12">
                             <button type="submit" class="btn btn-success">
                                 <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-check-circle"></use></svg>
                                 記錄付款
@@ -97,6 +110,41 @@
                         </div>
                     </div>
                 </form>
+            </div>
+        </div>
+        @endif
+
+        {{-- 收款明細 --}}
+        @if($invoice->payments->isNotEmpty())
+        <div class="card mt-3">
+            <div class="card-header"><strong>收款明細</strong></div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0 align-middle">
+                        <thead>
+                            <tr><th>日期</th><th>金額</th><th>方式</th><th>備註</th><th class="text-end">操作</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach($invoice->payments as $payment)
+                            <tr>
+                                <td class="text-nowrap">{{ $payment->paid_on->format('Y-m-d') }}</td>
+                                <td>NT$ {{ number_format($payment->amount) }}</td>
+                                <td class="text-muted">{{ $payment->payment_method ?: '-' }}</td>
+                                <td class="small text-muted">{{ $payment->note }}</td>
+                                <td class="text-end">
+                                    @if($payment->proof_path)
+                                    <a href="{{ $payment->proof_url }}" target="_blank" class="btn btn-sm btn-link p-0 me-2" title="檢視收款憑證">憑證</a>
+                                    @endif
+                                    <form method="POST" action="{{ route('admin.invoices.destroy-payment', [$invoice, $payment]) }}" class="d-inline">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-link text-danger p-0" data-confirm-delete title="刪除此筆收款">✕</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         @endif
