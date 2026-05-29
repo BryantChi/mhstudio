@@ -9,7 +9,6 @@ use App\Models\Payment;
 use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Spatie\Activitylog\Models\Activity;
 
@@ -119,7 +118,7 @@ class InvoiceController extends Controller
      */
     public function show(Invoice $invoice): View
     {
-        $invoice->load(['client', 'project', 'creator', 'items', 'quote', 'payments', 'contract', 'linkedPayments']);
+        $invoice->load(['client', 'project', 'creator', 'items', 'quote', 'payments', 'contract']);
 
         $activities = Activity::where('subject_type', Invoice::class)
             ->where('subject_id', $invoice->id)
@@ -209,16 +208,10 @@ class InvoiceController extends Controller
     }
 
     /**
-     * 記錄付款（發票自身帳本）。合約發票不走此路徑——收款以合約為唯一真實來源。
+     * 記錄付款（發票自身帳本）。所有發票（含合約發票）一律走此帳本，合約 paid_amount 由其發票衍生。
      */
     public function recordPayment(Request $request, Invoice $invoice): RedirectResponse
     {
-        if ($invoice->contract_id) {
-            flash_error('合約發票的收款請於本頁「登記收款」（記入合約帳本），不在發票自身帳本入帳');
-
-            return redirect()->route('admin.invoices.show', $invoice);
-        }
-
         $request->validate([
             'amount' => 'required|numeric|min:0.01|max:'.$invoice->balance_due,
             'payment_method' => 'nullable|string|max:255',
@@ -236,53 +229,6 @@ class InvoiceController extends Controller
 
         $invoice->recordPayment($request->amount, $request->payment_method, $request->paid_on, $request->note, $proofPath);
         flash_success('付款已記錄');
-
-        return redirect()->route('admin.invoices.show', $invoice);
-    }
-
-    /**
-     * 登記合約發票的收款：寫進「合約帳本」（唯一真實來源）、綁定此發票，
-     * 並依綁定到本發票的合約收款重算發票的已付狀態（不走發票自身帳本，避免雙重入帳）。
-     */
-    public function recordContractPayment(Request $request, Invoice $invoice): RedirectResponse
-    {
-        abort_unless($invoice->contract_id, 404);
-
-        $validated = $request->validate([
-            'amount' => 'required|numeric|min:0.01|max:'.$invoice->balance_due,
-            'payment_method' => 'nullable|string|max:255',
-            'paid_on' => 'nullable|date',
-            'note' => 'nullable|string|max:500',
-            'proof' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-        ]);
-
-        // 收款憑證（轉帳截圖／收據，選填）——只在此上傳一次，存於合約收款
-        $proofPath = null;
-        if ($request->hasFile('proof')) {
-            $file = $request->file('proof');
-            $proofPath = $file->storeAs('uploads/'.date('Y/m'), \Illuminate\Support\Str::uuid().'.'.$file->getClientOriginalExtension(), 'public');
-        }
-
-        DB::transaction(function () use ($validated, $invoice, $proofPath) {
-            // 1) 記入合約帳本（唯一真實來源），並綁定此發票
-            $payment = $invoice->contract->recordPayment(
-                (float) $validated['amount'],
-                $validated['payment_method'] ?? null,
-                $validated['paid_on'] ?? null,
-                $validated['note'] ?? null,
-                $proofPath,
-            );
-            $payment->update(['invoice_id' => $invoice->id]);
-
-            // 2) 由綁定到本發票的合約收款重算發票已付狀態（不寫發票自身帳本）
-            $paid = round((float) Payment::where('invoice_id', $invoice->id)->sum('amount'), 2);
-            $invoice->paid_amount = $paid;
-            $invoice->status = $paid >= (float) $invoice->total ? 'paid' : 'partially_paid';
-            $invoice->paid_at = $paid >= (float) $invoice->total ? ($invoice->paid_at ?: now()) : null;
-            $invoice->save();
-        });
-
-        flash_success('已登記收款（記入合約帳本並更新此發票收款狀態）');
 
         return redirect()->route('admin.invoices.show', $invoice);
     }

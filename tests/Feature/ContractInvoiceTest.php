@@ -270,3 +270,22 @@ it('one-step partial payment leaves invoice partially_paid', function () {
     expect($invoice->status)->toBe('paid'); // 摘要模式發票 total = 收款額,故全額付清
     expect((float) $invoice->total)->toBe(20000.0);
 });
+
+it('all invoices including contract invoices collect on their own ledger', function () {
+    $contract = makeContract();
+    $invoice = $contract->invoices()->create([
+        'client_id' => $contract->client_id, 'title' => '合約發票', 'status' => 'sent',
+        'subtotal' => 30000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 30000, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now(),
+    ]);
+
+    $this->post(route('admin.invoices.record-payment', $invoice), [
+        'amount' => 30000, 'payment_method' => '現金',
+    ]);
+
+    $invoice = $invoice->fresh();
+    expect($invoice->status)->toBe('paid');
+    expect((float) $invoice->paid_amount)->toBe(30000.0);
+    expect($invoice->payments()->count())->toBe(1);
+    expect((float) $contract->fresh()->paid_amount)->toBe(30000.0); // 合約衍生
+});
