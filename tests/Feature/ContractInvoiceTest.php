@@ -73,3 +73,79 @@ it('relates contract to its invoices and computes invoiced/uninvoiced amounts', 
     $invoice = $contract->invoices->first();
     expect($invoice->contract->id)->toBe($contract->id);
 });
+
+it('creates a custom-amount invoice (tax_rate 0, single item, draft)', function () {
+    $contract = makeContract(); // total 105000
+
+    $response = $this->post(route('admin.contracts.create-invoice', $contract), [
+        'mode' => 'custom',
+        'amount' => 30000,
+    ]);
+
+    $invoice = $contract->fresh()->invoices()->first();
+    expect($invoice)->not->toBeNull();
+    expect($invoice->contract_id)->toBe($contract->id);
+    expect($invoice->status)->toBe('draft');
+    expect((float) $invoice->total)->toBe(30000.0);
+    expect($invoice->items)->toHaveCount(1);
+    $response->assertRedirect(route('admin.invoices.show', $invoice));
+});
+
+it('creates a percent invoice = contract total * percent', function () {
+    $contract = makeContract(); // total 105000
+
+    $this->post(route('admin.contracts.create-invoice', $contract), [
+        'mode' => 'percent',
+        'percent' => 30,
+    ]);
+
+    $invoice = $contract->fresh()->invoices()->first();
+    expect((float) $invoice->total)->toBe(31500.0); // 105000 * 30%
+    expect($invoice->items)->toHaveCount(1);
+});
+
+it('creates a remaining invoice = total - already invoiced', function () {
+    $contract = makeContract(); // total 105000
+    $contract->invoices()->create([
+        'client_id' => $contract->client_id, 'title' => '頭款', 'status' => 'draft',
+        'subtotal' => 40000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 40000, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now()->addDays(30),
+    ]);
+
+    $this->post(route('admin.contracts.create-invoice', $contract), [
+        'mode' => 'remaining',
+    ]);
+
+    $invoice = $contract->fresh()->invoices()->where('total', '!=', 40000)->first();
+    expect((float) $invoice->total)->toBe(65000.0); // 105000 - 40000
+});
+
+it('creates a copy_items invoice reproducing contract total with tax', function () {
+    $contract = makeContract(); // 1 item 100000, tax 5% => total 105000
+
+    $this->post(route('admin.contracts.create-invoice', $contract), [
+        'mode' => 'copy_items',
+    ]);
+
+    $invoice = $contract->fresh()->invoices()->first();
+    expect($invoice->items)->toHaveCount(1);
+    expect((float) $invoice->subtotal)->toBe(100000.0);
+    expect((float) $invoice->total)->toBe(105000.0); // 沿用 tax_rate 5%
+});
+
+it('warns but still creates an over-invoiced invoice', function () {
+    $contract = makeContract(); // total 105000
+    $contract->invoices()->create([
+        'client_id' => $contract->client_id, 'title' => '全額', 'status' => 'draft',
+        'subtotal' => 105000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 105000, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now()->addDays(30),
+    ]);
+
+    $response = $this->post(route('admin.contracts.create-invoice', $contract), [
+        'mode' => 'custom',
+        'amount' => 10000,
+    ]);
+
+    expect($contract->fresh()->invoices()->count())->toBe(2); // 仍建立
+    $response->assertSessionHas('warning'); // flash_warning() writes session key 'warning'
+});

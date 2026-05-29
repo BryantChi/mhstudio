@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\Contract;
 use App\Models\ContractTemplate;
+use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Project;
 use App\Models\Service;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Spatie\Activitylog\Models\Activity;
 
@@ -434,6 +436,84 @@ class ContractController extends Controller
             : '合約已標記為「已簽署」');
 
         return redirect()->route('admin.contracts.show', $contract);
+    }
+
+    /**
+     * 功能一：從合約手動開立發票（4 種金額模式）。
+     * custom/percent/remaining 為單行模式（tax_rate=0，項目金額即發票 total）；
+     * copy_items 逐項複製並沿用合約稅率，total 等於合約 total。
+     */
+    public function createInvoice(Request $request, Contract $contract): RedirectResponse
+    {
+        $validated = $request->validate([
+            'mode' => 'required|in:custom,percent,remaining,copy_items',
+            'amount' => 'required_if:mode,custom|nullable|numeric|min:0.01',
+            'percent' => 'required_if:mode,percent|nullable|numeric|min:0.01|max:100',
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $contract->loadMissing('items');
+
+        $invoice = DB::transaction(function () use ($validated, $contract) {
+            $invoice = Invoice::create([
+                'client_id' => $contract->client_id,
+                'project_id' => $contract->project_id,
+                'contract_id' => $contract->id,
+                'title' => $contract->title,
+                'status' => 'draft',
+                'subtotal' => 0,
+                'tax_rate' => 0,
+                'tax_amount' => 0,
+                'discount' => 0,
+                'total' => 0,
+                'currency' => $contract->currency ?? 'TWD',
+                'issued_date' => now(),
+                'due_date' => now()->addDays(30),
+            ]);
+
+            if ($validated['mode'] === 'copy_items') {
+                foreach ($contract->items as $item) {
+                    $invoice->items()->create([
+                        'description' => $item->description,
+                        'quantity' => $item->quantity,
+                        'unit' => $item->unit,
+                        'unit_price' => $item->unit_price,
+                        'amount' => $item->amount,
+                        'order' => $item->order,
+                    ]);
+                }
+                $invoice->tax_rate = $contract->tax_rate;
+                $invoice->discount = $contract->discount;
+                $invoice->save();
+            } else {
+                $amount = match ($validated['mode']) {
+                    'custom' => round((float) $validated['amount'], 2),
+                    'percent' => round((float) $contract->total * ((float) $validated['percent'] / 100), 2),
+                    'remaining' => round((float) $contract->uninvoiced_amount, 2),
+                };
+
+                $invoice->items()->create([
+                    'description' => ($validated['description'] ?? null) ?: $contract->title,
+                    'quantity' => 1,
+                    'unit' => '式',
+                    'unit_price' => $amount,
+                    'amount' => $amount,
+                    'order' => 0,
+                ]);
+            }
+
+            $invoice->recalculate();
+
+            return $invoice;
+        });
+
+        if ($contract->fresh()->invoiced_amount > $contract->total) {
+            flash_warning('已開發票總額已超過合約金額，請確認是否為追加項目');
+        }
+
+        flash_success('已從合約開立發票');
+
+        return redirect()->route('admin.invoices.show', $invoice);
     }
 
     /**

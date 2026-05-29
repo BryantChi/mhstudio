@@ -197,6 +197,7 @@ Route::prefix(config('admin.prefix', 'admin'))
         Route::post('contracts/{contract}/sign', [ContractController::class, 'uploadSignedDocument'])->name('contracts.sign');
         Route::post('contracts/{contract}/payments', [ContractController::class, 'recordPayment'])->name('contracts.record-payment');
         Route::delete('contracts/{contract}/payments/{payment}', [ContractController::class, 'destroyPayment'])->name('contracts.destroy-payment');
+        Route::post('contracts/{contract}/invoices', [ContractController::class, 'createInvoice'])->name('contracts.create-invoice');
         Route::resource('contracts', ContractController::class);
 
         // 合約範本
