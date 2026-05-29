@@ -281,6 +281,24 @@ function makeContractInvoice(Contract $contract, float $total = 30000): Invoice
     ]);
 }
 
+it('excludes contract invoices from invoice index revenue stats', function () {
+    $contract = makeContract();
+
+    // 獨立已付發票 → 計入營收
+    $contract->client->invoices()->create([
+        'contract_id' => null, 'title' => '獨立', 'status' => 'paid',
+        'subtotal' => 8000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 8000, 'paid_amount' => 8000, 'currency' => 'TWD',
+        'issued_date' => now(), 'due_date' => now(), 'paid_at' => now(),
+    ]);
+    // 合約已付發票 → 不計入營收
+    makeContractInvoice($contract, 50000)->update(['status' => 'paid', 'paid_amount' => 50000, 'paid_at' => now()]);
+
+    $stats = $this->get(route('admin.invoices.index'))->viewData('stats');
+    expect((float) $stats['total_revenue'])->toBe(8000.0);
+    expect((float) $stats['month_revenue'])->toBe(8000.0);
+});
+
 it('records a contract invoice payment into the contract ledger and marks it paid', function () {
     $contract = makeContract(); // total 105000
     $invoice = makeContractInvoice($contract, 30000);

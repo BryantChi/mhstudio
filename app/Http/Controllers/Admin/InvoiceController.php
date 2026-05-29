@@ -38,9 +38,11 @@ class InvoiceController extends Controller
         $invoices = $query->latest()->paginate(15)->withQueryString();
 
         // 統計卡片
+        // 營收一律排除合約發票（contract_id 有值）：合約收款以合約帳本為唯一真實來源，
+        // 與儀表板月營收、客戶 total_revenue 的計算保持一致。
         $stats = [
-            'total_revenue' => Invoice::paid()->sum('total'),
-            'month_revenue' => Invoice::paid()->whereMonth('paid_at', now()->month)->whereYear('paid_at', now()->year)->sum('total'),
+            'total_revenue' => Invoice::paid()->whereNull('contract_id')->sum('total'),
+            'month_revenue' => Invoice::paid()->whereNull('contract_id')->whereMonth('paid_at', now()->month)->whereYear('paid_at', now()->year)->sum('total'),
             'pending_amount' => Invoice::unpaid()->sum('total') - Invoice::unpaid()->sum('paid_amount'),
             'overdue_count' => Invoice::overdue()->count(),
         ];
