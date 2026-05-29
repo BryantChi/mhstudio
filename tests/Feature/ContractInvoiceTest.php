@@ -53,9 +53,9 @@ function makeContractPayment(Contract $c, float $amt, string $on, ?string $metho
     return $p;
 }
 
-it('has contract_id column on invoices and no longer keeps invoice_id on payments', function () {
+it('has contract_id column on invoices and invoice_id on payments', function () {
     expect(Schema::hasColumn('invoices', 'contract_id'))->toBeTrue();
-    expect(Schema::hasColumn('payments', 'invoice_id'))->toBeFalse();
+    expect(Schema::hasColumn('payments', 'invoice_id'))->toBeTrue();
 });
 
 it('relates contract to its invoices and computes invoiced/uninvoiced amounts', function () {
@@ -321,4 +321,53 @@ it('migrates existing contract direct payments into a carrier invoice without ch
     expect($invoice->status)->toBe('paid');
     expect($invoice->payments()->count())->toBe(2); // 兩筆改掛此發票
     expect((float) $contract->fresh()->paid_amount)->toBe(50000.0); // 合約衍生不變
+});
+
+it('does not double-count when a contract payment already backs a contract invoice (mirror)', function () {
+    $contract = makeContract();
+
+    // 既有合約發票(舊 recordContractPayment 流程產生,paid_amount 已鏡像)
+    $mirror = $contract->invoices()->create([
+        'client_id' => $contract->client_id, 'title' => '鏡像', 'status' => 'paid',
+        'subtotal' => 5000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 5000, 'paid_amount' => 5000, 'currency' => 'TWD',
+        'issued_date' => now(), 'due_date' => now(), 'paid_at' => now(),
+    ]);
+    // 對應的合約收款(payable=Contract,且 invoice_id 指向鏡像發票)
+    $p = makeContractPayment($contract, 5000, '2026-05-01');
+    $p->invoice_id = $mirror->id;
+    $p->save();
+
+    (new \App\Actions\Finance\MigrateContractPaymentsToInvoices)->execute();
+
+    // 收款改掛鏡像發票,不另開承載發票 → 不重複計算
+    expect($contract->fresh()->invoices()->count())->toBe(1); // 只有鏡像,無新承載發票
+    expect((float) Invoice::where('status', 'paid')->sum('total'))->toBe(5000.0); // 非 10000
+    expect(Payment::where('payable_type', Contract::class)->count())->toBe(0);
+    expect((int) $p->fresh()->payable_id)->toBe($mirror->id);
+    expect((float) $contract->fresh()->paid_amount)->toBe(5000.0);
+});
+
+it('renders the contract show page without error', function () {
+    $contract = makeContract();
+    $contract->invoices()->create([
+        'client_id' => $contract->client_id, 'title' => '發票', 'status' => 'paid',
+        'subtotal' => 10000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 10000, 'paid_amount' => 10000, 'currency' => 'TWD',
+        'issued_date' => now(), 'due_date' => now(), 'paid_at' => now(),
+    ]);
+
+    $this->get(route('admin.contracts.show', $contract))->assertOk();
+});
+
+it('renders the invoice show page (contract invoice with a payment) without error', function () {
+    $contract = makeContract();
+    $invoice = $contract->invoices()->create([
+        'client_id' => $contract->client_id, 'title' => '合約發票', 'status' => 'sent',
+        'subtotal' => 10000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 10000, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now(),
+    ]);
+    $invoice->recordPayment(4000, '現金');
+
+    $this->get(route('admin.invoices.show', $invoice))->assertOk();
 });

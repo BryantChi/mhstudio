@@ -190,7 +190,7 @@ class ContractController extends Controller
      */
     public function show(Contract $contract): View
     {
-        $contract->load(['client', 'project', 'creator', 'items', 'quote', 'payments', 'invoices']);
+        $contract->load(['client', 'project', 'creator', 'items', 'quote', 'invoices']);
 
         // 活動紀錄
         $activities = Activity::where('subject_type', Contract::class)
