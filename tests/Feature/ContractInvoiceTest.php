@@ -309,6 +309,9 @@ it('migrates existing contract direct payments into a carrier invoice without ch
 
     $totalBefore = Payment::sum('amount');
 
+    // 模擬 CLI 遷移情境:無登入使用者(承載發票須顯式帶 created_by,不可靠 auth)
+    auth()->logout();
+
     (new \App\Actions\Finance\MigrateContractPaymentsToInvoices)->execute();
 
     expect((float) Payment::sum('amount'))->toBe((float) $totalBefore); // 總額不變
@@ -321,6 +324,7 @@ it('migrates existing contract direct payments into a carrier invoice without ch
     expect($invoice->status)->toBe('paid');
     expect($invoice->payments()->count())->toBe(2); // 兩筆改掛此發票
     expect((float) $contract->fresh()->paid_amount)->toBe(50000.0); // 合約衍生不變
+    expect($invoice->created_by)->not->toBeNull(); // CLI 無 auth 仍正確帶入
 });
 
 it('does not double-count when a contract payment already backs a contract invoice (mirror)', function () {
