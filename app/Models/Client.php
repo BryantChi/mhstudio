@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -144,8 +144,11 @@ class Client extends Model
      */
     public function recalculateRevenue(): void
     {
+        // 排除合約發票（contract_id 有值）：合約收款以合約帳本為唯一真實來源，
+        // 不重複計入客戶累計營收。獨立發票（contract_id=null）維持現狀。
         $this->total_revenue = $this->invoices()
             ->where('status', 'paid')
+            ->whereNull('contract_id')
             ->sum('total');
         $this->save();
     }

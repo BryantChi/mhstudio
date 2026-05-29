@@ -2,7 +2,6 @@
 
 use App\Models\Contract;
 use App\Models\Invoice;
-use App\Models\Payment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 
@@ -215,6 +214,31 @@ it('payment without create_invoice records only the contract ledger', function (
     expect((float) $contract->paid_amount)->toBe(30000.0);
     expect($contract->invoices()->count())->toBe(0);
     expect($contract->payments()->first()->invoice_id)->toBeNull();
+});
+
+it('excludes contract invoices from client revenue, counts independent ones', function () {
+    $contract = makeContract(); // makeContract 已登入並建立 client
+    $client = $contract->client;
+
+    // 獨立發票（contract_id=null）已付 → 應計入營收
+    $client->invoices()->create([
+        'contract_id' => null, 'title' => '獨立', 'status' => 'paid',
+        'subtotal' => 8000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 8000, 'paid_amount' => 8000, 'currency' => 'TWD',
+        'issued_date' => now(), 'due_date' => now(), 'paid_at' => now(),
+    ]);
+
+    // 合約發票（contract_id 有值）已付 → 不應計入營收
+    $contract->invoices()->create([
+        'client_id' => $client->id, 'title' => '合約款', 'status' => 'paid',
+        'subtotal' => 50000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 50000, 'paid_amount' => 50000, 'currency' => 'TWD',
+        'issued_date' => now(), 'due_date' => now(), 'paid_at' => now(),
+    ]);
+
+    $client->recalculateRevenue();
+
+    expect((float) $client->fresh()->total_revenue)->toBe(8000.0); // 只計獨立發票
 });
 
 it('independent invoice (contract_id null) keeps its own payment ledger intact', function () {

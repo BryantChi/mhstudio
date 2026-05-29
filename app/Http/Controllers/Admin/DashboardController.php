@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Article;
-use App\Models\User;
-use App\Models\Category;
 use App\Models\AnalyticsEvent;
-use App\Models\Invoice;
+use App\Models\Article;
+use App\Models\Category;
+use App\Models\ClientInteraction;
 use App\Models\Contract;
+use App\Models\Invoice;
+use App\Models\QuoteRequest;
 use App\Models\Task;
 use App\Models\TimeEntry;
-use App\Models\ClientInteraction;
-use App\Models\QuoteRequest;
+use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
@@ -67,7 +67,9 @@ class DashboardController extends Controller
         // 商業概覽 KPI（快取 5 分鐘）
         $businessKpi = Cache::remember('dashboard_business_kpi', 300, function () {
             return [
+                // 排除合約發票（contract_id 有值），避免合約收款重複計入月營收
                 'month_revenue' => Invoice::where('status', 'paid')
+                    ->whereNull('contract_id')
                     ->whereMonth('paid_at', now()->month)
                     ->whereYear('paid_at', now()->year)
                     ->sum('total'),
@@ -154,7 +156,7 @@ class DashboardController extends Controller
     {
         $composerLockPath = base_path('composer.lock');
 
-        if (!file_exists($composerLockPath)) {
+        if (! file_exists($composerLockPath)) {
             return [];
         }
 
@@ -176,7 +178,7 @@ class DashboardController extends Controller
         }
 
         // 按名稱排序
-        usort($packages, fn($a, $b) => strcmp($a['name'], $b['name']));
+        usort($packages, fn ($a, $b) => strcmp($a['name'], $b['name']));
 
         return $packages;
     }
