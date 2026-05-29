@@ -517,7 +517,7 @@ class ContractController extends Controller
     }
 
     /**
-     * 登記一筆收款
+     * 登記一筆收款；可選擇同時為此筆款開立發票（功能二）。
      */
     public function recordPayment(Request $request, Contract $contract): RedirectResponse
     {
@@ -527,25 +527,105 @@ class ContractController extends Controller
             'paid_on' => 'nullable|date',
             'note' => 'nullable|string|max:500',
             'proof' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'create_invoice' => 'nullable|boolean',
+            'invoice_item_mode' => 'nullable|in:summary,custom,copy',
+            'invoice_description' => 'nullable|string|max:255',
         ]);
 
-        // 收款憑證（轉帳截圖／收據，選填）
         $proofPath = null;
         if ($request->hasFile('proof')) {
             $file = $request->file('proof');
             $proofPath = $file->storeAs('uploads/'.date('Y/m'), \Illuminate\Support\Str::uuid().'.'.$file->getClientOriginalExtension(), 'public');
         }
 
-        $contract->recordPayment(
-            (float) $validated['amount'],
-            $validated['payment_method'] ?? null,
-            $validated['paid_on'] ?? null,
-            $validated['note'] ?? null,
-            $proofPath,
-        );
-        flash_success('收款已登記');
+        $amount = (float) $validated['amount'];
+
+        DB::transaction(function () use ($request, $validated, $contract, $amount, $proofPath) {
+            $payment = $contract->recordPayment(
+                $amount,
+                $validated['payment_method'] ?? null,
+                $validated['paid_on'] ?? null,
+                $validated['note'] ?? null,
+                $proofPath,
+            );
+
+            if ($request->boolean('create_invoice')) {
+                $invoice = $this->buildLinkedInvoice(
+                    $contract,
+                    $amount,
+                    $validated['invoice_item_mode'] ?? 'summary',
+                    $validated['invoice_description'] ?? null,
+                );
+                $payment->update(['invoice_id' => $invoice->id]);
+            }
+        });
+
+        flash_success($request->boolean('create_invoice') ? '收款已登記並開立發票' : '收款已登記');
 
         return redirect()->route('admin.contracts.show', $contract);
+    }
+
+    /**
+     * 建立「收款連動發票」：已付請款文件，total 等於收款額，不自成帳本。
+     */
+    private function buildLinkedInvoice(Contract $contract, float $amount, string $itemMode, ?string $description): Invoice
+    {
+        $contract->loadMissing('items');
+
+        $invoice = Invoice::create([
+            'client_id' => $contract->client_id,
+            'project_id' => $contract->project_id,
+            'contract_id' => $contract->id,
+            'title' => $contract->title,
+            'status' => 'paid',
+            'subtotal' => 0,
+            'tax_rate' => 0,
+            'tax_amount' => 0,
+            'discount' => 0,
+            'total' => 0,
+            'currency' => $contract->currency ?? 'TWD',
+            'issued_date' => now(),
+            'due_date' => now(),
+        ]);
+
+        if ($itemMode === 'copy' && $contract->total > 0 && $contract->items->isNotEmpty()) {
+            $f = $amount / (float) $contract->total;
+            foreach ($contract->items as $item) {
+                $scaled = round((float) $item->amount * $f, 2);
+                $invoice->items()->create([
+                    'description' => $item->description,
+                    'quantity' => 1,
+                    'unit' => $item->unit,
+                    'unit_price' => $scaled,
+                    'amount' => $scaled,
+                    'order' => $item->order,
+                ]);
+            }
+            $invoice->tax_rate = $contract->tax_rate;
+            $invoice->discount = round((float) $contract->discount * $f, 2);
+            $invoice->save();
+        } else {
+            $desc = $itemMode === 'custom' && $description
+                ? $description
+                : "合約 {$contract->contract_number} 款項";
+
+            $invoice->items()->create([
+                'description' => $desc,
+                'quantity' => 1,
+                'unit' => '式',
+                'unit_price' => $amount,
+                'amount' => $amount,
+                'order' => 0,
+            ]);
+        }
+
+        $invoice->recalculate();
+        $invoice->paid_amount = $invoice->total;
+        $invoice->status = 'paid';
+        $invoice->paid_at = now();
+        $invoice->save();
+
+        return $invoice;
     }
 
     /**
