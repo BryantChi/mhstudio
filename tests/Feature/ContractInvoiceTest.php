@@ -2,6 +2,7 @@
 
 use App\Models\Contract;
 use App\Models\Invoice;
+use App\Models\Payment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 
@@ -42,9 +43,19 @@ function makeContract(array $overrides = []): Contract
     return $contract->fresh();
 }
 
-it('has contract_id column on invoices and invoice_id on payments', function () {
+/** 模擬舊資料:直接記在合約上的收款(payable=Contract) */
+function makeContractPayment(Contract $c, float $amt, string $on, ?string $method = null): Payment
+{
+    $p = new Payment(['amount' => $amt, 'paid_on' => $on, 'payment_method' => $method, 'created_by' => auth()->id()]);
+    $p->payable()->associate($c);
+    $p->save();
+
+    return $p;
+}
+
+it('has contract_id column on invoices and no longer keeps invoice_id on payments', function () {
     expect(Schema::hasColumn('invoices', 'contract_id'))->toBeTrue();
-    expect(Schema::hasColumn('payments', 'invoice_id'))->toBeTrue();
+    expect(Schema::hasColumn('payments', 'invoice_id'))->toBeFalse();
 });
 
 it('relates contract to its invoices and computes invoiced/uninvoiced amounts', function () {
@@ -288,4 +299,26 @@ it('all invoices including contract invoices collect on their own ledger', funct
     expect((float) $invoice->paid_amount)->toBe(30000.0);
     expect($invoice->payments()->count())->toBe(1);
     expect((float) $contract->fresh()->paid_amount)->toBe(30000.0); // 合約衍生
+});
+
+it('migrates existing contract direct payments into a carrier invoice without changing money', function () {
+    $contract = makeContract(); // total 105000
+
+    makeContractPayment($contract, 30000, '2026-04-01', '轉帳');
+    makeContractPayment($contract, 20000, '2026-05-10');
+
+    $totalBefore = Payment::sum('amount');
+
+    (new \App\Actions\Finance\MigrateContractPaymentsToInvoices)->execute();
+
+    expect((float) Payment::sum('amount'))->toBe((float) $totalBefore); // 總額不變
+    expect(Payment::where('payable_type', Contract::class)->count())->toBe(0); // 合約已無直接收款
+
+    $invoice = $contract->fresh()->invoices()->first();
+    expect($invoice)->not->toBeNull();
+    expect((float) $invoice->total)->toBe(50000.0);
+    expect((float) $invoice->paid_amount)->toBe(50000.0);
+    expect($invoice->status)->toBe('paid');
+    expect($invoice->payments()->count())->toBe(2); // 兩筆改掛此發票
+    expect((float) $contract->fresh()->paid_amount)->toBe(50000.0); // 合約衍生不變
 });
