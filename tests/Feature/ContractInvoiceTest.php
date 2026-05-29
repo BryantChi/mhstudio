@@ -240,3 +240,33 @@ it('derives contract paid_amount and balance from its invoices', function () {
     expect((float) $contract->paid_amount)->toBe(35000.0); // 30000 + 5000
     expect((float) $contract->balance_due)->toBe(70000.0); // 105000 - 35000
 });
+
+it('creates an invoice and records its payment in one step (一鍵)', function () {
+    $contract = makeContract(); // total 105000
+
+    $this->post(route('admin.contracts.create-invoice-and-pay', $contract), [
+        'amount' => 50000,
+        'item_mode' => 'summary',
+        'payment_method' => '轉帳',
+    ]);
+
+    $invoice = $contract->fresh()->invoices()->first();
+    expect($invoice)->not->toBeNull();
+    expect($invoice->contract_id)->toBe($contract->id);
+    expect((float) $invoice->total)->toBe(50000.0);
+    expect($invoice->status)->toBe('paid');
+    expect((float) $invoice->paid_amount)->toBe(50000.0);
+    expect($invoice->payments()->count())->toBe(1); // 收款記在發票自身帳本
+    expect((float) $contract->fresh()->paid_amount)->toBe(50000.0); // 合約衍生
+});
+
+it('one-step partial payment leaves invoice partially_paid', function () {
+    $contract = makeContract();
+
+    $this->post(route('admin.contracts.create-invoice-and-pay', $contract), [
+        'amount' => 20000, 'item_mode' => 'summary',
+    ]);
+    $invoice = $contract->fresh()->invoices()->first();
+    expect($invoice->status)->toBe('paid'); // 摘要模式發票 total = 收款額,故全額付清
+    expect((float) $invoice->total)->toBe(20000.0);
+});

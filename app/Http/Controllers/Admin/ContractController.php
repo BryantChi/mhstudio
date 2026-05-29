@@ -516,6 +516,76 @@ class ContractController extends Controller
     }
 
     /**
+     * 一鍵:從合約開立發票並在該發票帳本記一筆收款(單一帳本)。
+     */
+    public function createInvoiceAndPay(Request $request, Contract $contract): RedirectResponse
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'item_mode' => 'required|in:summary,custom,copy',
+            'description' => 'nullable|string|max:255',
+            'payment_method' => 'nullable|string|max:255',
+            'paid_on' => 'nullable|date',
+            'note' => 'nullable|string|max:500',
+            'proof' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+        ]);
+
+        $contract->loadMissing('items');
+        $amount = round((float) $validated['amount'], 2);
+
+        $proofPath = null;
+        if ($request->hasFile('proof')) {
+            $file = $request->file('proof');
+            $proofPath = $file->storeAs('uploads/'.date('Y/m'), \Illuminate\Support\Str::uuid().'.'.$file->getClientOriginalExtension(), 'public');
+        }
+
+        $invoice = DB::transaction(function () use ($validated, $contract, $amount, $proofPath) {
+            $invoice = Invoice::create([
+                'client_id' => $contract->client_id,
+                'project_id' => $contract->project_id,
+                'contract_id' => $contract->id,
+                'title' => $contract->title,
+                'status' => 'draft',
+                'subtotal' => 0, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0, 'total' => 0,
+                'currency' => $contract->currency ?? 'TWD',
+                'issued_date' => now(),
+                'due_date' => now(),
+            ]);
+
+            if ($validated['item_mode'] === 'copy' && $contract->total > 0 && $contract->items->isNotEmpty()) {
+                $f = $amount / (float) $contract->total;
+                foreach ($contract->items as $item) {
+                    $scaled = round((float) $item->amount * $f, 2);
+                    $invoice->items()->create([
+                        'description' => $item->description, 'quantity' => 1, 'unit' => $item->unit,
+                        'unit_price' => $scaled, 'amount' => $scaled, 'order' => $item->order,
+                    ]);
+                }
+                $invoice->tax_rate = $contract->tax_rate;
+                $invoice->discount = round((float) $contract->discount * $f, 2);
+                $invoice->save();
+            } else {
+                $desc = $validated['item_mode'] === 'custom' && ! empty($validated['description'])
+                    ? $validated['description']
+                    : "合約 {$contract->contract_number} 款項";
+                $invoice->items()->create([
+                    'description' => $desc, 'quantity' => 1, 'unit' => '式',
+                    'unit_price' => $amount, 'amount' => $amount, 'order' => 0,
+                ]);
+            }
+
+            $invoice->recalculate();
+            $invoice->recordPayment($amount, $validated['payment_method'] ?? null, $validated['paid_on'] ?? null, $validated['note'] ?? null, $proofPath);
+
+            return $invoice;
+        });
+
+        flash_success('已開立發票並登記收款');
+
+        return redirect()->route('admin.invoices.show', $invoice);
+    }
+
+    /**
      * 複製合約
      */
     public function duplicate(Contract $contract): RedirectResponse
