@@ -2,7 +2,6 @@
 
 use App\Models\Contract;
 use App\Models\Invoice;
-use App\Models\Payment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 
@@ -150,73 +149,6 @@ it('warns but still creates an over-invoiced invoice', function () {
     $response->assertSessionHas('warning'); // flash_warning() writes session key 'warning'
 });
 
-it('linked payment creates a paid invoice bound to the payment (summary mode)', function () {
-    $contract = makeContract(); // total 105000
-
-    $this->post(route('admin.contracts.record-payment', $contract), [
-        'amount' => 50000,
-        'create_invoice' => '1',
-        'invoice_item_mode' => 'summary',
-    ]);
-
-    $contract = $contract->fresh();
-    expect((float) $contract->paid_amount)->toBe(50000.0); // 合約帳本只加一次
-
-    $invoice = $contract->invoices()->first();
-    expect($invoice)->not->toBeNull();
-    expect($invoice->status)->toBe('paid');
-    expect((float) $invoice->total)->toBe(50000.0);
-    expect((float) $invoice->paid_amount)->toBe(50000.0);
-    expect($invoice->items)->toHaveCount(1);
-
-    $payment = $contract->payments()->first();
-    expect($payment->invoice_id)->toBe($invoice->id);
-});
-
-it('linked payment custom mode uses provided description', function () {
-    $contract = makeContract();
-
-    $this->post(route('admin.contracts.record-payment', $contract), [
-        'amount' => 20000,
-        'create_invoice' => '1',
-        'invoice_item_mode' => 'custom',
-        'invoice_description' => '第二期款',
-    ]);
-
-    $invoice = $contract->fresh()->invoices()->first();
-    expect($invoice->items->first()->description)->toBe('第二期款');
-    expect((float) $invoice->total)->toBe(20000.0);
-});
-
-it('linked payment copy mode scales contract items and total equals payment', function () {
-    $contract = makeContract(); // 1 item 100000, total 105000
-
-    $this->post(route('admin.contracts.record-payment', $contract), [
-        'amount' => 52500, // 合約 total 的一半
-        'create_invoice' => '1',
-        'invoice_item_mode' => 'copy',
-    ]);
-
-    $invoice = $contract->fresh()->invoices()->first();
-    expect($invoice->items)->toHaveCount(1);
-    expect((float) $invoice->items->first()->amount)->toBe(50000.0); // f=0.5
-    expect((float) $invoice->total)->toBe(52500.0); // 50000 + 5% tax
-    expect($invoice->status)->toBe('paid');
-});
-
-it('payment without create_invoice records only the contract ledger', function () {
-    $contract = makeContract();
-
-    $this->post(route('admin.contracts.record-payment', $contract), [
-        'amount' => 30000,
-    ]);
-
-    $contract = $contract->fresh();
-    expect((float) $contract->paid_amount)->toBe(30000.0);
-    expect($contract->invoices()->count())->toBe(0);
-    expect($contract->payments()->first()->invoice_id)->toBeNull();
-});
-
 it('independent invoice (contract_id null) keeps its own payment ledger intact', function () {
     // 不經 makeContract，故自行登入（Invoice::boot 取 auth()->id()）
     test()->actingAs(\App\Models\User::create([
@@ -256,66 +188,6 @@ function makeContractInvoice(Contract $contract, float $total = 30000): Invoice
     ]);
 }
 
-it('records a contract invoice payment into the contract ledger and marks it paid', function () {
-    $contract = makeContract(); // total 105000
-    $invoice = makeContractInvoice($contract, 30000);
-
-    $this->post(route('admin.invoices.record-contract-payment', $invoice), [
-        'amount' => 30000,
-    ]);
-
-    $invoice = $invoice->fresh();
-    expect($invoice->status)->toBe('paid');
-    expect((float) $invoice->paid_amount)->toBe(30000.0);
-    // 收款寫進合約帳本（唯一真實來源）
-    expect((float) $contract->fresh()->paid_amount)->toBe(30000.0);
-    // 該筆 Payment 綁定發票、payable 為合約
-    $payment = Payment::where('invoice_id', $invoice->id)->first();
-    expect($payment)->not->toBeNull();
-    expect($payment->payable_type)->toBe(Contract::class);
-    // 發票自身帳本（morphMany payable=Invoice）為空，無雙重入帳
-    expect($invoice->payments()->count())->toBe(0);
-});
-
-it('supports partial payment on a contract invoice', function () {
-    $contract = makeContract();
-    $invoice = makeContractInvoice($contract, 30000);
-
-    $this->post(route('admin.invoices.record-contract-payment', $invoice), ['amount' => 10000]);
-
-    $invoice = $invoice->fresh();
-    expect($invoice->status)->toBe('partially_paid');
-    expect((float) $invoice->paid_amount)->toBe(10000.0);
-    expect((float) $contract->fresh()->paid_amount)->toBe(10000.0);
-});
-
-it('rejects the contract-payment route for an independent invoice', function () {
-    test()->actingAs(\App\Models\User::create([
-        'name' => 'a', 'email' => 'ind'.uniqid().'@example.com', 'password' => 'password',
-    ]));
-    $client = \App\Models\Client::create(['name' => '獨立']);
-    $invoice = Invoice::create([
-        'client_id' => $client->id, 'contract_id' => null, 'title' => '獨立', 'status' => 'sent',
-        'subtotal' => 5000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
-        'total' => 5000, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now()->addDays(30),
-    ]);
-
-    $this->post(route('admin.invoices.record-contract-payment', $invoice), ['amount' => 5000])
-        ->assertStatus(404);
-});
-
-it('blocks the invoice self-ledger payment route for contract invoices', function () {
-    $contract = makeContract();
-    $invoice = makeContractInvoice($contract, 30000);
-
-    $this->post(route('admin.invoices.record-payment', $invoice), ['amount' => 30000]);
-
-    // 不得寫入發票自身帳本，避免雙重入帳
-    $invoice = $invoice->fresh();
-    expect($invoice->payments()->count())->toBe(0);
-    expect((float) $invoice->paid_amount)->toBe(0.0);
-});
-
 it('revenue equals paid invoices (client, dashboard, invoice index)', function () {
     $contract = makeContract(); // makeContract 已登入並建立 client
     $client = $contract->client;
@@ -346,4 +218,25 @@ it('revenue equals paid invoices (client, dashboard, invoice index)', function (
     expect((float) $stats['month_revenue'])->toBe(58000.0);
 
     expect((float) $this->get(route('admin.dashboard'))->viewData('monthRevenue'))->toBe(58000.0);
+});
+
+it('derives contract paid_amount and balance from its invoices', function () {
+    $contract = makeContract(); // total 105000
+
+    $contract->invoices()->create([
+        'client_id' => $contract->client_id, 'title' => 'A', 'status' => 'paid',
+        'subtotal' => 30000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 30000, 'paid_amount' => 30000, 'currency' => 'TWD',
+        'issued_date' => now(), 'due_date' => now(), 'paid_at' => now(),
+    ]);
+    $contract->invoices()->create([
+        'client_id' => $contract->client_id, 'title' => 'B', 'status' => 'partially_paid',
+        'subtotal' => 20000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 20000, 'paid_amount' => 5000, 'currency' => 'TWD',
+        'issued_date' => now(), 'due_date' => now(),
+    ]);
+
+    $contract = $contract->fresh();
+    expect((float) $contract->paid_amount)->toBe(35000.0); // 30000 + 5000
+    expect((float) $contract->balance_due)->toBe(70000.0); // 105000 - 35000
 });

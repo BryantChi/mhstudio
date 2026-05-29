@@ -7,7 +7,6 @@ use App\Models\Client;
 use App\Models\Contract;
 use App\Models\ContractTemplate;
 use App\Models\Invoice;
-use App\Models\Payment;
 use App\Models\Project;
 use App\Models\Service;
 use Illuminate\Http\RedirectResponse;
@@ -319,7 +318,7 @@ class ContractController extends Controller
      */
     public function destroy(Contract $contract): RedirectResponse
     {
-        // 刪除客戶回簽檔（避免遺留孤兒檔案）；收款帳本由 HasPayments 連帶刪除
+        // 刪除客戶回簽檔（避免遺留孤兒檔案）；合約收款已移至發票，合約本身不持有收款
         if ($contract->signed_document_path) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($contract->signed_document_path);
         }
@@ -514,138 +513,6 @@ class ContractController extends Controller
         flash_success('已從合約開立發票');
 
         return redirect()->route('admin.invoices.show', $invoice);
-    }
-
-    /**
-     * 登記一筆收款；可選擇同時為此筆款開立發票（功能二）。
-     */
-    public function recordPayment(Request $request, Contract $contract): RedirectResponse
-    {
-        $validated = $request->validate([
-            'amount' => 'required|numeric|min:0.01|max:'.$contract->balance_due,
-            'payment_method' => 'nullable|string|max:255',
-            'paid_on' => 'nullable|date',
-            'note' => 'nullable|string|max:500',
-            'proof' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            'create_invoice' => 'nullable|boolean',
-            'invoice_item_mode' => 'nullable|in:summary,custom,copy',
-            'invoice_description' => 'nullable|string|max:255',
-        ]);
-
-        $proofPath = null;
-        if ($request->hasFile('proof')) {
-            $file = $request->file('proof');
-            $proofPath = $file->storeAs('uploads/'.date('Y/m'), \Illuminate\Support\Str::uuid().'.'.$file->getClientOriginalExtension(), 'public');
-        }
-
-        $amount = (float) $validated['amount'];
-
-        DB::transaction(function () use ($request, $validated, $contract, $amount, $proofPath) {
-            $payment = $contract->recordPayment(
-                $amount,
-                $validated['payment_method'] ?? null,
-                $validated['paid_on'] ?? null,
-                $validated['note'] ?? null,
-                $proofPath,
-            );
-
-            if ($request->boolean('create_invoice')) {
-                $invoice = $this->buildLinkedInvoice(
-                    $contract,
-                    $amount,
-                    $validated['invoice_item_mode'] ?? 'summary',
-                    $validated['invoice_description'] ?? null,
-                );
-                $payment->update(['invoice_id' => $invoice->id]);
-            }
-        });
-
-        flash_success($request->boolean('create_invoice') ? '收款已登記並開立發票' : '收款已登記');
-
-        return redirect()->route('admin.contracts.show', $contract);
-    }
-
-    /**
-     * 建立「收款連動發票」：已付請款文件，total 等於收款額，不自成帳本。
-     */
-    private function buildLinkedInvoice(Contract $contract, float $amount, string $itemMode, ?string $description): Invoice
-    {
-        $contract->loadMissing('items');
-
-        $invoice = Invoice::create([
-            'client_id' => $contract->client_id,
-            'project_id' => $contract->project_id,
-            'contract_id' => $contract->id,
-            'title' => $contract->title,
-            'status' => 'paid',
-            'subtotal' => 0,
-            'tax_rate' => 0,
-            'tax_amount' => 0,
-            'discount' => 0,
-            'total' => 0,
-            'currency' => $contract->currency ?? 'TWD',
-            'issued_date' => now(),
-            'due_date' => now(),
-        ]);
-
-        if ($itemMode === 'copy' && $contract->total > 0 && $contract->items->isNotEmpty()) {
-            $f = $amount / (float) $contract->total;
-            foreach ($contract->items as $item) {
-                $scaled = round((float) $item->amount * $f, 2);
-                $invoice->items()->create([
-                    'description' => $item->description,
-                    'quantity' => 1,
-                    'unit' => $item->unit,
-                    'unit_price' => $scaled,
-                    'amount' => $scaled,
-                    'order' => $item->order,
-                ]);
-            }
-            $invoice->tax_rate = $contract->tax_rate;
-            $invoice->discount = round((float) $contract->discount * $f, 2);
-            $invoice->save();
-        } else {
-            $desc = $itemMode === 'custom' && $description
-                ? $description
-                : "合約 {$contract->contract_number} 款項";
-
-            $invoice->items()->create([
-                'description' => $desc,
-                'quantity' => 1,
-                'unit' => '式',
-                'unit_price' => $amount,
-                'amount' => $amount,
-                'order' => 0,
-            ]);
-        }
-
-        $invoice->recalculate();
-        $invoice->paid_amount = $invoice->total;
-        $invoice->status = 'paid';
-        $invoice->paid_at = now();
-        $invoice->save();
-
-        return $invoice;
-    }
-
-    /**
-     * 刪除一筆收款並重算已收金額
-     */
-    public function destroyPayment(Contract $contract, Payment $payment): RedirectResponse
-    {
-        if ($payment->payable_type !== Contract::class || (int) $payment->payable_id !== $contract->id) {
-            abort(404);
-        }
-
-        if ($payment->proof_path) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($payment->proof_path);
-        }
-
-        $payment->delete();
-        $contract->syncPaidAmount();
-        flash_success('收款紀錄已刪除');
-
-        return redirect()->route('admin.contracts.show', $contract);
     }
 
     /**

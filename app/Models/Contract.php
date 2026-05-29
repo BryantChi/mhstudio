@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\HasPayments;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +11,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Contract extends Model
 {
-    use HasPayments, LogsActivity;
+    use LogsActivity;
 
     /**
      * 合約狀態的合法轉換路徑（狀態機守衛）。
@@ -252,26 +251,6 @@ class Contract extends Model
         return in_array($status, $this->allowedNextStatuses(), true);
     }
 
-    /**
-     * 收款同步後：付清則設 paid_at，否則清空（HasPayments 呼叫）。
-     */
-    protected function afterPaymentsSynced(): void
-    {
-        if ($this->total > 0 && $this->paid_amount >= $this->total) {
-            $this->paid_at = $this->paid_at ?: now();
-        } else {
-            $this->paid_at = null;
-        }
-    }
-
-    /**
-     * 收款存檔後：重算客戶累計營收（合約收款也計入實收）。
-     */
-    protected function afterPaymentsSaved(): void
-    {
-        $this->client?->recalculateRevenue();
-    }
-
     /* ===== Accessors ===== */
 
     public function getStatusColorAttribute(): string
@@ -343,6 +322,26 @@ class Contract extends Model
             'email_consent' => 'Email 同意',
             default => '未知',
         };
+    }
+
+    /**
+     * 已收金額 = 旗下發票已付加總(收款只發生在發票上,合約不自有帳本)。
+     */
+    public function getPaidAmountAttribute(): float
+    {
+        return round((float) $this->invoices()->sum('paid_amount'), 2);
+    }
+
+    /**
+     * 全部發票付清且有金額時,取最近一次發票付款日;否則 null。
+     */
+    public function getPaidAtAttribute()
+    {
+        if ($this->total > 0 && $this->paid_amount >= $this->total) {
+            return $this->invoices()->whereNotNull('paid_at')->max('paid_at');
+        }
+
+        return null;
     }
 
     public function getBalanceDueAttribute(): float

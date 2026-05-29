@@ -1,18 +1,18 @@
 <?php
 
-use App\Models\Contract;
 use App\Models\Invoice;
 use Illuminate\Database\Migrations\Migration;
 
 /**
  * 將既有的 paid_amount（舊流程直接累加，無帳本列）回填為一筆「期初」收款，
  * 確保 payments 帳本加總 == paid_amount，之後的登記/刪除才不會覆蓋掉舊已收金額。
+ * 註：合約已不再持有收款帳本（收款只在發票上），故僅回填 Invoice。
  */
 return new class extends Migration
 {
     public function up(): void
     {
-        foreach ([Contract::class, Invoice::class] as $model) {
+        foreach ([Invoice::class] as $model) {
             $model::where('paid_amount', '>', 0)
                 ->whereDoesntHave('payments')
                 ->get()
