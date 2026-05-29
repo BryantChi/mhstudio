@@ -2,6 +2,7 @@
 
 use App\Models\Contract;
 use App\Models\Invoice;
+use App\Models\Payment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 
@@ -265,4 +266,77 @@ it('independent invoice (contract_id null) keeps its own payment ledger intact',
     expect((float) $invoice->paid_amount)->toBe(10000.0);
     expect($invoice->status)->toBe('paid');
     expect($invoice->payments()->count())->toBe(1);
+});
+
+/** 手動開立一張有 contract_id 的合約發票（sent，餘額 = total） */
+function makeContractInvoice(Contract $contract, float $total = 30000): Invoice
+{
+    return $contract->invoices()->create([
+        'client_id' => $contract->client_id,
+        'title' => '手動合約發票',
+        'status' => 'sent',
+        'subtotal' => $total, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => $total, 'currency' => 'TWD',
+        'issued_date' => now(), 'due_date' => now()->addDays(30),
+    ]);
+}
+
+it('records a contract invoice payment into the contract ledger and marks it paid', function () {
+    $contract = makeContract(); // total 105000
+    $invoice = makeContractInvoice($contract, 30000);
+
+    $this->post(route('admin.invoices.record-contract-payment', $invoice), [
+        'amount' => 30000,
+    ]);
+
+    $invoice = $invoice->fresh();
+    expect($invoice->status)->toBe('paid');
+    expect((float) $invoice->paid_amount)->toBe(30000.0);
+    // 收款寫進合約帳本（唯一真實來源）
+    expect((float) $contract->fresh()->paid_amount)->toBe(30000.0);
+    // 該筆 Payment 綁定發票、payable 為合約
+    $payment = Payment::where('invoice_id', $invoice->id)->first();
+    expect($payment)->not->toBeNull();
+    expect($payment->payable_type)->toBe(Contract::class);
+    // 發票自身帳本（morphMany payable=Invoice）為空，無雙重入帳
+    expect($invoice->payments()->count())->toBe(0);
+});
+
+it('supports partial payment on a contract invoice', function () {
+    $contract = makeContract();
+    $invoice = makeContractInvoice($contract, 30000);
+
+    $this->post(route('admin.invoices.record-contract-payment', $invoice), ['amount' => 10000]);
+
+    $invoice = $invoice->fresh();
+    expect($invoice->status)->toBe('partially_paid');
+    expect((float) $invoice->paid_amount)->toBe(10000.0);
+    expect((float) $contract->fresh()->paid_amount)->toBe(10000.0);
+});
+
+it('rejects the contract-payment route for an independent invoice', function () {
+    test()->actingAs(\App\Models\User::create([
+        'name' => 'a', 'email' => 'ind'.uniqid().'@example.com', 'password' => 'password',
+    ]));
+    $client = \App\Models\Client::create(['name' => '獨立']);
+    $invoice = Invoice::create([
+        'client_id' => $client->id, 'contract_id' => null, 'title' => '獨立', 'status' => 'sent',
+        'subtotal' => 5000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 5000, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now()->addDays(30),
+    ]);
+
+    $this->post(route('admin.invoices.record-contract-payment', $invoice), ['amount' => 5000])
+        ->assertStatus(404);
+});
+
+it('blocks the invoice self-ledger payment route for contract invoices', function () {
+    $contract = makeContract();
+    $invoice = makeContractInvoice($contract, 30000);
+
+    $this->post(route('admin.invoices.record-payment', $invoice), ['amount' => 30000]);
+
+    // 不得寫入發票自身帳本，避免雙重入帳
+    $invoice = $invoice->fresh();
+    expect($invoice->payments()->count())->toBe(0);
+    expect((float) $invoice->paid_amount)->toBe(0.0);
 });

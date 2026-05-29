@@ -125,6 +125,17 @@ class Invoice extends Model
         return $this->hasMany(InvoiceItem::class)->orderBy('order');
     }
 
+    /**
+     * 綁定到本發票的「合約收款」（payments.invoice_id）。
+     * 合約發票不走自身帳本，收款記在合約帳本並以 invoice_id 對應到本發票。
+     */
+    public function linkedPayments(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'invoice_id')
+            ->orderByDesc('paid_on')
+            ->orderByDesc('id');
+    }
+
     /* ===== Scopes ===== */
 
     public function scopeOverdue(Builder $query): void
