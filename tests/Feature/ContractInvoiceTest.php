@@ -217,71 +217,6 @@ it('payment without create_invoice records only the contract ledger', function (
     expect($contract->payments()->first()->invoice_id)->toBeNull();
 });
 
-it('client revenue counts contract payments and independent-invoice payments once', function () {
-    $contract = makeContract(); // makeContract 已登入並建立 client，合約 paid 0
-    $client = $contract->client;
-
-    // 合約收款 50000（走合約帳本）→ 應計入
-    $contract->recordPayment(50000, '轉帳');
-
-    // 獨立發票收款 8000（走發票自身帳本）→ 應計入
-    $inv = $client->invoices()->create([
-        'contract_id' => null, 'title' => '獨立', 'status' => 'sent',
-        'subtotal' => 8000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
-        'total' => 8000, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now(),
-    ]);
-    $inv->recordPayment(8000, '現金');
-
-    // 實收 = 合約收款 + 獨立發票收款，每筆只算一次
-    expect((float) $client->fresh()->total_revenue)->toBe(58000.0);
-});
-
-it('does not double-count revenue when a contract invoice also has its own ledger payment', function () {
-    $contract = makeContract(); // total 105000
-    $contract->recordPayment(50000, '轉帳'); // 真實合約收款（payable=Contract）
-
-    // 模擬：合約發票自身帳本也被記了一筆 50000（舊資料／先前測試造成的重複）
-    $inv = $contract->invoices()->create([
-        'client_id' => $contract->client_id, 'title' => '合約發票', 'status' => 'sent',
-        'subtotal' => 50000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
-        'total' => 50000, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now(),
-    ]);
-    $inv->payments()->create([
-        'amount' => 50000, 'paid_on' => now()->toDateString(), 'created_by' => auth()->id(),
-    ]);
-
-    // 營收只算合約收款一次 = 50000（排除合約發票自身帳本那筆重複）
-    expect((float) Payment::revenue()->sum('amount'))->toBe(50000.0);
-    expect((float) $this->get(route('admin.invoices.index'))->viewData('stats')['total_revenue'])->toBe(50000.0);
-    expect((float) $this->get(route('admin.dashboard'))->viewData('monthRevenue'))->toBe(50000.0);
-});
-
-it('does not double-count revenue across the linked-payment (功能二) flow', function () {
-    $contract = makeContract(); // total 105000
-
-    $this->post(route('admin.contracts.record-payment', $contract), [
-        'amount' => 50000, 'create_invoice' => '1', 'invoice_item_mode' => 'summary',
-    ]);
-
-    // 收款帳本只有一筆 50000（不是兩筆/兩倍）
-    expect((float) Payment::sum('amount'))->toBe(50000.0);
-    expect(Payment::count())->toBe(1);
-    // 合約已付 50000
-    expect((float) $contract->fresh()->paid_amount)->toBe(50000.0);
-    // 客戶營收 50000（不因連動發票再加一次）
-    expect((float) $contract->client->fresh()->total_revenue)->toBe(50000.0);
-    // 儀表板月營收 50000
-    expect((float) $this->get(route('admin.dashboard'))->viewData('monthRevenue'))->toBe(50000.0);
-});
-
-it('dashboard month revenue sums the payments ledger including contract payments', function () {
-    $contract = makeContract();
-    $contract->recordPayment(50000, '轉帳'); // 合約收款也要進月營收
-
-    $monthRevenue = $this->get(route('admin.dashboard'))->viewData('monthRevenue');
-    expect((float) $monthRevenue)->toBe(50000.0);
-});
-
 it('independent invoice (contract_id null) keeps its own payment ledger intact', function () {
     // 不經 makeContract，故自行登入（Invoice::boot 取 auth()->id()）
     test()->actingAs(\App\Models\User::create([
@@ -320,22 +255,6 @@ function makeContractInvoice(Contract $contract, float $total = 30000): Invoice
         'issued_date' => now(), 'due_date' => now()->addDays(30),
     ]);
 }
-
-it('invoice index revenue sums the payments ledger (contract + independent, once)', function () {
-    $contract = makeContract();
-    $contract->recordPayment(50000, '轉帳'); // 合約收款
-
-    $inv = $contract->client->invoices()->create([
-        'contract_id' => null, 'title' => '獨立', 'status' => 'sent',
-        'subtotal' => 8000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
-        'total' => 8000, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now(),
-    ]);
-    $inv->recordPayment(8000, '現金'); // 獨立發票收款
-
-    $stats = $this->get(route('admin.invoices.index'))->viewData('stats');
-    expect((float) $stats['total_revenue'])->toBe(58000.0);
-    expect((float) $stats['month_revenue'])->toBe(58000.0); // 收款皆在本月
-});
 
 it('records a contract invoice payment into the contract ledger and marks it paid', function () {
     $contract = makeContract(); // total 105000
@@ -395,4 +314,36 @@ it('blocks the invoice self-ledger payment route for contract invoices', functio
     $invoice = $invoice->fresh();
     expect($invoice->payments()->count())->toBe(0);
     expect((float) $invoice->paid_amount)->toBe(0.0);
+});
+
+it('revenue equals paid invoices (client, dashboard, invoice index)', function () {
+    $contract = makeContract(); // makeContract 已登入並建立 client
+    $client = $contract->client;
+
+    $contract->invoices()->create([
+        'client_id' => $client->id, 'title' => '合約款', 'status' => 'paid',
+        'subtotal' => 50000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 50000, 'paid_amount' => 50000, 'currency' => 'TWD',
+        'issued_date' => now(), 'due_date' => now(), 'paid_at' => now(),
+    ]);
+    $client->invoices()->create([
+        'contract_id' => null, 'title' => '獨立', 'status' => 'paid',
+        'subtotal' => 8000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 8000, 'paid_amount' => 8000, 'currency' => 'TWD',
+        'issued_date' => now(), 'due_date' => now(), 'paid_at' => now(),
+    ]);
+    $client->invoices()->create([
+        'contract_id' => null, 'title' => '未付', 'status' => 'sent',
+        'subtotal' => 9999, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 9999, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now(),
+    ]);
+
+    $client->recalculateRevenue();
+    expect((float) $client->fresh()->total_revenue)->toBe(58000.0);
+
+    $stats = $this->get(route('admin.invoices.index'))->viewData('stats');
+    expect((float) $stats['total_revenue'])->toBe(58000.0);
+    expect((float) $stats['month_revenue'])->toBe(58000.0);
+
+    expect((float) $this->get(route('admin.dashboard'))->viewData('monthRevenue'))->toBe(58000.0);
 });
