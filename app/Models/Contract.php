@@ -162,6 +162,11 @@ class Contract extends Model
         return $this->hasMany(ContractItem::class)->orderBy('order');
     }
 
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class)->latest();
+    }
+
     /* ===== Scopes ===== */
 
     public function scopeActive(Builder $query): void
@@ -335,6 +340,22 @@ class Contract extends Model
     public function getBalanceDueAttribute(): float
     {
         return round($this->total - $this->paid_amount, 2);
+    }
+
+    /**
+     * 旗下發票的 total 加總（含稅尺度）。
+     */
+    public function getInvoicedAmountAttribute(): float
+    {
+        return round((float) $this->invoices()->sum('total'), 2);
+    }
+
+    /**
+     * 尚可開立的金額 = 合約 total − 已開發票總額（可為負，UI 自行判斷）。
+     */
+    public function getUninvoicedAmountAttribute(): float
+    {
+        return round((float) $this->total - $this->invoiced_amount, 2);
     }
 
     public function getIsOverdueAttribute(): bool

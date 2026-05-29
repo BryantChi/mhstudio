@@ -19,6 +19,7 @@ class Invoice extends Model
         'client_id',
         'project_id',
         'quote_id',
+        'contract_id',
         'title',
         'status',
         'subtotal',
@@ -107,6 +108,11 @@ class Invoice extends Model
     public function quote(): BelongsTo
     {
         return $this->belongsTo(Quote::class);
+    }
+
+    public function contract(): BelongsTo
+    {
+        return $this->belongsTo(Contract::class);
     }
 
     public function creator(): BelongsTo
