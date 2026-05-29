@@ -634,7 +634,8 @@ use Illuminate\Support\Facades\DB;
                 };
 
                 $invoice->items()->create([
-                    'description' => $validated['description'] ?: $contract->title,
+                    // description 為 nullable，未送出時不在 validated() 中，需 ?? null 防 Undefined key
+                    'description' => ($validated['description'] ?? null) ?: $contract->title,
                     'quantity' => 1,
                     'unit' => '式',
                     'unit_price' => $amount,
