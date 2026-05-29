@@ -287,40 +287,6 @@
                 @if($contract->paid_at)
                 <div class="small text-success">付清時間：{{ $contract->paid_at->format('Y-m-d H:i') }}</div>
                 @endif
-
-                @if($contract->total > 0 && $contract->balance_due > 0)
-                <button type="button" class="btn btn-sm btn-primary w-100 mt-2" data-coreui-toggle="modal" data-coreui-target="#recordPaymentModal">
-                    <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-plus"></use></svg> 登記收款
-                </button>
-                @endif
-
-                @if($contract->payments->isNotEmpty())
-                <hr>
-                <div class="small fw-bold mb-1">收款明細</div>
-                <table class="table table-sm mb-0 align-middle">
-                    <tbody>
-                        @foreach($contract->payments as $payment)
-                        <tr>
-                            <td class="text-nowrap small">{{ $payment->paid_on->format('Y-m-d') }}</td>
-                            <td class="small">NT$ {{ number_format($payment->amount) }}</td>
-                            <td class="small text-muted">{{ $payment->payment_method ?: '-' }}</td>
-                            <td class="text-end">
-                                @if($payment->proof_path)
-                                <a href="{{ $payment->proof_url }}" target="_blank" class="btn btn-sm btn-link p-0 me-2" title="檢視收款憑證">憑證</a>
-                                @endif
-                                <form method="POST" action="{{ route('admin.contracts.destroy-payment', [$contract, $payment]) }}" class="d-inline">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" data-confirm-delete title="刪除此筆收款">✕</button>
-                                </form>
-                            </td>
-                        </tr>
-                        @if($payment->note)
-                        <tr><td colspan="4" class="small text-muted pt-0">{{ $payment->note }}</td></tr>
-                        @endif
-                        @endforeach
-                    </tbody>
-                </table>
-                @endif
             </div>
         </div>
 
@@ -387,9 +353,12 @@
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
         <strong>相關發票</strong>
-        <button type="button" class="btn btn-sm btn-primary" data-coreui-toggle="modal" data-coreui-target="#createInvoiceModal">
-            <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-plus"></use></svg> 開立發票
-        </button>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-primary" data-coreui-toggle="modal" data-coreui-target="#createInvoiceModal">
+                <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-plus"></use></svg> 開立發票
+            </button>
+            <button type="button" class="btn btn-sm btn-success" data-coreui-toggle="modal" data-coreui-target="#createInvoicePayModal">開發票並收款</button>
+        </div>
     </div>
     <div class="card-body">
         <div class="row text-center mb-3">
@@ -469,30 +438,39 @@
     </div>
 </div>
 
-{{-- 登記收款 Modal --}}
-@if($contract->total > 0 && $contract->balance_due > 0)
-<div class="modal fade" id="recordPaymentModal" tabindex="-1" aria-hidden="true">
+{{-- 開發票並收款 Modal --}}
+<div class="modal fade" id="createInvoicePayModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="{{ route('admin.contracts.record-payment', $contract) }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('admin.contracts.create-invoice-and-pay', $contract) }}" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">登記收款</h5>
+                    <h5 class="modal-title">開發票並收款</h5>
                     <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">收款金額 <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text">NT$</span>
-                            <input type="number" name="amount" class="form-control" step="0.01" min="0.01"
-                                   max="{{ $contract->balance_due }}" value="{{ $contract->balance_due }}" required>
+                        <div class="input-group"><span class="input-group-text">NT$</span>
+                            <input type="number" name="amount" class="form-control" step="0.01" min="0.01" required>
                         </div>
-                        <div class="form-text">尚餘 NT$ {{ number_format($contract->balance_due) }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">發票項目方式</label>
+                        <select name="item_mode" class="form-select"
+                                onchange="document.getElementById('ciapDescWrap').classList.toggle('d-none', this.value !== 'custom')">
+                            <option value="summary">摘要(合約款項)</option>
+                            <option value="custom">自訂描述</option>
+                            <option value="copy">複製合約項目(等比縮放)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3 d-none" id="ciapDescWrap">
+                        <label class="form-label">發票描述</label>
+                        <input type="text" name="description" class="form-control" placeholder="留空則用摘要預設">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">付款方式</label>
-                        <input type="text" name="payment_method" class="form-control" placeholder="例如：銀行轉帳、現金" value="{{ $contract->payment_method }}">
+                        <input type="text" name="payment_method" class="form-control" placeholder="例如:銀行轉帳">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">收款日期</label>
@@ -505,39 +483,17 @@
                     <div class="mb-3">
                         <label class="form-label">收款憑證</label>
                         <input type="file" name="proof" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
-                        <div class="form-text">選填，可上傳轉帳截圖或收據（PDF／圖檔，10MB 內）</div>
-                    </div>
-                    <hr>
-                    <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input" id="createInvoiceCheck" name="create_invoice" value="1"
-                               onchange="document.getElementById('invoiceItemModeWrap').classList.toggle('d-none', !this.checked)">
-                        <label class="form-check-label" for="createInvoiceCheck">同時為此筆款開立發票</label>
-                    </div>
-                    <div id="invoiceItemModeWrap" class="d-none">
-                        <div class="mb-3">
-                            <label class="form-label">發票項目方式</label>
-                            <select name="invoice_item_mode" class="form-select"
-                                    onchange="document.getElementById('invoiceDescWrap').classList.toggle('d-none', this.value !== 'custom')">
-                                <option value="summary">摘要（合約款項，金額＝收款額）</option>
-                                <option value="custom">自訂描述</option>
-                                <option value="copy">複製合約項目（等比縮放）</option>
-                            </select>
-                        </div>
-                        <div id="invoiceDescWrap" class="mb-3 d-none">
-                            <label class="form-label">發票描述</label>
-                            <input type="text" name="invoice_description" class="form-control" placeholder="留空則用摘要預設">
-                        </div>
+                        <div class="form-text">選填,上傳一次即可(存於發票收款)</div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-coreui-dismiss="modal">取消</button>
-                    <button type="submit" class="btn btn-primary">確認收款</button>
+                    <button type="submit" class="btn btn-success">開發票並收款</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-@endif
 
 @push('styles')
 <style>

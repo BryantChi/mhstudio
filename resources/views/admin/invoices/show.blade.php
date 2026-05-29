@@ -58,8 +58,8 @@
             </div>
         </div>
 
-        {{-- 記錄付款（獨立發票才走自身帳本；合約發票見下方「登記收款（走合約）」） --}}
-        @if($invoice->balance_due > 0 && !in_array($invoice->status, ['cancelled', 'draft']) && !$invoice->contract_id)
+        {{-- 記錄付款 --}}
+        @if($invoice->balance_due > 0 && !in_array($invoice->status, ['cancelled', 'draft']))
         <div class="card mt-3">
             <div class="card-header"><strong>記錄付款</strong></div>
             <div class="card-body">
@@ -114,67 +114,10 @@
         </div>
         @endif
 
-        {{-- 登記收款（合約發票）：寫進合約帳本、憑證只在此上傳一次 --}}
-        @if($invoice->contract_id && $invoice->balance_due > 0 && $invoice->status !== 'cancelled')
-        <div class="card mt-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <strong>登記收款</strong>
-                <span class="small text-medium-emphasis">此為合約發票，收款記入
-                    <a href="{{ route('admin.contracts.show', $invoice->contract_id) }}">來源合約</a> 帳本</span>
-            </div>
-            <div class="card-body">
-                <form method="POST" action="{{ route('admin.invoices.record-contract-payment', $invoice) }}" enctype="multipart/form-data">
-                    @csrf
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">付款金額 <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text">NT$</span>
-                                <input type="number" class="form-control" name="amount" value="{{ $invoice->balance_due }}"
-                                       min="0.01" max="{{ $invoice->balance_due }}" step="0.01" required>
-                            </div>
-                            <div class="form-text">尚餘 NT$ {{ number_format($invoice->balance_due) }}</div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">付款方式</label>
-                            <input type="text" class="form-control" name="payment_method" placeholder="例如：銀行轉帳、現金">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">收款日期</label>
-                            <input type="date" class="form-control" name="paid_on" value="{{ now()->format('Y-m-d') }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">備註</label>
-                            <input type="text" class="form-control" name="note" placeholder="選填">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">收款憑證</label>
-                            <input type="file" class="form-control" name="proof" accept=".pdf,.jpg,.jpeg,.png">
-                            <div class="form-text">選填，上傳一次即可（存於合約收款）</div>
-                        </div>
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-success">
-                                <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-check-circle"></use></svg>
-                                登記收款
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-        @endif
-
         {{-- 收款明細 --}}
-        @php($ledgerPayments = $invoice->contract_id ? $invoice->linkedPayments : $invoice->payments)
-        @if($ledgerPayments->isNotEmpty())
+        @if($invoice->payments->isNotEmpty())
         <div class="card mt-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <strong>收款明細</strong>
-                @if($invoice->contract_id)
-                <span class="small text-medium-emphasis">收款記於合約帳本，刪除請至
-                    <a href="{{ route('admin.contracts.show', $invoice->contract_id) }}">來源合約</a></span>
-                @endif
-            </div>
+            <div class="card-header"><strong>收款明細</strong></div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-sm mb-0 align-middle">
@@ -182,7 +125,7 @@
                             <tr><th>日期</th><th>金額</th><th>方式</th><th>備註</th><th class="text-end">操作</th></tr>
                         </thead>
                         <tbody>
-                            @foreach($ledgerPayments as $payment)
+                            @foreach($invoice->payments as $payment)
                             <tr>
                                 <td class="text-nowrap">{{ $payment->paid_on->format('Y-m-d') }}</td>
                                 <td>NT$ {{ number_format($payment->amount) }}</td>
@@ -192,12 +135,10 @@
                                     @if($payment->proof_path)
                                     <a href="{{ $payment->proof_url }}" target="_blank" class="btn btn-sm btn-link p-0 me-2" title="檢視收款憑證">憑證</a>
                                     @endif
-                                    @unless($invoice->contract_id)
                                     <form method="POST" action="{{ route('admin.invoices.destroy-payment', [$invoice, $payment]) }}" class="d-inline">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-link text-danger p-0" data-confirm-delete title="刪除此筆收款">✕</button>
                                     </form>
-                                    @endunless
                                 </td>
                             </tr>
                             @endforeach
