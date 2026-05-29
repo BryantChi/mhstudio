@@ -21,9 +21,9 @@
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_STORE" value="array"/>
-        <!-- 測試使用獨立的 mhstudio_test 資料庫；切勿改為正式庫 mhstudio，RefreshDatabase 會清空它 -->
+        <!-- 本機測試資料庫（mhstudio 即本機測試用庫）。注意：RefreshDatabase 每次測試會清空重建此庫，切勿指向正式環境資料庫 -->
         <env name="DB_CONNECTION" value="mysql"/>
-        <env name="DB_DATABASE" value="mhstudio_test"/>
+        <env name="DB_DATABASE" value="mhstudio"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
