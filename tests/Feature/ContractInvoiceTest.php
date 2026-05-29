@@ -236,6 +236,44 @@ it('client revenue counts contract payments and independent-invoice payments onc
     expect((float) $client->fresh()->total_revenue)->toBe(58000.0);
 });
 
+it('does not double-count revenue when a contract invoice also has its own ledger payment', function () {
+    $contract = makeContract(); // total 105000
+    $contract->recordPayment(50000, '轉帳'); // 真實合約收款（payable=Contract）
+
+    // 模擬：合約發票自身帳本也被記了一筆 50000（舊資料／先前測試造成的重複）
+    $inv = $contract->invoices()->create([
+        'client_id' => $contract->client_id, 'title' => '合約發票', 'status' => 'sent',
+        'subtotal' => 50000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 50000, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now(),
+    ]);
+    $inv->payments()->create([
+        'amount' => 50000, 'paid_on' => now()->toDateString(), 'created_by' => auth()->id(),
+    ]);
+
+    // 營收只算合約收款一次 = 50000（排除合約發票自身帳本那筆重複）
+    expect((float) Payment::revenue()->sum('amount'))->toBe(50000.0);
+    expect((float) $this->get(route('admin.invoices.index'))->viewData('stats')['total_revenue'])->toBe(50000.0);
+    expect((float) $this->get(route('admin.dashboard'))->viewData('monthRevenue'))->toBe(50000.0);
+});
+
+it('does not double-count revenue across the linked-payment (功能二) flow', function () {
+    $contract = makeContract(); // total 105000
+
+    $this->post(route('admin.contracts.record-payment', $contract), [
+        'amount' => 50000, 'create_invoice' => '1', 'invoice_item_mode' => 'summary',
+    ]);
+
+    // 收款帳本只有一筆 50000（不是兩筆/兩倍）
+    expect((float) Payment::sum('amount'))->toBe(50000.0);
+    expect(Payment::count())->toBe(1);
+    // 合約已付 50000
+    expect((float) $contract->fresh()->paid_amount)->toBe(50000.0);
+    // 客戶營收 50000（不因連動發票再加一次）
+    expect((float) $contract->client->fresh()->total_revenue)->toBe(50000.0);
+    // 儀表板月營收 50000
+    expect((float) $this->get(route('admin.dashboard'))->viewData('monthRevenue'))->toBe(50000.0);
+});
+
 it('dashboard month revenue sums the payments ledger including contract payments', function () {
     $contract = makeContract();
     $contract->recordPayment(50000, '轉帳'); // 合約收款也要進月營收

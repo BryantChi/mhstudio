@@ -68,10 +68,10 @@ class DashboardController extends Controller
         // 商業概覽 KPI（快取 5 分鐘）
         $businessKpi = Cache::remember('dashboard_business_kpi', 300, function () {
             return [
-                // 本月實收現金 = 收款帳本（payments）本月加總。
-                // 每筆收款（合約收款 / 獨立發票收款）皆為一列，合約發票的收款記在合約帳本，
-                // 不會重複計算；合約收入也能正確反映在營收。
-                'month_revenue' => Payment::whereMonth('paid_on', now()->month)
+                // 本月實收現金 = 收款帳本本月加總（合約收款 + 獨立發票收款）。
+                // revenue() scope 排除「合約發票自身帳本」的收款，避免與合約收款重複計算。
+                'month_revenue' => Payment::revenue()
+                    ->whereMonth('paid_on', now()->month)
                     ->whereYear('paid_on', now()->year)
                     ->sum('amount'),
                 'pending_amount' => (float) Invoice::whereIn('status', ['sent', 'partially_paid', 'overdue'])
