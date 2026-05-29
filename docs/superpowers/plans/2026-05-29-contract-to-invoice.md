@@ -10,6 +10,21 @@
 
 **規格來源：** `docs/superpowers/specs/2026-05-29-contract-to-invoice-design.md`
 
+## 生產部署安全性（既有資料零影響）— 硬性需求
+
+本功能上線到正式環境**不得更動任何既有資料**。保證方式：
+
+1. **只新增 2 支 migration，且皆為「可空欄位」**：
+   - `invoices.contract_id`：`nullable` FK。既有發票全部得到 `contract_id = NULL` = 獨立發票 = 行為完全不變。
+   - `payments.invoice_id`：`nullable` FK。既有收款全部得到 `invoice_id = NULL` = 不對應任何發票 = 行為完全不變。
+   - **無任何 UPDATE / 資料回填 / 欄位刪除 / 既有欄位型別變更**，純 `ADD COLUMN`（外加 FK 約束），既有列的資料一個位元都不會改。
+2. **既有 migration 一律不動**（採用同款 MySQL 測試庫，毋須為 SQLite 修補）。正式環境已套用過的 58 支 migration 不會重跑。
+3. **部署指令只跑新 migration**：`php artisan migrate --force`（或 `/deploy/migrate` 路由）只會執行這 2 支尚未套用的 migration，Laravel 會略過已套用者。
+4. **應用層只「新增能力」不改舊行為**：新關聯／accessor／controller 方法／視圖區塊都是加法；獨立發票（`contract_id=NULL`）的收款與顯示邏輯完全沿用現狀（見功能驗證測試「獨立發票不受影響」）。
+5. **部署前演練**：先在 `mhstudio_test`（或一份正式資料快照）跑 `migrate --force` 驗證 2 支 migration 成功、既有資料筆數不變，再上正式。
+
+> 注意：`down()`（rollback）會 `dropConstrainedForeignId`，僅在「主動回滾」時觸發，正常部署不會執行，故不影響既有資料。
+
 **前置現況（重要）：** 本專案雖在 `composer.json` 列入 Pest，但**尚無任何測試骨架**——沒有 `phpunit.xml`、`tests/` 目錄、`TestCase.php`、`Pest.php`，也**沒有任何 model factory**。因此 Task 0 必須先建立測試骨架，且所有測試資料一律以 `Model::create([...])` 直接建立，**不可使用 `::factory()`**。
 
 **測試資料庫決策（已定）：** 採**獨立的 MySQL 測試庫 `mhstudio_test`**（與正式環境同款 MySQL，沿用本機同組帳密，僅資料庫名不同），而非 SQLite。原因：本專案 58 支既有 migration 含多處 MySQL 專屬操作（`fullText` 索引、依名 `dropForeign` 等），SQLite 無法跑完整 migration 歷史。
