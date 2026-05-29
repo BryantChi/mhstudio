@@ -144,12 +144,13 @@ class Client extends Model
      */
     public function recalculateRevenue(): void
     {
-        // 排除合約發票（contract_id 有值）：合約收款以合約帳本為唯一真實來源，
-        // 不重複計入客戶累計營收。獨立發票（contract_id=null）維持現狀。
-        $this->total_revenue = $this->invoices()
-            ->where('status', 'paid')
-            ->whereNull('contract_id')
-            ->sum('total');
+        // 累計實收 = 合約收款 + 獨立發票收款（皆由各自帳本同步出的 paid_amount）。
+        // 合約發票不另計：其收款已記在合約帳本，計入合約 paid_amount，避免重複。
+        $this->total_revenue = round(
+            (float) $this->contracts()->sum('paid_amount')
+            + (float) $this->invoices()->whereNull('contract_id')->sum('paid_amount'),
+            2
+        );
         $this->save();
     }
 }

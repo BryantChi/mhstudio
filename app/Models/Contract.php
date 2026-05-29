@@ -264,6 +264,14 @@ class Contract extends Model
         }
     }
 
+    /**
+     * 收款存檔後：重算客戶累計營收（合約收款也計入實收）。
+     */
+    protected function afterPaymentsSaved(): void
+    {
+        $this->client?->recalculateRevenue();
+    }
+
     /* ===== Accessors ===== */
 
     public function getStatusColorAttribute(): string

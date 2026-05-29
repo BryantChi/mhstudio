@@ -217,29 +217,31 @@ it('payment without create_invoice records only the contract ledger', function (
     expect($contract->payments()->first()->invoice_id)->toBeNull();
 });
 
-it('excludes contract invoices from client revenue, counts independent ones', function () {
-    $contract = makeContract(); // makeContract 已登入並建立 client
+it('client revenue counts contract payments and independent-invoice payments once', function () {
+    $contract = makeContract(); // makeContract 已登入並建立 client，合約 paid 0
     $client = $contract->client;
 
-    // 獨立發票（contract_id=null）已付 → 應計入營收
-    $client->invoices()->create([
-        'contract_id' => null, 'title' => '獨立', 'status' => 'paid',
+    // 合約收款 50000（走合約帳本）→ 應計入
+    $contract->recordPayment(50000, '轉帳');
+
+    // 獨立發票收款 8000（走發票自身帳本）→ 應計入
+    $inv = $client->invoices()->create([
+        'contract_id' => null, 'title' => '獨立', 'status' => 'sent',
         'subtotal' => 8000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
-        'total' => 8000, 'paid_amount' => 8000, 'currency' => 'TWD',
-        'issued_date' => now(), 'due_date' => now(), 'paid_at' => now(),
+        'total' => 8000, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now(),
     ]);
+    $inv->recordPayment(8000, '現金');
 
-    // 合約發票（contract_id 有值）已付 → 不應計入營收
-    $contract->invoices()->create([
-        'client_id' => $client->id, 'title' => '合約款', 'status' => 'paid',
-        'subtotal' => 50000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
-        'total' => 50000, 'paid_amount' => 50000, 'currency' => 'TWD',
-        'issued_date' => now(), 'due_date' => now(), 'paid_at' => now(),
-    ]);
+    // 實收 = 合約收款 + 獨立發票收款，每筆只算一次
+    expect((float) $client->fresh()->total_revenue)->toBe(58000.0);
+});
 
-    $client->recalculateRevenue();
+it('dashboard month revenue sums the payments ledger including contract payments', function () {
+    $contract = makeContract();
+    $contract->recordPayment(50000, '轉帳'); // 合約收款也要進月營收
 
-    expect((float) $client->fresh()->total_revenue)->toBe(8000.0); // 只計獨立發票
+    $monthRevenue = $this->get(route('admin.dashboard'))->viewData('monthRevenue');
+    expect((float) $monthRevenue)->toBe(50000.0);
 });
 
 it('independent invoice (contract_id null) keeps its own payment ledger intact', function () {
@@ -281,22 +283,20 @@ function makeContractInvoice(Contract $contract, float $total = 30000): Invoice
     ]);
 }
 
-it('excludes contract invoices from invoice index revenue stats', function () {
+it('invoice index revenue sums the payments ledger (contract + independent, once)', function () {
     $contract = makeContract();
+    $contract->recordPayment(50000, '轉帳'); // 合約收款
 
-    // 獨立已付發票 → 計入營收
-    $contract->client->invoices()->create([
-        'contract_id' => null, 'title' => '獨立', 'status' => 'paid',
+    $inv = $contract->client->invoices()->create([
+        'contract_id' => null, 'title' => '獨立', 'status' => 'sent',
         'subtotal' => 8000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
-        'total' => 8000, 'paid_amount' => 8000, 'currency' => 'TWD',
-        'issued_date' => now(), 'due_date' => now(), 'paid_at' => now(),
+        'total' => 8000, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now(),
     ]);
-    // 合約已付發票 → 不計入營收
-    makeContractInvoice($contract, 50000)->update(['status' => 'paid', 'paid_amount' => 50000, 'paid_at' => now()]);
+    $inv->recordPayment(8000, '現金'); // 獨立發票收款
 
     $stats = $this->get(route('admin.invoices.index'))->viewData('stats');
-    expect((float) $stats['total_revenue'])->toBe(8000.0);
-    expect((float) $stats['month_revenue'])->toBe(8000.0);
+    expect((float) $stats['total_revenue'])->toBe(58000.0);
+    expect((float) $stats['month_revenue'])->toBe(58000.0); // 收款皆在本月
 });
 
 it('records a contract invoice payment into the contract ledger and marks it paid', function () {

@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\ClientInteraction;
 use App\Models\Contract;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\QuoteRequest;
 use App\Models\Task;
 use App\Models\TimeEntry;
@@ -67,12 +68,12 @@ class DashboardController extends Controller
         // 商業概覽 KPI（快取 5 分鐘）
         $businessKpi = Cache::remember('dashboard_business_kpi', 300, function () {
             return [
-                // 排除合約發票（contract_id 有值），避免合約收款重複計入月營收
-                'month_revenue' => Invoice::where('status', 'paid')
-                    ->whereNull('contract_id')
-                    ->whereMonth('paid_at', now()->month)
-                    ->whereYear('paid_at', now()->year)
-                    ->sum('total'),
+                // 本月實收現金 = 收款帳本（payments）本月加總。
+                // 每筆收款（合約收款 / 獨立發票收款）皆為一列，合約發票的收款記在合約帳本，
+                // 不會重複計算；合約收入也能正確反映在營收。
+                'month_revenue' => Payment::whereMonth('paid_on', now()->month)
+                    ->whereYear('paid_on', now()->year)
+                    ->sum('amount'),
                 'pending_amount' => (float) Invoice::whereIn('status', ['sent', 'partially_paid', 'overdue'])
                     ->selectRaw('SUM(total - paid_amount) as balance')
                     ->value('balance') ?? 0,
