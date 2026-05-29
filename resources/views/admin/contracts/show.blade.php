@@ -383,6 +383,92 @@
     </div>
 </div>
 
+{{-- 相關發票 --}}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>相關發票</strong>
+        <button type="button" class="btn btn-sm btn-primary" data-coreui-toggle="modal" data-coreui-target="#createInvoiceModal">
+            <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-plus"></use></svg> 開立發票
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="row text-center mb-3">
+            <div class="col"><div class="small text-medium-emphasis">合約總額</div><div class="fw-semibold">NT$ {{ number_format($contract->total) }}</div></div>
+            <div class="col"><div class="small text-medium-emphasis">已開發票</div><div class="fw-semibold">NT$ {{ number_format($contract->invoiced_amount) }}</div></div>
+            <div class="col"><div class="small text-medium-emphasis">可開餘額</div><div class="fw-semibold {{ $contract->uninvoiced_amount < 0 ? 'text-danger' : '' }}">NT$ {{ number_format($contract->uninvoiced_amount) }}</div></div>
+        </div>
+        @if($contract->invoices->isEmpty())
+            <p class="text-medium-emphasis mb-0 small">尚無發票</p>
+        @else
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead><tr><th>發票號</th><th class="text-end">金額</th><th>狀態</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach($contract->invoices as $inv)
+                        <tr>
+                            <td>{{ $inv->invoice_number }}</td>
+                            <td class="text-end">NT$ {{ number_format($inv->total) }}</td>
+                            <td><span class="badge bg-{{ $inv->status_color }}">{{ $inv->status_label }}</span></td>
+                            <td class="text-end"><a href="{{ route('admin.invoices.show', $inv) }}" class="btn btn-sm btn-light">檢視</a></td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+</div>
+
+{{-- 開立發票 Modal --}}
+<div class="modal fade" id="createInvoiceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.contracts.create-invoice', $contract) }}">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">從合約開立發票</h5>
+                    <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">金額模式</label>
+                        <select name="mode" class="form-select" id="createInvoiceMode" onchange="
+                            document.getElementById('ciAmountWrap').classList.toggle('d-none', this.value !== 'custom');
+                            document.getElementById('ciPercentWrap').classList.toggle('d-none', this.value !== 'percent');">
+                            <option value="custom">自訂金額</option>
+                            <option value="percent">按比例（合約總額的百分比）</option>
+                            <option value="remaining">剩餘未開全額（NT$ {{ number_format($contract->uninvoiced_amount) }}）</option>
+                            <option value="copy_items">複製合約所有項目</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="ciAmountWrap">
+                        <label class="form-label">金額</label>
+                        <div class="input-group">
+                            <span class="input-group-text">NT$</span>
+                            <input type="number" name="amount" class="form-control" step="0.01" min="0.01">
+                        </div>
+                    </div>
+                    <div class="mb-3 d-none" id="ciPercentWrap">
+                        <label class="form-label">百分比</label>
+                        <div class="input-group">
+                            <input type="number" name="percent" class="form-control" step="0.01" min="0.01" max="100">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">發票項目描述（單行模式適用，選填）</label>
+                        <input type="text" name="description" class="form-control" placeholder="留空則用合約標題">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-coreui-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">建立發票</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {{-- 登記收款 Modal --}}
 @if($contract->total > 0 && $contract->balance_due > 0)
 <div class="modal fade" id="recordPaymentModal" tabindex="-1" aria-hidden="true">
@@ -420,6 +506,27 @@
                         <label class="form-label">收款憑證</label>
                         <input type="file" name="proof" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
                         <div class="form-text">選填，可上傳轉帳截圖或收據（PDF／圖檔，10MB 內）</div>
+                    </div>
+                    <hr>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="createInvoiceCheck" name="create_invoice" value="1"
+                               onchange="document.getElementById('invoiceItemModeWrap').classList.toggle('d-none', !this.checked)">
+                        <label class="form-check-label" for="createInvoiceCheck">同時為此筆款開立發票</label>
+                    </div>
+                    <div id="invoiceItemModeWrap" class="d-none">
+                        <div class="mb-3">
+                            <label class="form-label">發票項目方式</label>
+                            <select name="invoice_item_mode" class="form-select"
+                                    onchange="document.getElementById('invoiceDescWrap').classList.toggle('d-none', this.value !== 'custom')">
+                                <option value="summary">摘要（合約款項，金額＝收款額）</option>
+                                <option value="custom">自訂描述</option>
+                                <option value="copy">複製合約項目（等比縮放）</option>
+                            </select>
+                        </div>
+                        <div id="invoiceDescWrap" class="mb-3 d-none">
+                            <label class="form-label">發票描述</label>
+                            <input type="text" name="invoice_description" class="form-control" placeholder="留空則用摘要預設">
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">

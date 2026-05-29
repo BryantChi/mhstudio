@@ -118,7 +118,7 @@ class InvoiceController extends Controller
      */
     public function show(Invoice $invoice): View
     {
-        $invoice->load(['client', 'project', 'creator', 'items', 'quote', 'payments']);
+        $invoice->load(['client', 'project', 'creator', 'items', 'quote', 'payments', 'contract']);
 
         $activities = Activity::where('subject_type', Invoice::class)
             ->where('subject_id', $invoice->id)

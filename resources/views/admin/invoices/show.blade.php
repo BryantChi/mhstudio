@@ -211,6 +211,9 @@
                         @if($invoice->quote)
                         <tr><th>來源報價</th><td><a href="{{ route('admin.quotes.show', $invoice->quote) }}">{{ $invoice->quote->quote_number }}</a></td></tr>
                         @endif
+                        @if($invoice->contract_id)
+                        <tr><th>來源合約</th><td><a href="{{ route('admin.contracts.show', $invoice->contract_id) }}">{{ $invoice->contract->contract_number ?? '檢視合約' }}</a></td></tr>
+                        @endif
                         @if($invoice->project)
                         <tr><th>關聯專案</th><td><a href="{{ route('admin.projects.show', $invoice->project) }}">{{ $invoice->project->title }}</a></td></tr>
                         @endif
