@@ -295,6 +295,13 @@ git commit -m "feat: add contract_id to invoices and invoice_id to payments"
 ```php
 function makeContract(array $overrides = []): Contract
 {
+    // contracts.created_by 為 NOT NULL FK；Contract::boot() 取 auth()->id()，故須先登入
+    test()->actingAs(\App\Models\User::create([
+        'name' => '測試人員',
+        'email' => 'tester'.uniqid().'@example.com',
+        'password' => 'password',
+    ]));
+
     $client = \App\Models\Client::create(['name' => '測試客戶']);
 
     $contract = Contract::create(array_merge([
@@ -452,22 +459,9 @@ git commit -m "feat: add contract<->invoice<->payment relations and invoiced amo
 
 - [ ] **Step 1: 寫失敗測試（4 模式 + 剩餘 + 超開）**
 
-在 `tests/Feature/ContractInvoiceTest.php` 末尾追加。先在檔案頂部 helper 區加入登入 helper（若尚未存在）：
+在 `tests/Feature/ContractInvoiceTest.php` 末尾追加測試。
 
-```php
-function actingAdmin(): \App\Models\User
-{
-    // 專案無 factory，直接建立；'password' 由 User 的 hashed cast 自動雜湊
-    $user = \App\Models\User::create([
-        'name' => '管理員',
-        'email' => 'admin@test.local',
-        'password' => 'password',
-    ]);
-    test()->actingAs($user);
-
-    return $user;
-}
-```
+> 注意：`makeContract()` 已在內部 `actingAs()` 一個新使用者，故**凡呼叫 `makeContract()` 的測試都已登入**，不需再額外登入。只有「不經 `makeContract()` 卻仍需登入」的測試（如 Task 4 的「獨立發票」測試會直接 `Invoice::create`，其 `boot()` 取 `auth()->id()`）才需自行 `test()->actingAs(\App\Models\User::create([...]))`。本計畫下列 Task 3 測試皆使用 `makeContract()`，因此**移除原先的 `actingAdmin()` 呼叫**。
 
 接著新增測試：
 
