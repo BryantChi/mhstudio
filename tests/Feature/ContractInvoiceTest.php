@@ -199,29 +199,32 @@ function makeContractInvoice(Contract $contract, float $total = 30000): Invoice
     ]);
 }
 
-it('revenue equals paid invoices (client, dashboard, invoice index)', function () {
+it('revenue equals actual payments by paid_on (client, dashboard, invoice index)', function () {
     $contract = makeContract(); // makeContract 已登入並建立 client
     $client = $contract->client;
 
-    $contract->invoices()->create([
-        'client_id' => $client->id, 'title' => '合約款', 'status' => 'paid',
+    // 現金基礎:已收款發票走帳本(recordPayment,paid_on 預設本月),未收款發票不計營收
+    $inv1 = $contract->invoices()->create([
+        'client_id' => $client->id, 'title' => '合約款', 'status' => 'sent',
         'subtotal' => 50000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
-        'total' => 50000, 'paid_amount' => 50000, 'currency' => 'TWD',
-        'issued_date' => now(), 'due_date' => now(), 'paid_at' => now(),
+        'total' => 50000, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now(),
     ]);
-    $client->invoices()->create([
-        'contract_id' => null, 'title' => '獨立', 'status' => 'paid',
+    $inv1->recordPayment(50000, '轉帳');
+
+    $inv2 = $client->invoices()->create([
+        'contract_id' => null, 'title' => '獨立', 'status' => 'sent',
         'subtotal' => 8000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
-        'total' => 8000, 'paid_amount' => 8000, 'currency' => 'TWD',
-        'issued_date' => now(), 'due_date' => now(), 'paid_at' => now(),
+        'total' => 8000, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now(),
     ]);
+    $inv2->recordPayment(8000, '現金');
+
     $client->invoices()->create([
         'contract_id' => null, 'title' => '未付', 'status' => 'sent',
         'subtotal' => 9999, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
         'total' => 9999, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now(),
     ]);
 
-    $client->recalculateRevenue();
+    // recordPayment 已連動 client 營收(afterPaymentsSaved),營收 = 實收 50000 + 8000
     expect((float) $client->fresh()->total_revenue)->toBe(58000.0);
 
     $stats = $this->get(route('admin.invoices.index'))->viewData('stats');
@@ -229,6 +232,7 @@ it('revenue equals paid invoices (client, dashboard, invoice index)', function (
     expect((float) $stats['month_revenue'])->toBe(58000.0);
 
     expect((float) $this->get(route('admin.dashboard'))->viewData('monthRevenue'))->toBe(58000.0);
+    expect((float) $this->get(route('admin.dashboard'))->viewData('yearRevenue'))->toBe(58000.0);
 });
 
 it('derives contract paid_amount and balance from its invoices', function () {
@@ -374,4 +378,79 @@ it('renders the invoice show page (contract invoice with a payment) without erro
     $invoice->recordPayment(4000, '現金');
 
     $this->get(route('admin.invoices.show', $invoice))->assertOk();
+});
+
+it('attributes revenue by paid_on and re-buckets it when a payment is edited', function () {
+    $this->travelTo(\Illuminate\Support\Carbon::create(2026, 6, 15, 12));
+
+    test()->actingAs(\App\Models\User::create([
+        'name' => '會計', 'email' => 'acc'.uniqid().'@example.com', 'password' => 'password',
+    ]));
+    $client = \App\Models\Client::create(['name' => '現金基礎客戶']);
+    $invoice = Invoice::create([
+        'client_id' => $client->id, 'contract_id' => null, 'title' => '分期', 'status' => 'sent',
+        'subtotal' => 100000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 100000, 'currency' => 'TWD', 'issued_date' => now()->subMonths(2), 'due_date' => now(),
+    ]);
+
+    $invoice->recordPayment(30000, '轉帳', '2026-05-20'); // 上月
+    $invoice->recordPayment(20000, '現金', '2026-06-10'); // 本月
+
+    expect((float) Payment::forInvoices()->inMonth(6, 2026)->sum('amount'))->toBe(20000.0);
+    expect((float) Payment::forInvoices()->inMonth(5, 2026)->sum('amount'))->toBe(30000.0);
+    expect((float) Payment::forInvoices()->inYear(2026)->sum('amount'))->toBe(50000.0);
+
+    $invoice = $invoice->fresh();
+    expect((float) $invoice->paid_amount)->toBe(50000.0);
+    expect($invoice->status)->toBe('partially_paid'); // 50000 < 100000
+
+    // 把上月那筆改到本月 → 本月營收增為 50000、上月歸零
+    $p = $invoice->payments()->whereDate('paid_on', '2026-05-20')->first();
+    $this->put(route('admin.invoices.update-payment', [$invoice, $p]), [
+        'amount' => 30000, 'paid_on' => '2026-06-05', 'payment_method' => '轉帳',
+    ])->assertSessionHasNoErrors();
+
+    expect((float) Payment::forInvoices()->inMonth(6, 2026)->sum('amount'))->toBe(50000.0);
+    expect((float) Payment::forInvoices()->inMonth(5, 2026)->sum('amount'))->toBe(0.0);
+    expect((float) $invoice->fresh()->paid_amount)->toBe(50000.0); // 只改日期,金額不變
+
+    $this->travelBack();
+});
+
+it('updatePayment recomputes status, caps amount at released balance, and guards ownership', function () {
+    test()->actingAs(\App\Models\User::create([
+        'name' => '會計', 'email' => 'acc2'.uniqid().'@example.com', 'password' => 'password',
+    ]));
+    $client = \App\Models\Client::create(['name' => '客戶B']);
+    $invoice = Invoice::create([
+        'client_id' => $client->id, 'contract_id' => null, 'title' => '單筆', 'status' => 'sent',
+        'subtotal' => 100000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 100000, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now(),
+    ]);
+    $invoice->recordPayment(40000, '現金'); // partially_paid
+    $p = $invoice->payments()->first();
+
+    // 金額放大到全額 → 狀態轉 paid、客戶營收連動
+    $this->put(route('admin.invoices.update-payment', [$invoice, $p]), [
+        'amount' => 100000, 'paid_on' => now()->toDateString(),
+    ])->assertSessionHasNoErrors();
+    $invoice = $invoice->fresh();
+    expect((float) $invoice->paid_amount)->toBe(100000.0);
+    expect($invoice->status)->toBe('paid');
+    expect((float) $client->fresh()->total_revenue)->toBe(100000.0);
+
+    // 超過「釋放本筆後的可用額度」(= 100000) 應被驗證擋下
+    $this->put(route('admin.invoices.update-payment', [$invoice, $p->fresh()]), [
+        'amount' => 100001, 'paid_on' => now()->toDateString(),
+    ])->assertSessionHasErrors('amount');
+
+    // 歸屬防護:用別張發票的路由去改本筆收款 → 404
+    $other = Invoice::create([
+        'client_id' => $client->id, 'contract_id' => null, 'title' => '別張', 'status' => 'sent',
+        'subtotal' => 5000, 'tax_rate' => 0, 'tax_amount' => 0, 'discount' => 0,
+        'total' => 5000, 'currency' => 'TWD', 'issued_date' => now(), 'due_date' => now(),
+    ]);
+    $this->put(route('admin.invoices.update-payment', [$other, $p->fresh()]), [
+        'amount' => 1000, 'paid_on' => now()->toDateString(),
+    ])->assertNotFound();
 });

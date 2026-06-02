@@ -38,8 +38,9 @@ class InvoiceController extends Controller
 
         // 統計卡片
         $stats = [
-            'total_revenue' => Invoice::paid()->sum('total'),
-            'month_revenue' => Invoice::paid()->whereMonth('paid_at', now()->month)->whereYear('paid_at', now()->year)->sum('total'),
+            // 現金基礎：依實際收款日 paid_on 加總實收金額（含部分付款），與 Dashboard 口徑一致
+            'total_revenue' => (float) Payment::forInvoices()->sum('amount'),
+            'month_revenue' => (float) Payment::forInvoices()->inMonth(now()->month, now()->year)->sum('amount'),
             'pending_amount' => Invoice::unpaid()->sum('total') - Invoice::unpaid()->sum('paid_amount'),
             'overdue_count' => Invoice::overdue()->count(),
         ];
@@ -229,6 +230,50 @@ class InvoiceController extends Controller
 
         $invoice->recordPayment($request->amount, $request->payment_method, $request->paid_on, $request->note, $proofPath);
         flash_success('付款已記錄');
+
+        return redirect()->route('admin.invoices.show', $invoice);
+    }
+
+    /**
+     * 編輯一筆收款並重算帳本（修正填錯的金額／收款日／方式／備註，可換憑證）。
+     */
+    public function updatePayment(Request $request, Invoice $invoice, Payment $payment): RedirectResponse
+    {
+        if ($payment->payable_type !== Invoice::class || (int) $payment->payable_id !== $invoice->id) {
+            abort(404);
+        }
+
+        // 上限為「釋放本筆後的可用額度」：目前餘額已扣掉本筆，需加回本筆原金額
+        $maxAmount = round($invoice->balance_due + (float) $payment->amount, 2);
+
+        $request->validate([
+            'amount' => 'required|numeric|min:0.01|max:'.$maxAmount,
+            'payment_method' => 'nullable|string|max:255',
+            'paid_on' => 'nullable|date',
+            'note' => 'nullable|string|max:500',
+            'proof' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+        ]);
+
+        // 換憑證：先刪舊檔再存新檔；未上傳則保留原憑證
+        $proofPath = $payment->proof_path;
+        if ($request->hasFile('proof')) {
+            if ($payment->proof_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($payment->proof_path);
+            }
+            $file = $request->file('proof');
+            $proofPath = $file->storeAs('uploads/'.date('Y/m'), \Illuminate\Support\Str::uuid().'.'.$file->getClientOriginalExtension(), 'public');
+        }
+
+        $payment->update([
+            'amount' => round((float) $request->amount, 2),
+            'payment_method' => $request->payment_method,
+            'paid_on' => $request->paid_on ?: $payment->paid_on->toDateString(),
+            'note' => $request->note,
+            'proof_path' => $proofPath,
+        ]);
+
+        $invoice->syncPaidAmount();
+        flash_success('收款紀錄已更新');
 
         return redirect()->route('admin.invoices.show', $invoice);
     }

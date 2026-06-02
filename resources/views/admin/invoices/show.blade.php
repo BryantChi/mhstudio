@@ -135,6 +135,15 @@
                                     @if($payment->proof_path)
                                     <a href="{{ $payment->proof_url }}" target="_blank" class="btn btn-sm btn-link p-0 me-2" title="檢視收款憑證">憑證</a>
                                     @endif
+                                    <button type="button" class="btn btn-sm btn-link p-0 me-2" title="編輯此筆收款"
+                                            data-payment-id="{{ $payment->id }}"
+                                            data-amount="{{ $payment->amount }}"
+                                            data-method="{{ $payment->payment_method }}"
+                                            data-paid-on="{{ $payment->paid_on->format('Y-m-d') }}"
+                                            data-note="{{ $payment->note }}"
+                                            data-max="{{ round($invoice->balance_due + $payment->amount, 2) }}"
+                                            data-has-proof="{{ $payment->proof_path ? '1' : '0' }}"
+                                            onclick="editPayment(this)">編輯</button>
                                     <form method="POST" action="{{ route('admin.invoices.destroy-payment', [$invoice, $payment]) }}" class="d-inline">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-link text-danger p-0" data-confirm-delete title="刪除此筆收款">✕</button>
@@ -236,4 +245,85 @@
         </div>
     </div>
 </div>
+
+{{-- 編輯收款 Modal（單一共用，editPayment() 依列資料帶入） --}}
+<div class="modal fade" id="editPaymentModal" tabindex="-1" aria-labelledby="editPaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" id="editPaymentForm" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editPaymentModalLabel">
+                        <svg class="icon me-2"><use xlink:href="/assets/icons/free.svg#cil-pencil"></use></svg>
+                        編輯收款紀錄
+                    </h5>
+                    <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">付款金額 <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">NT$</span>
+                                <input type="number" class="form-control" name="amount" id="edit-pay-amount" min="0.01" step="0.01" required>
+                            </div>
+                            <div class="form-text">本筆可填上限 NT$ <span id="edit-pay-max-hint">0</span></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">付款方式</label>
+                            <select class="form-select" name="payment_method" id="edit-pay-method">
+                                <option value="">選擇方式</option>
+                                <option value="銀行轉帳">銀行轉帳</option>
+                                <option value="信用卡">信用卡</option>
+                                <option value="現金">現金</option>
+                                <option value="支票">支票</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">收款日期</label>
+                            <input type="date" class="form-control" name="paid_on" id="edit-pay-paid-on">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">備註</label>
+                            <input type="text" class="form-control" name="note" id="edit-pay-note" placeholder="選填">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">更換收款憑證</label>
+                            <input type="file" class="form-control" name="proof" id="edit-pay-proof" accept=".pdf,.jpg,.jpeg,.png">
+                            <div class="form-text"><span id="edit-pay-proof-hint">選填</span>，上傳新檔將取代原憑證（PDF／圖檔，10MB 內）</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-coreui-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-success">儲存變更</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+    function editPayment(btn) {
+        const d = btn.dataset;
+        const form = document.getElementById('editPaymentForm');
+        form.action = '{{ url('/'.config('admin.prefix', 'admin').'/invoices/'.$invoice->id.'/payments') }}/' + d.paymentId;
+
+        const amount = document.getElementById('edit-pay-amount');
+        amount.value = d.amount;
+        amount.max = d.max;
+        document.getElementById('edit-pay-max-hint').textContent = Number(d.max).toLocaleString();
+        document.getElementById('edit-pay-method').value = d.method || '';
+        document.getElementById('edit-pay-paid-on').value = d.paidOn || '';
+        document.getElementById('edit-pay-note').value = d.note || '';
+        document.getElementById('edit-pay-proof').value = '';
+        document.getElementById('edit-pay-proof-hint').textContent = d.hasProof === '1' ? '已有憑證' : '選填';
+
+        new coreui.Modal(document.getElementById('editPaymentModal')).show();
+    }
+</script>
+@endpush

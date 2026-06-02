@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\ClientInteraction;
 use App\Models\Contract;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\QuoteRequest;
 use App\Models\Task;
 use App\Models\TimeEntry;
@@ -67,10 +68,9 @@ class DashboardController extends Controller
         // 商業概覽 KPI（快取 5 分鐘）
         $businessKpi = Cache::remember('dashboard_business_kpi', 300, function () {
             return [
-                'month_revenue' => Invoice::where('status', 'paid')
-                    ->whereMonth('paid_at', now()->month)
-                    ->whereYear('paid_at', now()->year)
-                    ->sum('total'),
+                // 現金基礎：依實際收款日 paid_on 加總（含部分付款）
+                'month_revenue' => (float) Payment::forInvoices()->inMonth(now()->month, now()->year)->sum('amount'),
+                'year_revenue' => (float) Payment::forInvoices()->inYear(now()->year)->sum('amount'),
                 'pending_amount' => (float) Invoice::whereIn('status', ['sent', 'partially_paid', 'overdue'])
                     ->selectRaw('SUM(total - paid_amount) as balance')
                     ->value('balance') ?? 0,
@@ -80,6 +80,7 @@ class DashboardController extends Controller
         });
 
         $monthRevenue = $businessKpi['month_revenue'];
+        $yearRevenue = $businessKpi['year_revenue'] ?? 0;
         $pendingAmount = $businessKpi['pending_amount'];
         $pendingTaskCount = $businessKpi['pending_task_count'];
         $weeklyMinutes = $businessKpi['weekly_minutes'];
@@ -95,7 +96,7 @@ class DashboardController extends Controller
 
         return view('admin.dashboard.index', compact(
             'stats', 'recentArticles', 'popularArticles', 'dailyViews', 'topPages', 'todayTopPages',
-            'monthRevenue', 'pendingAmount', 'pendingTaskCount', 'weeklyMinutes',
+            'monthRevenue', 'yearRevenue', 'pendingAmount', 'pendingTaskCount', 'weeklyMinutes',
             'overdueInvoices', 'expiringContracts', 'recentInteractions', 'recentCompletedTasks',
             'pendingQuoteRequests', 'recentQuoteRequests'
         ));

@@ -213,6 +213,7 @@ Route::prefix(config('admin.prefix', 'admin'))
 
         // 發票管理
         Route::post('invoices/{invoice}/payment', [InvoiceController::class, 'recordPayment'])->name('invoices.record-payment');
+        Route::put('invoices/{invoice}/payments/{payment}', [InvoiceController::class, 'updatePayment'])->name('invoices.update-payment');
         Route::delete('invoices/{invoice}/payments/{payment}', [InvoiceController::class, 'destroyPayment'])->name('invoices.destroy-payment');
         Route::resource('invoices', InvoiceController::class);
 

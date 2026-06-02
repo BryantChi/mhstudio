@@ -144,8 +144,8 @@ class Client extends Model
      */
     public function recalculateRevenue(): void
     {
-        // 營收 = 已付發票加總(收款只發生在發票上,故已付發票即實收)
-        $this->total_revenue = round((float) $this->invoices()->where('status', 'paid')->sum('total'), 2);
+        // 營收 = 現金基礎,所有發票的實收金額加總(paid_amount 為每張發票收款即時加總,含部分付款)
+        $this->total_revenue = round((float) $this->invoices()->sum('paid_amount'), 2);
         $this->save();
     }
 }

@@ -115,6 +115,7 @@
                     <div>
                         <div class="fs-6 fw-semibold text-success">NT$ {{ number_format($monthRevenue ?? 0) }}</div>
                         <div class="text-muted small text-uppercase fw-semibold">本月營收</div>
+                        <div class="text-muted small mt-1">本年度 NT$ {{ number_format($yearRevenue ?? 0) }}</div>
                     </div>
                     <div class="text-success">
                         <svg class="icon icon-xl"><use xlink:href="/assets/icons/free.svg#cil-dollar"></use></svg>
