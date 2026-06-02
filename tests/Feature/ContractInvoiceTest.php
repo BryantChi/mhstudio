@@ -229,6 +229,7 @@ it('revenue equals actual payments by paid_on (client, dashboard, invoice index)
 
     $stats = $this->get(route('admin.invoices.index'))->viewData('stats');
     expect((float) $stats['total_revenue'])->toBe(58000.0);
+    expect((float) $stats['year_revenue'])->toBe(58000.0);
     expect((float) $stats['month_revenue'])->toBe(58000.0);
 
     expect((float) $this->get(route('admin.dashboard'))->viewData('monthRevenue'))->toBe(58000.0);

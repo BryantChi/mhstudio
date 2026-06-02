@@ -19,10 +19,10 @@
 </div>
 
 {{-- 統計卡片 --}}
-<div class="row mb-4">
-    <div class="col-md-3">
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md">
         <a href="{{ route('admin.invoices.index', ['status' => 'paid']) }}" class="text-decoration-none">
-            <div class="card text-white bg-success">
+            <div class="card text-white bg-success h-100">
                 <div class="card-body">
                     <div class="fs-4 fw-semibold">NT$ {{ number_format($stats['total_revenue']) }}</div>
                     <div>總營收</div>
@@ -30,9 +30,19 @@
             </div>
         </a>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md">
         <a href="{{ route('admin.invoices.index', ['status' => 'paid']) }}" class="text-decoration-none">
-            <div class="card text-white bg-primary">
+            <div class="card text-white bg-info h-100">
+                <div class="card-body">
+                    <div class="fs-4 fw-semibold">NT$ {{ number_format($stats['year_revenue']) }}</div>
+                    <div>本年度營收</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md">
+        <a href="{{ route('admin.invoices.index', ['status' => 'paid']) }}" class="text-decoration-none">
+            <div class="card text-white bg-primary h-100">
                 <div class="card-body">
                     <div class="fs-4 fw-semibold">NT$ {{ number_format($stats['month_revenue']) }}</div>
                     <div>本月營收</div>
@@ -40,9 +50,9 @@
             </div>
         </a>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md">
         <a href="{{ route('admin.invoices.index', ['status' => 'sent']) }}" class="text-decoration-none">
-            <div class="card text-white bg-warning">
+            <div class="card text-white bg-warning h-100">
                 <div class="card-body">
                     <div class="fs-4 fw-semibold">NT$ {{ number_format($stats['pending_amount']) }}</div>
                     <div>待收款項</div>
@@ -50,9 +60,9 @@
             </div>
         </a>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md">
         <a href="{{ route('admin.invoices.index', ['status' => 'overdue']) }}" class="text-decoration-none">
-            <div class="card text-white bg-danger">
+            <div class="card text-white bg-danger h-100">
                 <div class="card-body">
                     <div class="fs-4 fw-semibold">{{ $stats['overdue_count'] }}</div>
                     <div>逾期發票</div>

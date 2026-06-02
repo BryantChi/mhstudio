@@ -40,6 +40,7 @@ class InvoiceController extends Controller
         $stats = [
             // 現金基礎：依實際收款日 paid_on 加總實收金額（含部分付款），與 Dashboard 口徑一致
             'total_revenue' => (float) Payment::forInvoices()->sum('amount'),
+            'year_revenue' => (float) Payment::forInvoices()->inYear(now()->year)->sum('amount'),
             'month_revenue' => (float) Payment::forInvoices()->inMonth(now()->month, now()->year)->sum('amount'),
             'pending_amount' => Invoice::unpaid()->sum('total') - Invoice::unpaid()->sum('paid_amount'),
             'overdue_count' => Invoice::overdue()->count(),
