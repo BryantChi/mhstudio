@@ -241,6 +241,9 @@
                         @if($contract->project)
                         <tr><th>關聯專案</th><td><a href="{{ route('admin.projects.show', $contract->project) }}">{{ $contract->project->title }}</a></td></tr>
                         @endif
+                        @if($contract->project_name)
+                        <tr><th>專案名稱</th><td>{{ $contract->project_name }}</td></tr>
+                        @endif
                         @if($contract->quote)
                         <tr><th>來源報價</th><td><a href="{{ route('admin.quotes.show', $contract->quote) }}">{{ $contract->quote->quote_number }}</a></td></tr>
                         @endif

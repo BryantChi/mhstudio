@@ -30,6 +30,7 @@ class Contract extends Model
         'contract_number',
         'client_id',
         'project_id',
+        'project_name',
         'quote_id',
         'title',
         'content',
@@ -207,7 +208,7 @@ class Contract extends Model
 
         return [
             'client_name' => $this->client?->name,
-            'project_name' => $this->project?->title,
+            'project_name' => $this->project_name ?: $this->project?->title,
             'amount' => $amount > 0 ? number_format($amount) : null,
             'deposit_amount' => $amount > 0 ? number_format($amount * 0.5) : null,
             'yearly_fee' => $this->yearly_fee > 0 ? number_format($this->yearly_fee) : null,

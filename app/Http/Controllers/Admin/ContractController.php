@@ -98,6 +98,7 @@ class ContractController extends Controller
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'project_id' => 'nullable|exists:projects,id',
+            'project_name' => 'nullable|string|max:255',
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'type' => 'required|in:service,maintenance,retainer,nda,other',
@@ -137,6 +138,7 @@ class ContractController extends Controller
         $contract = Contract::create([
             'client_id' => $validated['client_id'],
             'project_id' => $validated['project_id'] ?? null,
+            'project_name' => $validated['project_name'] ?? null,
             'title' => $validated['title'],
             'content' => $validated['content'],
             'type' => $validated['type'],
@@ -222,6 +224,7 @@ class ContractController extends Controller
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'project_id' => 'nullable|exists:projects,id',
+            'project_name' => 'nullable|string|max:255',
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'type' => 'required|in:service,maintenance,retainer,nda,other',
@@ -263,6 +266,7 @@ class ContractController extends Controller
         $contract->update([
             'client_id' => $validated['client_id'],
             'project_id' => $validated['project_id'] ?? null,
+            'project_name' => $validated['project_name'] ?? null,
             'title' => $validated['title'],
             'content' => $validated['content'],
             'type' => $validated['type'],

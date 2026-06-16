@@ -175,6 +175,11 @@
                         </select>
                     </div>
                     <div class="mb-3">
+                        <label for="project_name" class="form-label">專案名稱</label>
+                        <input type="text" class="form-control @error('project_name') is-invalid @enderror" id="project_name" name="project_name" value="{{ old('project_name') }}" placeholder="供 {{ '{{project_name}}' }} 佔位符使用；留空則自動帶入上方關聯專案名稱">
+                        @error('project_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="mb-3">
                         <label for="type" class="form-label">合約類型 <span class="text-danger">*</span></label>
                         <select class="form-select @error('type') is-invalid @enderror" id="type" name="type" required>
                             @foreach(['service' => '服務合約', 'maintenance' => '維護合約', 'retainer' => '長期顧問', 'nda' => '保密協議', 'other' => '其他'] as $val => $label)

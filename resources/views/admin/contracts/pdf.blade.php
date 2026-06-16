@@ -154,10 +154,10 @@
             <td class="value">{{ $contract->company_signer_name ?? '-' }}</td>
         </tr>
         @endif
-        @if($contract->project)
+        @if($contract->project_name || $contract->project)
         <tr>
             <td class="label">關聯專案</td>
-            <td class="value" colspan="3">{{ $contract->project->title }}</td>
+            <td class="value" colspan="3">{{ $contract->project_name ?: $contract->project->title }}</td>
         </tr>
         @endif
     </table>
