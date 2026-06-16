@@ -176,7 +176,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="project_name" class="form-label">專案名稱</label>
-                        <input type="text" class="form-control @error('project_name') is-invalid @enderror" id="project_name" name="project_name" value="{{ old('project_name') }}" placeholder="供 {{ '{{project_name}}' }} 佔位符使用；留空則自動帶入上方關聯專案名稱">
+                        <input type="text" class="form-control @error('project_name') is-invalid @enderror" id="project_name" name="project_name" value="{{ old('project_name') }}" placeholder="供 @{{project_name}} 佔位符使用；留空則自動帶入上方關聯專案名稱">
                         @error('project_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="mb-3">
