@@ -338,7 +338,9 @@ class Contract extends Model
     public function getPaidAtAttribute()
     {
         if ($this->total > 0 && $this->paid_amount >= $this->total) {
-            return $this->invoices()->whereNotNull('paid_at')->max('paid_at');
+            $latest = $this->invoices()->whereNotNull('paid_at')->max('paid_at');
+
+            return $latest ? $this->asDateTime($latest) : null;
         }
 
         return null;
