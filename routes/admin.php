@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\SubscriberController;
 use App\Http\Controllers\Admin\NewsletterController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\AnalyticsController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ContractController;
 use App\Http\Controllers\Admin\QuoteController;
@@ -56,6 +57,14 @@ Route::prefix(config('admin.prefix', 'admin'))
         Route::get('analytics/api/pages', [AnalyticsController::class, 'apiPages'])->name('analytics.api.pages');
         Route::get('analytics/api/referrers', [AnalyticsController::class, 'apiReferrers'])->name('analytics.api.referrers');
         Route::get('analytics/api/chart', [AnalyticsController::class, 'apiChart'])->name('analytics.api.chart');
+
+        // 綜合報表中心
+        Route::middleware('can:view reports')->group(function () {
+            Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+            Route::get('reports/api/revenue', [ReportController::class, 'apiRevenue'])->name('reports.api.revenue');
+            Route::get('reports/api/clients', [ReportController::class, 'apiClients'])->name('reports.api.clients');
+            Route::get('reports/api/time', [ReportController::class, 'apiTime'])->name('reports.api.time');
+        });
 
         // 用戶管理
         Route::resource('users', UserController::class);

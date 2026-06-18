@@ -245,6 +245,17 @@
         </a>
     </li>
 
+    @can('view reports')
+    <li class="nav-item">
+        <a class="nav-link {{ active_route('admin.reports') }}" href="{{ route('admin.reports.index') }}">
+            <svg class="nav-icon">
+                <use xlink:href="/assets/icons/free.svg#cil-bar-chart"></use>
+            </svg>
+            綜合報表中心
+        </a>
+    </li>
+    @endcan
+
     {{-- 用戶管理 --}}
     @can('view users')
     <li class="nav-title">用戶管理</li>

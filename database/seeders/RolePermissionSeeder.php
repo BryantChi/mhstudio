@@ -57,6 +57,9 @@ class RolePermissionSeeder extends Seeder
             // 分析
             'view analytics',
 
+            // 報表
+            'view reports',
+
             // 系統設定
             'view settings',
             'edit settings',
@@ -97,6 +100,7 @@ class RolePermissionSeeder extends Seeder
             'edit seo',
             'generate sitemap',
             'view analytics',
+            'view reports',
             'view media',
             'upload media',
             'delete media',
