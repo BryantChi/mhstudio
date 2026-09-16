@@ -197,3 +197,14 @@ it('用暫定客戶建立報價單可正常送出', function () {
 
     expect(\App\Models\Quote::firstWhere('title', '網站改版報價')->client->name)->toBe('大東實業');
 });
+
+it('暫定提示條不會被 app.js 的自動隱藏機制關掉', function () {
+    actingAsAdmin();
+    $client = Client::create(['name' => '小林設計', 'is_provisional' => true]);
+
+    // app.js 會在 5 秒後自動 close 所有 .alert，唯獨帶 alert-permanent 的不會。
+    // 這條提示是常駐狀態說明（含轉正按鈕），消失了使用者就按不到。
+    $this->get(route('admin.clients.show', $client))
+        ->assertOk()
+        ->assertSee('alert-permanent', false);
+});

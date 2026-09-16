@@ -11,7 +11,8 @@
 
 @section('content')
 @if($client->is_provisional)
-    <div class="alert alert-secondary d-flex justify-content-between align-items-center flex-wrap gap-2">
+    {{-- alert-permanent：app.js 會讓一般 .alert 在 5 秒後自動關閉，此處是常駐狀態提示不可消失 --}}
+    <div class="alert alert-secondary alert-permanent d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
             <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-info"></use></svg>
             這是開單時快速建立的<strong>暫定客戶</strong>，資料可能尚未補齊。
