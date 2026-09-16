@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\ClientInteraction;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -88,6 +89,36 @@ class ClientController extends Controller
         flash_success('客戶建立成功');
 
         return redirect(admin_list_url('admin.clients.index'));
+    }
+
+    /**
+     * 表單內快速建立客戶（AJAX）。
+     * 不重用 store() 的原因：store() 強制要求 source/status/tier，且回傳 redirect，AJAX 接不到。
+     */
+    public function quickStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:50',
+            'company' => 'nullable|string|max:255',
+            'tax_id' => 'nullable|string|max:20',
+        ]);
+
+        $client = Client::create($validated + [
+            'status' => 'lead',
+            'source' => 'other',
+            'tier' => 'standard',
+            'is_provisional' => $request->boolean('is_provisional', true),
+        ]);
+
+        return response()->json([
+            'id' => $client->id,
+            'name' => $client->name,
+            'company' => $client->company,
+            'is_provisional' => $client->is_provisional,
+        ]);
     }
 
     /**
