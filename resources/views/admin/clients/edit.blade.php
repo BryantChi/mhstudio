@@ -127,6 +127,15 @@
                         @error('status') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" value="1" id="is_provisional" name="is_provisional"
+                               {{ old('is_provisional', $client->is_provisional) ? 'checked' : '' }}>
+                        <label class="form-check-label" for="is_provisional">
+                            暫定客戶
+                            <small class="text-muted d-block">開單時快速建立、資料尚未補齊。取消勾選並儲存即轉為正式客戶。</small>
+                        </label>
+                    </div>
+
                     <div class="mb-3">
                         <label for="tier" class="form-label">客戶等級 <span class="text-danger">*</span></label>
                         <select class="form-select @error('tier') is-invalid @enderror" id="tier" name="tier" required>

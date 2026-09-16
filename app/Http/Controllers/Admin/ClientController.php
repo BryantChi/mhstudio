@@ -42,6 +42,13 @@ class ClientController extends Controller
             $query->where('source', $request->source);
         }
 
+        // 暫定客戶篩選：only=僅暫定、exclude=僅正式、未帶=全部
+        if ($request->provisional === 'only') {
+            $query->provisional();
+        } elseif ($request->provisional === 'exclude') {
+            $query->formal();
+        }
+
         $clients = $query->latest()->paginate(15)->withQueryString();
 
         return view('admin.clients.index', compact('clients'));

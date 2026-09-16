@@ -115,3 +115,25 @@ it('編輯客戶時維持暫定勾選則仍為暫定', function () {
 
     expect($client->fresh()->is_provisional)->toBeTrue();
 });
+
+it('客戶列表可依暫定狀態篩選', function () {
+    actingAsAdmin();
+    Client::create(['name' => '正式客戶']);
+    Client::create(['name' => '暫定客戶', 'is_provisional' => true]);
+
+    $onlyProvisional = $this->get(route('admin.clients.index', ['provisional' => 'only']))->viewData('clients');
+    expect($onlyProvisional->pluck('name')->all())->toBe(['暫定客戶']);
+
+    $onlyFormal = $this->get(route('admin.clients.index', ['provisional' => 'exclude']))->viewData('clients');
+    expect($onlyFormal->pluck('name')->all())->toBe(['正式客戶']);
+
+    expect($this->get(route('admin.clients.index'))->viewData('clients'))->toHaveCount(2);
+});
+
+it('暫定客戶在列表與詳情頁顯示暫定標示', function () {
+    actingAsAdmin();
+    $client = Client::create(['name' => '小林設計', 'is_provisional' => true]);
+
+    $this->get(route('admin.clients.index'))->assertOk()->assertSee('暫定');
+    $this->get(route('admin.clients.show', $client))->assertOk()->assertSee('轉為正式客戶');
+});

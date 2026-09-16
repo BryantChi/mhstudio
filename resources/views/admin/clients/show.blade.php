@@ -10,9 +10,27 @@
 @endphp
 
 @section('content')
+@if($client->is_provisional)
+    <div class="alert alert-secondary d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <svg class="icon me-1"><use xlink:href="/assets/icons/free.svg#cil-info"></use></svg>
+            這是開單時快速建立的<strong>暫定客戶</strong>，資料可能尚未補齊。
+        </div>
+        <form method="POST" action="{{ route('admin.clients.promote', $client) }}" class="m-0">
+            @csrf
+            <button type="submit" class="btn btn-sm btn-primary">轉為正式客戶</button>
+        </form>
+    </div>
+@endif
+
 <div class="row mb-4">
     <div class="col-md-6">
-        <h2 class="mb-0">{{ $client->name }}</h2>
+        <h2 class="mb-0">
+            {{ $client->name }}
+            @if($client->is_provisional)
+                <span class="badge bg-secondary align-middle fs-6">暫定</span>
+            @endif
+        </h2>
         <p class="text-muted">
             <span class="badge bg-{{ $client->status_color }}">{{ $client->status_label }}</span>
             <span class="badge bg-{{ $client->tier_color }}">{{ $client->tier_label }}</span>

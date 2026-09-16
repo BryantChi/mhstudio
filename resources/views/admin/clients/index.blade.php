@@ -60,6 +60,13 @@
                     <option value="other" {{ request('source') == 'other' ? 'selected' : '' }}>其他</option>
                 </select>
             </div>
+            <div class="col-md-2">
+                <select class="form-select" name="provisional">
+                    <option value="">全部客戶</option>
+                    <option value="exclude" {{ request('provisional') === 'exclude' ? 'selected' : '' }}>僅正式客戶</option>
+                    <option value="only" {{ request('provisional') === 'only' ? 'selected' : '' }}>僅暫定客戶</option>
+                </select>
+            </div>
             <div class="col-md-auto">
                 <button type="submit" class="btn btn-secondary">
                     <svg class="icon"><use xlink:href="/assets/icons/free.svg#cil-search"></use></svg>
@@ -98,6 +105,10 @@
                                     {{ $client->name }}
                                 </a>
                             </strong>
+                            @if($client->is_provisional)
+                                <span class="badge bg-secondary ms-1" data-coreui-toggle="tooltip"
+                                      title="開單時快速建立，資料尚未補齊">暫定</span>
+                            @endif
                             @if($client->company)
                                 <br><small class="text-muted">{{ $client->company }}</small>
                             @endif
@@ -154,7 +165,12 @@
                     <span class="badge bg-{{ $client->status_color }}">{{ $client->status_label }}</span>
                 </div>
                 <div class="admin-grid-card-body">
-                    <h6><a href="{{ route('admin.clients.show', $client) }}">{{ $client->name }}</a></h6>
+                    <h6>
+                        <a href="{{ route('admin.clients.show', $client) }}">{{ $client->name }}</a>
+                        @if($client->is_provisional)
+                            <span class="badge bg-secondary ms-1">暫定</span>
+                        @endif
+                    </h6>
                     <div class="admin-grid-card-subtitle">
                         @if($client->company){{ $client->company }} &middot; @endif
                         {{ $client->email ?? '-' }}
