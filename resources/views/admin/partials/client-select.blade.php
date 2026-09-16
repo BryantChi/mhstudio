@@ -160,12 +160,16 @@
                 noResults: () => '找不到客戶，直接打名字即可建立',
                 searching: () => '搜尋中…',
             },
-            // 打字找不到時，在下拉最後放一個「建立」項目；真正建檔在 select2:select 時才做
+            // 打字時提供「建立」項目；真正建檔在 select2:select 時才做
             createTag: function (params) {
                 const term = $.trim(params.term);
                 if (!term) return null;
 
                 return { id: '__new__', text: '＋ 用「' + term + '」開單（暫定客戶）', isNew: true, term: term };
+            },
+            // Select2 預設把新標籤插在最前面，按 Enter 會誤建客戶；既有客戶必須優先
+            insertTag: function (data, tag) {
+                data.push(tag);
             },
         });
 
