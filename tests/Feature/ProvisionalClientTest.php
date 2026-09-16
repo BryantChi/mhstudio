@@ -75,3 +75,43 @@ it('快速建立缺少名稱時回傳驗證錯誤', function () {
         ->assertStatus(422)
         ->assertJsonValidationErrors('name');
 });
+
+it('可將暫定客戶一鍵轉為正式客戶', function () {
+    actingAsAdmin();
+    $client = Client::create(['name' => '小林設計', 'is_provisional' => true]);
+
+    $this->post(route('admin.clients.promote', $client))
+        ->assertRedirect(route('admin.clients.show', $client));
+
+    expect($client->fresh()->is_provisional)->toBeFalse();
+});
+
+it('編輯客戶時取消暫定勾選即轉正', function () {
+    actingAsAdmin();
+    $client = Client::create(['name' => '小林設計', 'is_provisional' => true]);
+
+    // checkbox 未勾選時瀏覽器不會送出該欄位，這裡刻意不帶 is_provisional
+    $this->put(route('admin.clients.update', $client), [
+        'name' => '小林設計',
+        'source' => 'other',
+        'status' => 'lead',
+        'tier' => 'standard',
+    ])->assertRedirect();
+
+    expect($client->fresh()->is_provisional)->toBeFalse();
+});
+
+it('編輯客戶時維持暫定勾選則仍為暫定', function () {
+    actingAsAdmin();
+    $client = Client::create(['name' => '小林設計', 'is_provisional' => true]);
+
+    $this->put(route('admin.clients.update', $client), [
+        'name' => '小林設計',
+        'source' => 'other',
+        'status' => 'lead',
+        'tier' => 'standard',
+        'is_provisional' => '1',
+    ])->assertRedirect();
+
+    expect($client->fresh()->is_provisional)->toBeTrue();
+});

@@ -167,16 +167,31 @@ class ClientController extends Controller
             'notes' => 'nullable|string',
             'tags' => 'nullable|string',
             'user_id' => 'nullable|exists:users,id',
+            'is_provisional' => 'nullable|boolean',
         ]);
 
         if (!empty($validated['tags'])) {
             $validated['tags'] = array_map('trim', explode(',', $validated['tags']));
         }
 
+        // checkbox 未勾選時不會送出，需明確補 false，否則無法藉由編輯頁轉正
+        $validated['is_provisional'] = $request->boolean('is_provisional');
+
         $client->update($validated);
         flash_success('客戶更新成功');
 
         return redirect(admin_list_url('admin.clients.index'));
+    }
+
+    /**
+     * 暫定客戶轉為正式客戶
+     */
+    public function promote(Client $client): RedirectResponse
+    {
+        $client->update(['is_provisional' => false]);
+        flash_success('已轉為正式客戶');
+
+        return redirect()->route('admin.clients.show', $client);
     }
 
     /**

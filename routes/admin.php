@@ -195,6 +195,7 @@ Route::prefix(config('admin.prefix', 'admin'))
         // 客戶 CRM
         // 表單內快速建立客戶（AJAX）。須置於 resource 之前，否則會被 clients/{client} 吃掉
         Route::post('clients/quick-store', [ClientController::class, 'quickStore'])->name('clients.quick-store');
+        Route::post('clients/{client}/promote', [ClientController::class, 'promote'])->name('clients.promote');
         Route::resource('clients', ClientController::class);
         Route::post('clients/{client}/interactions', [ClientController::class, 'storeInteraction'])->name('clients.interactions.store');
         Route::delete('interactions/{interaction}', [ClientController::class, 'destroyInteraction'])->name('clients.interactions.destroy');
