@@ -137,3 +137,63 @@ it('暫定客戶在列表與詳情頁顯示暫定標示', function () {
     $this->get(route('admin.clients.index'))->assertOk()->assertSee('暫定');
     $this->get(route('admin.clients.show', $client))->assertOk()->assertSee('轉為正式客戶');
 });
+
+function makeQuoteFor(Client $client): \App\Models\Quote
+{
+    return \App\Models\Quote::create([
+        'client_id' => $client->id, 'title' => '測試報價', 'status' => 'draft',
+        'tax_rate' => 5, 'discount' => 0, 'currency' => 'TWD',
+    ]);
+}
+
+function makeContractFor(Client $client): \App\Models\Contract
+{
+    return \App\Models\Contract::create([
+        'client_id' => $client->id, 'title' => '測試合約', 'content' => '內容',
+        'type' => 'service', 'status' => 'draft', 'currency' => 'TWD',
+        'tax_rate' => 5, 'discount' => 0, 'payment_terms' => 'net30',
+    ]);
+}
+
+function makeInvoiceFor(Client $client): \App\Models\Invoice
+{
+    return \App\Models\Invoice::create([
+        'client_id' => $client->id, 'title' => '測試發票', 'status' => 'draft',
+        'tax_rate' => 5, 'discount' => 0, 'currency' => 'TWD',
+        'issued_date' => now(), 'due_date' => now()->addDays(30),
+    ]);
+}
+
+it('六個單據表單都使用共用的客戶選擇元件', function () {
+    actingAsAdmin();
+    $client = Client::create(['name' => '大東實業']);
+
+    $urls = [
+        route('admin.quotes.create'),
+        route('admin.quotes.edit', makeQuoteFor($client)),
+        route('admin.contracts.create'),
+        route('admin.contracts.edit', makeContractFor($client)),
+        route('admin.invoices.create'),
+        route('admin.invoices.edit', makeInvoiceFor($client)),
+    ];
+
+    foreach ($urls as $url) {
+        // data-client-select 是共用元件的標記，確保六頁都吃到同一個元件
+        $this->get($url)->assertOk()->assertSee('data-client-select', false);
+    }
+});
+
+it('用暫定客戶建立報價單可正常送出', function () {
+    actingAsAdmin();
+    $client = Client::create(['name' => '大東實業', 'is_provisional' => true]);
+
+    $this->post(route('admin.quotes.store'), [
+        'client_id' => $client->id,
+        'title' => '網站改版報價',
+        'status' => 'draft',
+        'tax_rate' => 5,
+        'items' => [['description' => '首頁設計', 'quantity' => 1, 'unit' => '式', 'unit_price' => 50000]],
+    ])->assertRedirect();
+
+    expect(\App\Models\Quote::firstWhere('title', '網站改版報價')->client->name)->toBe('大東實業');
+});

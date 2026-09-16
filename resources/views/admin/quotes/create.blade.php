@@ -127,16 +127,7 @@
             <div class="card">
                 <div class="card-header"><strong>報價設定</strong></div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <label for="client_id" class="form-label">客戶 <span class="text-danger">*</span></label>
-                        <select class="form-select @error('client_id') is-invalid @enderror" id="client_id" name="client_id" required>
-                            <option value="">選擇客戶</option>
-                            @foreach($clients as $client)
-                                <option value="{{ $client->id }}" {{ old('client_id', $selectedClientId) == $client->id ? 'selected' : '' }}>{{ $client->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('client_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
+                    @include('admin.partials.client-select', ['clients' => $clients, 'selected' => old('client_id', $selectedClientId)])
                     <div class="mb-3">
                         <label for="project_id" class="form-label">關聯專案</label>
                         <select class="form-select" id="project_id" name="project_id">

@@ -112,15 +112,7 @@
             <div class="card">
                 <div class="card-header"><strong>報價設定</strong></div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label">客戶 <span class="text-danger">*</span></label>
-                        <select class="form-select" name="client_id" required>
-                            <option value="">選擇客戶</option>
-                            @foreach($clients as $client)
-                                <option value="{{ $client->id }}" {{ old('client_id', $quote->client_id) == $client->id ? 'selected' : '' }}>{{ $client->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                    @include('admin.partials.client-select', ['clients' => $clients, 'selected' => old('client_id', $quote->client_id)])
                     <div class="mb-3">
                         <label class="form-label">關聯專案</label>
                         <select class="form-select" name="project_id">
