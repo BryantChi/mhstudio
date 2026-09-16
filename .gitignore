@@ -20,7 +20,10 @@ yarn-error.log
 /.vscode
 /.claude
 /.playwright-mcp
+/.codegraph
+/.omc
 /storage/framework/cache
+/storage/framework/testing
 
 # Business documents (ignore root PDFs, allow docs/)
 /*.pdf
