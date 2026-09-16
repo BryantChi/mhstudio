@@ -27,11 +27,13 @@ class Client extends Model
         'tags',
         'total_revenue',
         'user_id',
+        'is_provisional',
     ];
 
     protected $casts = [
         'tags' => 'array',
         'total_revenue' => 'decimal:2',
+        'is_provisional' => 'boolean',
     ];
 
     /* ===== Relations ===== */
@@ -76,6 +78,18 @@ class Client extends Model
     public function scopeLeads(Builder $query): void
     {
         $query->where('status', 'lead');
+    }
+
+    /** 暫定客戶：開單當下順手建立、資料尚未補齊 */
+    public function scopeProvisional(Builder $query): void
+    {
+        $query->where('is_provisional', true);
+    }
+
+    /** 正式客戶 */
+    public function scopeFormal(Builder $query): void
+    {
+        $query->where('is_provisional', false);
     }
 
     public function scopeByTier(Builder $query, string $tier): void
