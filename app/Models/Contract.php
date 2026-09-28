@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -40,6 +41,8 @@ class Contract extends Model
         'currency',
         'start_date',
         'end_date',
+        'expected_delivery_date',
+        'term_months',
         'signed_at',
         'notes',
         'created_by',
@@ -81,8 +84,11 @@ class Contract extends Model
         'total' => 'decimal:2',
         'paid_amount' => 'decimal:2',
         'yearly_fee' => 'decimal:2',
-        'start_date' => 'date',
-        'end_date' => 'date',
+        // 序列化成 Y-m-d：異動紀錄才會存「2026-11-08」而非 UTC 的「2026-11-07T16:00Z」
+        'start_date' => 'date:Y-m-d',
+        'end_date' => 'date:Y-m-d',
+        'expected_delivery_date' => 'date',
+        'term_months' => 'integer',
         'due_date' => 'date',
         'signed_at' => 'datetime',
         'paid_at' => 'datetime',
@@ -111,7 +117,7 @@ class Contract extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['title', 'status', 'total', 'paid_amount', 'sent_at', 'signed_at', 'signed_document_path'])
+            ->logOnly(['title', 'status', 'total', 'paid_amount', 'sent_at', 'signed_at', 'signed_document_path', 'start_date', 'end_date'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -232,6 +238,51 @@ class Contract extends Model
     public function renderedContent(): string
     {
         return ContractTemplate::fillPlaceholders((string) $this->content, $this->placeholderVariables());
+    }
+
+    /* ===== 合約期間（自上線日起算） ===== */
+
+    /** 預計交件日到上線日的預設緩衝天數（後台「單據條款」可覆寫） */
+    public const DEFAULT_GO_LIVE_BUFFER_DAYS = 7;
+
+    public static function goLiveBufferDays(): int
+    {
+        return max(0, (int) setting('contract_go_live_buffer_days', self::DEFAULT_GO_LIVE_BUFFER_DAYS));
+    }
+
+    /**
+     * 依上線日與期間月數算出起訖日：結束日 = 上線日 + N 個月 − 1 天（例：11/08 起 12 個月 → 隔年 11/07）。
+     * 用 addMonthsNoOverflow 避免 1/31 + 1 個月溢位成 3/3。
+     *
+     * @return array{start_date: string, end_date: ?string}
+     */
+    public static function termDatesFrom(\DateTimeInterface|string $goLiveDate, ?int $termMonths): array
+    {
+        $start = Carbon::parse($goLiveDate)->startOfDay();
+
+        return [
+            'start_date' => $start->toDateString(),
+            'end_date' => $termMonths ? $start->copy()->addMonthsNoOverflow($termMonths)->subDay()->toDateString() : null,
+        ];
+    }
+
+    /**
+     * 簽約階段的預估起訖日：預計交件日 + 緩衝天數視為預估上線日。
+     */
+    public static function estimatedTermDates(\DateTimeInterface|string $expectedDeliveryDate, ?int $termMonths): array
+    {
+        $goLive = Carbon::parse($expectedDeliveryDate)->addDays(self::goLiveBufferDays());
+
+        return self::termDatesFrom($goLive, $termMonths);
+    }
+
+    /**
+     * 目前的起訖日是否仍為預估值（尚未上線）。PDF／詳情頁據此標註「預估」。
+     */
+    public function isTermEstimated(): bool
+    {
+        return $this->term_months !== null
+            && in_array($this->status, ['draft', 'sent', 'signed'], true);
     }
 
     /* ===== Status workflow ===== */

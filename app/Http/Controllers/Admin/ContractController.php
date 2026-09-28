@@ -107,6 +107,8 @@ class ContractController extends Controller
             'currency' => 'nullable|string|max:10',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
+            'expected_delivery_date' => 'nullable|date',
+            'term_months' => 'nullable|integer|min:1|max:600',
             'notes' => 'nullable|string',
             // 財務明細
             'tax_rate' => 'nullable|numeric|min:0|max:100',
@@ -135,6 +137,8 @@ class ContractController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
 
+        $validated = $this->fillEstimatedTermDates($validated);
+
         $contract = Contract::create([
             'client_id' => $validated['client_id'],
             'project_id' => $validated['project_id'] ?? null,
@@ -147,6 +151,8 @@ class ContractController extends Controller
             'currency' => $validated['currency'] ?? 'TWD',
             'start_date' => $validated['start_date'] ?? null,
             'end_date' => $validated['end_date'] ?? null,
+            'expected_delivery_date' => $validated['expected_delivery_date'] ?? null,
+            'term_months' => $validated['term_months'] ?? null,
             'notes' => $validated['notes'] ?? null,
             'tax_rate' => $validated['tax_rate'] ?? 5,
             'discount' => $validated['discount'] ?? 0,
@@ -233,6 +239,8 @@ class ContractController extends Controller
             'currency' => 'nullable|string|max:10',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
+            'expected_delivery_date' => 'nullable|date',
+            'term_months' => 'nullable|integer|min:1|max:600',
             'signed_at' => 'nullable|date',
             'notes' => 'nullable|string',
             // 財務明細
@@ -263,6 +271,8 @@ class ContractController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
 
+        $validated = $this->fillEstimatedTermDates($validated);
+
         $contract->update([
             'client_id' => $validated['client_id'],
             'project_id' => $validated['project_id'] ?? null,
@@ -275,6 +285,8 @@ class ContractController extends Controller
             'currency' => $validated['currency'] ?? 'TWD',
             'start_date' => $validated['start_date'] ?? null,
             'end_date' => $validated['end_date'] ?? null,
+            'expected_delivery_date' => $validated['expected_delivery_date'] ?? null,
+            'term_months' => $validated['term_months'] ?? null,
             'signed_at' => $validated['signed_at'] ?? $contract->signed_at,
             'notes' => $validated['notes'] ?? null,
             'tax_rate' => $validated['tax_rate'] ?? 5,
@@ -334,6 +346,20 @@ class ContractController extends Controller
     }
 
     /**
+     * 有填預計交件日、卻沒填起訖日時，由後端補上預估值（前端 JS 失效時的備援）。
+     */
+    private function fillEstimatedTermDates(array $validated): array
+    {
+        if (empty($validated['start_date']) && ! empty($validated['expected_delivery_date'])) {
+            $estimated = Contract::estimatedTermDates($validated['expected_delivery_date'], $validated['term_months'] ?? null);
+            $validated['start_date'] = $estimated['start_date'];
+            $validated['end_date'] = $validated['end_date'] ?? $estimated['end_date'];
+        }
+
+        return $validated;
+    }
+
+    /**
      * 更新合約狀態
      */
     public function updateStatus(Request $request, Contract $contract): RedirectResponse
@@ -341,6 +367,8 @@ class ContractController extends Controller
         // 簽署（signed）僅能透過上傳客戶回簽檔達成，不開放此處直接設定
         $request->validate([
             'status' => 'required|in:draft,sent,active,completed,cancelled',
+            // 轉為執行中＝上線，合約期間改以實際上線日起算
+            'go_live_date' => 'required_if:status,active|nullable|date',
         ]);
 
         if (! $contract->canTransitionTo($request->status)) {
@@ -352,6 +380,14 @@ class ContractController extends Controller
         $updateData = ['status' => $request->status];
         if ($request->status === 'sent' && ! $contract->sent_at) {
             $updateData['sent_at'] = now();
+        }
+        if ($request->status === 'active') {
+            $termDates = Contract::termDatesFrom($request->go_live_date, $contract->term_months);
+            $updateData['start_date'] = $termDates['start_date'];
+            // 未設期間月數的舊合約只更新開始日，保留原本手填的結束日
+            if ($termDates['end_date']) {
+                $updateData['end_date'] = $termDates['end_date'];
+            }
         }
 
         $contract->update($updateData);
@@ -607,6 +643,7 @@ class ContractController extends Controller
         $newContract->signed_document_uploaded_at = null;
         $newContract->start_date = null; // 複本重新設定合約期間
         $newContract->end_date = null;
+        $newContract->expected_delivery_date = null;
         $newContract->paid_at = null;
         $newContract->paid_amount = 0;
         $newContract->created_by = auth()->id();
