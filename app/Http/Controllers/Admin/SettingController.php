@@ -317,6 +317,7 @@ class SettingController extends Controller
         $validated = $request->validate([
             'quote_standard_terms' => 'nullable|string|max:10000',
             'quote_pdf_notes' => 'nullable|string|max:10000',
+            'contract_go_live_buffer_days' => 'required|integer|min:0|max:365',
         ]);
 
         Setting::setMany($validated, 'document');

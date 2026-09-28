@@ -50,6 +50,20 @@
                     </div>
                 </div>
             </div>
+
+            <div class="card mb-3">
+                <div class="card-header"><strong>合約期間</strong></div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <label for="contract_go_live_buffer_days" class="form-label">上線緩衝天數</label>
+                        <input type="number" class="form-control @error('contract_go_live_buffer_days') is-invalid @enderror"
+                               id="contract_go_live_buffer_days" name="contract_go_live_buffer_days" min="0" max="365" style="max-width: 10rem;"
+                               value="{{ old('contract_go_live_buffer_days', setting('contract_go_live_buffer_days', \App\Models\Contract::DEFAULT_GO_LIVE_BUFFER_DAYS)) }}">
+                        @error('contract_go_live_buffer_days') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <small class="text-muted">建立合約時，預估上線日＝預計交件日＋此天數，並據此帶出預估起訖日。實際上線後會以實際日期重算。</small>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="col-lg-3">

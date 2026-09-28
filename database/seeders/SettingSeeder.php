@@ -698,6 +698,15 @@ EOT,
                 'is_public' => false,
                 'is_editable' => true,
             ],
+            [
+                'group' => 'document',
+                'key' => 'contract_go_live_buffer_days',
+                'value' => '7',
+                'type' => 'integer',
+                'description' => '合約預估上線日＝預計交件日＋此天數',
+                'is_public' => false,
+                'is_editable' => true,
+            ],
         ];
 
         foreach ($settings as $setting) {
