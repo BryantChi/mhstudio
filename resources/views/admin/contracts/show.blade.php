@@ -75,6 +75,12 @@
                     @if(count($contract->allowedNextStatuses()))
                     <span class="text-muted mx-2">變更為：</span>
                     @foreach($contract->allowedNextStatuses() as $val)
+                        @if($val === 'active')
+                            {{-- 轉為執行中＝上線：需先填實際上線日，合約期間以此重算 --}}
+                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    data-coreui-toggle="modal" data-coreui-target="#goLiveModal">{{ $statusLabels[$val] }}</button>
+                            @continue
+                        @endif
                         <form method="POST" action="{{ route('admin.contracts.update-status', $contract) }}" class="d-inline">
                             @csrf @method('PUT')
                             <input type="hidden" name="status" value="{{ $val }}">
@@ -235,8 +241,14 @@
                         <tr><th>類型</th><td>{{ $contract->type_label }}</td></tr>
                         <tr><th>狀態</th><td><span class="badge bg-{{ $contract->status_color }}">{{ $contract->status_label }}</span></td></tr>
                         <tr><th>總金額</th><td>{{ $contract->total > 0 ? $contract->currency . ' ' . number_format($contract->total) : '-' }}</td></tr>
-                        <tr><th>開始日期</th><td>{{ $contract->start_date?->format('Y-m-d') ?? '-' }}</td></tr>
-                        <tr><th>結束日期</th><td>{{ $contract->end_date?->format('Y-m-d') ?? '-' }}</td></tr>
+                        @if($contract->expected_delivery_date)
+                        <tr><th>預計交件</th><td>{{ $contract->expected_delivery_date->format('Y-m-d') }}</td></tr>
+                        @endif
+                        @if($contract->term_months)
+                        <tr><th>合約期間</th><td>自上線日起 {{ $contract->term_months }} 個月</td></tr>
+                        @endif
+                        <tr><th>開始日期</th><td>{{ $contract->start_date?->format('Y-m-d') ?? '-' }}@if($contract->isTermEstimated() && $contract->start_date) <span class="badge bg-warning text-dark">預估</span>@endif</td></tr>
+                        <tr><th>結束日期</th><td>{{ $contract->end_date?->format('Y-m-d') ?? '-' }}@if($contract->isTermEstimated() && $contract->end_date) <span class="badge bg-warning text-dark">預估</span>@endif</td></tr>
                         <tr><th>簽署日期</th><td>{{ $contract->signed_at?->format('Y-m-d') ?? '-' }}</td></tr>
                         @if($contract->project)
                         <tr><th>關聯專案</th><td><a href="{{ route('admin.projects.show', $contract->project) }}">{{ $contract->project->title }}</a></td></tr>
@@ -497,6 +509,44 @@
         </div>
     </div>
 </div>
+
+{{-- 上線（signed → active）：填實際上線日，重算合約起訖日 --}}
+@if($contract->canTransitionTo('active'))
+<div class="modal fade" id="goLiveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.contracts.update-status', $contract) }}">
+                @csrf @method('PUT')
+                <input type="hidden" name="status" value="active">
+                <div class="modal-header">
+                    <h5 class="modal-title">上線並開始執行合約</h5>
+                    <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="go_live_date" class="form-label">實際上線日 <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="go_live_date" name="go_live_date" value="{{ now()->format('Y-m-d') }}" required>
+                    </div>
+                    @if($contract->term_months)
+                        <p class="small text-muted mb-0">
+                            將以上線日起算 {{ $contract->term_months }} 個月，覆寫目前的起訖日
+                            （{{ $contract->start_date?->format('Y-m-d') ?? '-' }} ~ {{ $contract->end_date?->format('Y-m-d') ?? '-' }}）。
+                        </p>
+                    @else
+                        <p class="small text-muted mb-0">
+                            此合約未設定期間月數，只會把開始日期改為上線日，結束日期維持不變（{{ $contract->end_date?->format('Y-m-d') ?? '未設定' }}）。
+                        </p>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-coreui-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">確認上線</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 
 @push('styles')
 <style>

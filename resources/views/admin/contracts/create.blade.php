@@ -184,16 +184,7 @@
                             <option value="sent" {{ old('status') == 'sent' ? 'selected' : '' }}>已送出</option>
                         </select>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="start_date" class="form-label">開始日期</label>
-                            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ old('start_date', date('Y-m-d')) }}">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="end_date" class="form-label">結束日期</label>
-                            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ old('end_date') }}">
-                        </div>
-                    </div>
+                    @include('admin.contracts.partials.term-fields', ['contract' => null])
                 </div>
             </div>
 

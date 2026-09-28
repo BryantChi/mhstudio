@@ -144,6 +144,9 @@
             <td class="value" colspan="3">
                 {{ $contract->start_date?->format('Y-m-d') ?? '-' }}
                 @if($contract->end_date) ~ {{ $contract->end_date->format('Y-m-d') }} @endif
+                @if($contract->isTermEstimated())
+                    （預估；實際以上線日起算 {{ $contract->term_months }} 個月）
+                @endif
             </td>
         </tr>
         @if($contract->client_signer_name || $contract->company_signer_name)

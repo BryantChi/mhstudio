@@ -178,18 +178,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="start_date" class="form-label">開始日期</label>
-                            <input type="date" class="form-control" id="start_date" name="start_date"
-                                   value="{{ old('start_date', $contract->start_date?->format('Y-m-d')) }}">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="end_date" class="form-label">結束日期</label>
-                            <input type="date" class="form-control" id="end_date" name="end_date"
-                                   value="{{ old('end_date', $contract->end_date?->format('Y-m-d')) }}">
-                        </div>
-                    </div>
+                    @include('admin.contracts.partials.term-fields', ['contract' => $contract])
                     <div class="mb-3">
                         <label for="signed_at" class="form-label">簽署日期</label>
                         <input type="date" class="form-control" id="signed_at" name="signed_at"
