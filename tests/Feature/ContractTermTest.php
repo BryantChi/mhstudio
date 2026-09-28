@@ -137,3 +137,15 @@ it('未設期間月數的舊合約上線時只改開始日，保留手填的結�
     expect($contract->start_date->toDateString())->toBe('2026-10-20')
         ->and($contract->end_date->toDateString())->toBe('2027-09-30');
 });
+
+it('編輯合約不會改動狀態，避免繞過上線日重算與狀態機', function () {
+    $contract = makeTermContract(['term_months' => 12, 'start_date' => '2026-11-08', 'end_date' => '2027-11-07']);
+
+    $this->put(route('admin.contracts.update', $contract), contractFormPayload($contract->client, [
+        'status' => 'active', // 即使有人手動送出 status 也要被忽略
+        'start_date' => '2026-11-08',
+        'end_date' => '2027-11-07',
+    ]))->assertSessionHasNoErrors();
+
+    expect($contract->fresh()->status)->toBe('signed');
+});

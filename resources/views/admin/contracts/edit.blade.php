@@ -171,12 +171,12 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="status" class="form-label">狀態</label>
-                        <select class="form-select" id="status" name="status">
-                            @foreach(['draft' => '草稿', 'sent' => '已送出', 'signed' => '已簽署', 'active' => '執行中', 'completed' => '已完成', 'cancelled' => '已取消'] as $val => $label)
-                                <option value="{{ $val }}" {{ old('status', $contract->status) == $val ? 'selected' : '' }}>{{ $label }}</option>
-                            @endforeach
-                        </select>
+                        {{-- 狀態只能在詳情頁變更：那裡才有狀態機守衛、回簽檔上傳與上線日重算 --}}
+                        <label class="form-label">狀態</label>
+                        <div>
+                            <span class="badge bg-{{ $contract->status_color }}">{{ $contract->status_label }}</span>
+                            <a href="{{ route('admin.contracts.show', $contract) }}" class="small ms-2">至詳情頁變更狀態</a>
+                        </div>
                     </div>
                     @include('admin.contracts.partials.term-fields', ['contract' => $contract])
                     <div class="mb-3">
