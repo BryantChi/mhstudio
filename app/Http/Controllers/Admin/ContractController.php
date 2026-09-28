@@ -102,7 +102,8 @@ class ContractController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'type' => 'required|in:service,maintenance,retainer,nda,other',
-            'status' => 'required|in:draft,sent,signed,active,completed,cancelled',
+            // 新合約只能是草稿或已送出；簽署需上傳回簽檔、上線需填上線日，皆在詳情頁進行
+            'status' => 'required|in:draft,sent',
             'amount' => 'nullable|numeric|min:0',
             'currency' => 'nullable|string|max:10',
             'start_date' => 'nullable|date',

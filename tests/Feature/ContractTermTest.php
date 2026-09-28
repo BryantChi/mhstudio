@@ -149,3 +149,13 @@ it('編輯合約不會改動狀態，避免繞過上線日重算與狀態機', f
 
     expect($contract->fresh()->status)->toBe('signed');
 });
+
+it('建立合約只接受草稿或已送出，不能直接建出已簽署', function () {
+    makeTermContract();
+    $client = Client::create(['name' => '大東實業']);
+
+    $this->post(route('admin.contracts.store'), contractFormPayload($client, ['status' => 'signed']))
+        ->assertSessionHasErrors('status');
+
+    expect(Contract::where('title', '官網建置')->exists())->toBeFalse();
+});
