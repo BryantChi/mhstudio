@@ -108,7 +108,8 @@
     }
 
     // 只在使用者改動欄位時才重算，不在載入時覆蓋既有（可能手動調整過）的日期
-    delivery.addEventListener('change', recalc);
+    // 自訂起算與預計交件日無關；放行的話會把使用者手動調過的結束日重算蓋掉
+    delivery.addEventListener('change', () => { if (anchor.value !== 'custom') recalc(); });
     term.addEventListener('change', recalc);
     anchor.addEventListener('change', recalc);
     // 自訂起算時開始日期就是起點，要連動結束日；其他起算點下手動改開始日視為微調，不連動
