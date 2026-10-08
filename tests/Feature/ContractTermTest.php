@@ -423,3 +423,18 @@ it('PDF 的預估說明依起算點顯示', function () {
 
     expect($html)->toContain('預估；將以實際交件日起算 12 個月');
 });
+
+it('第一次記錄里程碑日期時，異動紀錄看得到從空白到新日期', function () {
+    $contract = makeTermContract(['term_months' => 12, 'start_date' => '2026-11-08', 'end_date' => '2027-11-07']);
+
+    // 交件日不是起算點：這筆異動只有 actual_delivery_date 一個欄位，舊值為 null
+    $this->put(route('admin.contracts.update-milestone-date', $contract), [
+        'field' => 'actual_delivery_date',
+        'date' => '2026-12-01',
+    ]);
+
+    $this->withoutVite();
+    $this->get(route('admin.contracts.show', $contract))
+        ->assertOk()
+        ->assertSee('actual_delivery_date: - → 2026-12-01');
+});

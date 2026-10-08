@@ -223,8 +223,9 @@
                                 <td>
                                     @if($activity->properties->has('old'))
                                         @foreach($activity->properties['attributes'] ?? [] as $key => $value)
-                                            @if(isset($activity->properties['old'][$key]) && $activity->properties['old'][$key] != $value)
-                                                <span class="badge bg-light text-dark me-1">{{ $key }}: {{ $activity->properties['old'][$key] }} → {{ $value }}</span>
+                                            {{-- 用 array_key_exists 而非 isset：舊值為 null（第一次填入）時 isset 為 false，整筆變更會被吞掉 --}}
+                                            @if(array_key_exists($key, $activity->properties['old']) && $activity->properties['old'][$key] != $value)
+                                                <span class="badge bg-light text-dark me-1">{{ $key }}: {{ $activity->properties['old'][$key] ?? '-' }} → {{ $value }}</span>
                                             @endif
                                         @endforeach
                                     @endif
