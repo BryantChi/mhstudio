@@ -307,3 +307,68 @@ it('model 層也拒絕非里程碑欄位，防止其他呼叫端繞過驗證', f
     expect(fn () => $contract->recordMilestoneDate('status', '2026-12-15'))
         ->toThrow(InvalidArgumentException::class);
 });
+
+it('建立自訂起算的合約時，後端不會用預計交件日代補預估值', function () {
+    makeTermContract();
+    $client = Client::create(['name' => '大東實業']);
+
+    $this->post(route('admin.contracts.store'), contractFormPayload($client, [
+        'term_anchor' => 'custom',
+        'expected_delivery_date' => '2026-11-01',
+        'term_months' => 12,
+    ]))->assertSessionHasNoErrors();
+
+    $contract = Contract::where('title', '官網建置')->firstOrFail();
+    expect($contract->term_anchor)->toBe('custom')
+        ->and($contract->start_date)->toBeNull();
+});
+
+it('起算點只接受三種值', function () {
+    makeTermContract();
+    $client = Client::create(['name' => '大東實業']);
+
+    $this->post(route('admin.contracts.store'), contractFormPayload($client, ['term_anchor' => 'signed_at']))
+        ->assertSessionHasErrors('term_anchor');
+});
+
+it('編輯時清空起訖日，後端備援以已記錄的上線日重算而非預估值', function () {
+    $contract = makeTermContract([
+        'status' => 'active', 'term_months' => 12, 'expected_delivery_date' => '2026-11-01',
+        'go_live_date' => '2026-12-15', 'start_date' => '2026-12-15', 'end_date' => '2027-12-14',
+    ]);
+
+    $this->put(route('admin.contracts.update', $contract), contractFormPayload($contract->client, [
+        'term_anchor' => 'go_live',
+        'expected_delivery_date' => '2026-11-01',
+        'term_months' => 12,
+    ]))->assertSessionHasNoErrors();
+
+    $contract->refresh();
+    expect($contract->start_date->toDateString())->toBe('2026-12-15')
+        ->and($contract->end_date->toDateString())->toBe('2027-12-14');
+});
+
+it('編輯時沒送起算點，維持原本的起算點', function () {
+    $contract = makeTermContract(['term_anchor' => 'delivery', 'term_months' => 12, 'start_date' => '2026-11-08', 'end_date' => '2027-11-07']);
+
+    $this->put(route('admin.contracts.update', $contract), contractFormPayload($contract->client, [
+        'start_date' => '2026-11-08',
+        'end_date' => '2027-11-07',
+    ]))->assertSessionHasNoErrors();
+
+    expect($contract->fresh()->term_anchor)->toBe('delivery');
+});
+
+it('複製合約時清空里程碑日期但沿用起算點', function () {
+    $contract = makeTermContract([
+        'status' => 'active', 'term_anchor' => 'delivery', 'term_months' => 12,
+        'go_live_date' => '2026-12-15', 'actual_delivery_date' => '2026-12-01',
+    ]);
+
+    $this->post(route('admin.contracts.duplicate', $contract));
+
+    $copy = Contract::where('title', '測試合約 (複本)')->firstOrFail();
+    expect($copy->go_live_date)->toBeNull()
+        ->and($copy->actual_delivery_date)->toBeNull()
+        ->and($copy->term_anchor)->toBe('delivery');
+});
