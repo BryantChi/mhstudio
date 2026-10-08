@@ -16,11 +16,14 @@ uses(RefreshDatabase::class);
 
 function makeTermContract(array $overrides = []): Contract
 {
-    test()->actingAs(User::create([
-        'name' => '測試人員',
-        'email' => 'tester'.uniqid().'@example.com',
-        'password' => 'password',
-    ]));
+    // users.name 有唯一索引：同一個測試建多份合約時沿用已登入的使用者
+    if (! auth()->check()) {
+        test()->actingAs(User::create([
+            'name' => '測試人員',
+            'email' => 'tester'.uniqid().'@example.com',
+            'password' => 'password',
+        ]));
+    }
 
     return Contract::create(array_merge([
         'client_id' => Client::create(['name' => '測試客戶'])->id,
@@ -176,4 +179,32 @@ it('剛建立未重新讀取的合約也以上線日為起算點', function () {
 
     expect($contract->term_anchor)->toBe('go_live')
         ->and($contract->isTermEstimated())->toBeTrue();
+});
+
+/*
+ * 回填條件是推論出來的：term_months 是 9/29 才加的欄位，有月數又已執行中的合約必定走過舊版
+ * 「轉執行中＋填上線日」流程，start_date 就是上線日；沒有月數的舊合約 start_date 是手填，猜錯比空著更糟。
+ */
+it('回填只補有期間月數且已上線的合約，舊合約與未上線的不猜', function () {
+    $live = makeTermContract(['status' => 'active', 'term_months' => 12, 'start_date' => '2026-10-20', 'end_date' => '2027-10-19']);
+    $done = makeTermContract(['status' => 'completed', 'term_months' => 6, 'start_date' => '2026-01-05']);
+    $legacy = makeTermContract(['status' => 'active', 'start_date' => '2025-01-01']);
+    $notLive = makeTermContract(['status' => 'signed', 'term_months' => 12, 'start_date' => '2026-11-08']);
+
+    (require database_path('migrations/2026_10_08_000002_backfill_go_live_date_on_contracts_table.php'))->up();
+
+    expect($live->fresh()->go_live_date->toDateString())->toBe('2026-10-20')
+        ->and($done->fresh()->go_live_date->toDateString())->toBe('2026-01-05')
+        ->and($legacy->fresh()->go_live_date)->toBeNull()
+        ->and($notLive->fresh()->go_live_date)->toBeNull();
+});
+
+it('回填不會覆蓋已記錄的上線日，也不產生異動紀錄', function () {
+    $contract = makeTermContract(['status' => 'active', 'term_months' => 12, 'start_date' => '2026-10-20', 'go_live_date' => '2026-10-18']);
+    $logCount = $contract->activities()->count();
+
+    (require database_path('migrations/2026_10_08_000002_backfill_go_live_date_on_contracts_table.php'))->up();
+
+    expect($contract->fresh()->go_live_date->toDateString())->toBe('2026-10-18')
+        ->and($contract->activities()->count())->toBe($logCount);
 });
