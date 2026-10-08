@@ -145,7 +145,7 @@
                 {{ $contract->start_date?->format('Y-m-d') ?? '-' }}
                 @if($contract->end_date) ~ {{ $contract->end_date->format('Y-m-d') }} @endif
                 @if($contract->isTermEstimated())
-                    （預估；實際以上線日起算 {{ $contract->term_months }} 個月）
+                    （預估；將以{{ $contract->term_anchor_label }}起算 {{ $contract->term_months }} 個月）
                 @endif
             </td>
         </tr>

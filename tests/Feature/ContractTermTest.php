@@ -387,3 +387,39 @@ it('編輯頁把已記錄的實際日期交給前端，改月數時才不會被�
         ->assertSee('data-delivery-date="2026-12-01"', false)
         ->assertSee('<option value="delivery" selected>', false);
 });
+
+it('詳情頁的里程碑 modal 說清楚哪個日期會重算期間', function () {
+    $contract = makeTermContract(['term_anchor' => 'delivery', 'term_months' => 12, 'start_date' => '2026-11-08', 'end_date' => '2027-11-07']);
+
+    $this->withoutVite();
+    $this->get(route('admin.contracts.show', $contract))
+        ->assertOk()
+        ->assertSee('設定上線日')
+        ->assertSee('設定實際交件日')
+        // 上線日不是起算點：只記錄
+        ->assertSee('僅記錄日期，不影響合約期間（目前起算點：實際交件日）')
+        // 交件日是起算點：會覆寫
+        ->assertSee('將以此日期起算 12 個月，覆寫目前的起訖日')
+        ->assertSee('自實際交件日起 12 個月')
+        // 舊的「轉執行中強制填上線日」modal 已移除
+        ->assertDontSee('goLiveModal');
+});
+
+it('已完成的合約詳情頁不提供設定上線日', function () {
+    $contract = makeTermContract(['status' => 'completed']);
+
+    $this->withoutVite();
+    $this->get(route('admin.contracts.show', $contract))
+        ->assertOk()
+        ->assertDontSee('設定上線日')
+        ->assertDontSee('修改上線日');
+});
+
+it('PDF 的預估說明依起算點顯示', function () {
+    $contract = makeTermContract(['term_anchor' => 'delivery', 'term_months' => 12, 'start_date' => '2026-11-08', 'end_date' => '2027-11-07']);
+    $contract->load(['client', 'project', 'creator', 'items']);
+
+    $html = view('admin.contracts.pdf', compact('contract'))->render();
+
+    expect($html)->toContain('預估；將以實際交件日起算 12 個月');
+});
