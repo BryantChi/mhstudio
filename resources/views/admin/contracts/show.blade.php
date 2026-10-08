@@ -78,11 +78,18 @@
                     @if(count($contract->allowedNextStatuses()))
                     <span class="text-muted mx-2">變更為：</span>
                     @foreach($contract->allowedNextStatuses() as $val)
+                        @php
+                            // 已完成後就不能再記錄里程碑日期；期間仍是預估時先提醒，否則會永遠停在預估值。
+                            // '\n' 刻意用單引號輸出字面反斜線 n，交給 JS 字串轉成換行
+                            $completeWarning = $val === 'completed' && $contract->isTermEstimated()
+                                ? '\n\n注意：尚未記錄'.$contract->term_anchor_label.'，合約期間仍是預估值，轉為已完成後將無法再設定。'
+                                : '';
+                        @endphp
                         <form method="POST" action="{{ route('admin.contracts.update-status', $contract) }}" class="d-inline">
                             @csrf @method('PUT')
                             <input type="hidden" name="status" value="{{ $val }}">
                             <button type="submit" class="btn btn-sm btn-outline-secondary"
-                                    onclick="return confirm('確定要變更為「{{ $statusLabels[$val] }}」嗎？')">{{ $statusLabels[$val] }}</button>
+                                    onclick="return confirm('確定要變更為「{{ $statusLabels[$val] }}」嗎？{{ $completeWarning }}')">{{ $statusLabels[$val] }}</button>
                         </form>
                     @endforeach
                     @endif

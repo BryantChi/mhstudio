@@ -438,3 +438,25 @@ it('第一次記錄里程碑日期時，異動紀錄看得到從空白到新日�
         ->assertOk()
         ->assertSee('actual_delivery_date: - → 2026-12-01');
 });
+
+/*
+ * 已完成後就不能再記錄里程碑日期（鎖住已結案紀錄）；期間仍是預估時若沒提醒，
+ * 合約會永遠停在「預估」，PDF 也一直印著預估字樣。
+ */
+it('期間仍是預估時，轉已完成的確認框會提醒尚未記錄起算日期', function () {
+    $contract = makeTermContract(['status' => 'active', 'term_months' => 12, 'start_date' => '2026-11-08']);
+
+    $this->withoutVite();
+    $this->get(route('admin.contracts.show', $contract))
+        ->assertOk()
+        ->assertSee('注意：尚未記錄上線日，合約期間仍是預估值，轉為已完成後將無法再設定。');
+});
+
+it('起算日期已記錄時，轉已完成不再多提醒', function () {
+    $contract = makeTermContract(['status' => 'active', 'term_months' => 12, 'go_live_date' => '2026-12-15', 'start_date' => '2026-12-15']);
+
+    $this->withoutVite();
+    $this->get(route('admin.contracts.show', $contract))
+        ->assertOk()
+        ->assertDontSee('合約期間仍是預估值，轉為已完成後將無法再設定');
+});
