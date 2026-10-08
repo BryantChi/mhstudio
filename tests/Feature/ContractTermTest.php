@@ -372,3 +372,18 @@ it('複製合約時清空里程碑日期但沿用起算點', function () {
         ->and($copy->actual_delivery_date)->toBeNull()
         ->and($copy->term_anchor)->toBe('delivery');
 });
+
+it('編輯頁把已記錄的實際日期交給前端，改月數時才不會被預估值蓋掉', function () {
+    $contract = makeTermContract([
+        'status' => 'active', 'term_anchor' => 'delivery', 'term_months' => 12,
+        'go_live_date' => '2026-12-15', 'actual_delivery_date' => '2026-12-01',
+    ]);
+
+    $this->withoutVite(); // 測試不依賴 public/build 的打包產物
+    $this->get(route('admin.contracts.edit', $contract))
+        ->assertOk()
+        ->assertSee('name="term_anchor"', false)
+        ->assertSee('data-go-live-date="2026-12-15"', false)
+        ->assertSee('data-delivery-date="2026-12-01"', false)
+        ->assertSee('<option value="delivery" selected>', false);
+});
