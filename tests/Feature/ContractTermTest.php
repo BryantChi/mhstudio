@@ -93,29 +93,6 @@ it('手動填的起訖日優先，不被預估值蓋掉', function () {
         ->and($contract->end_date->toDateString())->toBe('2027-06-30');
 });
 
-it('上線時以實際上線日覆寫預估起訖日，並記入異動紀錄', function () {
-    $contract = makeTermContract([
-        'term_months' => 12,
-        'start_date' => '2026-11-08',
-        'end_date' => '2027-11-07',
-    ]);
-
-    $this->put(route('admin.contracts.update-status', $contract), [
-        'status' => 'active',
-        'go_live_date' => '2026-12-15',
-    ])->assertSessionHasNoErrors();
-
-    $contract->refresh();
-    expect($contract->status)->toBe('active')
-        ->and($contract->start_date->toDateString())->toBe('2026-12-15')
-        ->and($contract->end_date->toDateString())->toBe('2027-12-14')
-        ->and($contract->isTermEstimated())->toBeFalse();
-
-    // 選擇「直接覆寫」的前提：原本的預估值要能從異動紀錄查回
-    $log = $contract->activities()->latest('id')->first();
-    expect($log->properties['old']['start_date'])->toBe('2026-11-08');
-});
-
 it('轉為執行中必須填上線日', function () {
     $contract = makeTermContract(['term_months' => 12]);
 
@@ -158,4 +135,45 @@ it('建立合約只接受草稿或已送出，不能直接建出已簽署', func
         ->assertSessionHasErrors('status');
 
     expect(Contract::where('title', '官網建置')->exists())->toBeFalse();
+});
+
+/*
+ * 「預估 vs 確定」改看起算點日期有沒有記錄，而不是看狀態：
+ * 執行中與上線脫鉤後，執行中但還沒上線的合約起訖日仍是預估值，標錯會讓人誤以為到期日已確定。
+ */
+it('起算點為上線日時，執行中但尚未記錄上線日仍視為預估', function () {
+    $contract = makeTermContract(['status' => 'active', 'term_months' => 12, 'start_date' => '2026-11-08']);
+
+    expect($contract->isTermEstimated())->toBeTrue();
+
+    $contract->update(['go_live_date' => '2026-12-15']);
+    expect($contract->isTermEstimated())->toBeFalse();
+});
+
+it('起算點為實際交件日時，只看交件日有沒有記錄', function () {
+    $contract = makeTermContract(['term_anchor' => 'delivery', 'term_months' => 12, 'go_live_date' => '2026-12-15']);
+
+    // 上線日有記錄也不算數，起算點是交件日
+    expect($contract->isTermEstimated())->toBeTrue();
+
+    $contract->update(['actual_delivery_date' => '2026-12-01']);
+    expect($contract->isTermEstimated())->toBeFalse();
+});
+
+it('自訂起算的合約永遠視為確定', function () {
+    $contract = makeTermContract(['status' => 'draft', 'term_anchor' => 'custom', 'term_months' => 12, 'start_date' => '2027-01-01']);
+
+    expect($contract->isTermEstimated())->toBeFalse();
+});
+
+it('沒設期間月數的合約沒有預估概念', function () {
+    expect(makeTermContract(['start_date' => '2026-11-08'])->isTermEstimated())->toBeFalse();
+});
+
+it('剛建立未重新讀取的合約也以上線日為起算點', function () {
+    // DB 預設值不會回填到記憶體中的 model；少了 model 端預設值會被誤判成自訂起算而不標預估
+    $contract = makeTermContract(['term_months' => 12, 'start_date' => '2026-11-08']);
+
+    expect($contract->term_anchor)->toBe('go_live')
+        ->and($contract->isTermEstimated())->toBeTrue();
 });
