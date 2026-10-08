@@ -204,6 +204,7 @@ Route::prefix(config('admin.prefix', 'admin'))
         Route::post('contracts/{contract}/duplicate', [ContractController::class, 'duplicate'])->name('contracts.duplicate');
         Route::get('contracts/{contract}/pdf', [ContractController::class, 'exportPdf'])->name('contracts.pdf');
         Route::put('contracts/{contract}/status', [ContractController::class, 'updateStatus'])->name('contracts.update-status');
+        Route::put('contracts/{contract}/milestone-date', [ContractController::class, 'updateMilestoneDate'])->name('contracts.update-milestone-date');
         Route::post('contracts/{contract}/send', [ContractController::class, 'markAsSent'])->name('contracts.send');
         Route::post('contracts/{contract}/email', [ContractController::class, 'emailToClient'])->name('contracts.email');
         Route::post('contracts/{contract}/sign', [ContractController::class, 'uploadSignedDocument'])->name('contracts.sign');

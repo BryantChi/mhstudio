@@ -102,7 +102,7 @@ class ContractController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'type' => 'required|in:service,maintenance,retainer,nda,other',
-            // 新合約只能是草稿或已送出；簽署需上傳回簽檔、上線需填上線日，皆在詳情頁進行
+            // 新合約只能是草稿或已送出；簽署需上傳回簽檔，在詳情頁進行
             'status' => 'required|in:draft,sent',
             'amount' => 'nullable|numeric|min:0',
             'currency' => 'nullable|string|max:10',
@@ -366,8 +366,6 @@ class ContractController extends Controller
         // 簽署（signed）僅能透過上傳客戶回簽檔達成，不開放此處直接設定
         $request->validate([
             'status' => 'required|in:draft,sent,active,completed,cancelled',
-            // 轉為執行中＝上線，合約期間改以實際上線日起算
-            'go_live_date' => 'required_if:status,active|nullable|date',
         ]);
 
         if (! $contract->canTransitionTo($request->status)) {
@@ -380,17 +378,31 @@ class ContractController extends Controller
         if ($request->status === 'sent' && ! $contract->sent_at) {
             $updateData['sent_at'] = now();
         }
-        if ($request->status === 'active') {
-            $termDates = Contract::termDatesFrom($request->go_live_date, $contract->term_months);
-            $updateData['start_date'] = $termDates['start_date'];
-            // 未設期間月數的舊合約只更新開始日，保留原本手填的結束日
-            if ($termDates['end_date']) {
-                $updateData['end_date'] = $termDates['end_date'];
-            }
-        }
 
         $contract->update($updateData);
         flash_success('合約狀態已更新');
+
+        return redirect()->route('admin.contracts.show', $contract);
+    }
+
+    /**
+     * 記錄上線日／實際交件日。與「執行中」狀態脫鉤：開發期間可先轉執行中，上線日填錯或延後也能修正。
+     */
+    public function updateMilestoneDate(Request $request, Contract $contract): RedirectResponse
+    {
+        $validated = $request->validate([
+            'field' => 'required|in:'.implode(',', Contract::ANCHOR_DATE_FIELDS),
+            'date' => 'required|date',
+        ]);
+
+        if (! $contract->canRecordMilestones()) {
+            flash_error("「{$contract->status_label}」的合約無法設定上線日或交件日");
+
+            return redirect()->route('admin.contracts.show', $contract);
+        }
+
+        $contract->recordMilestoneDate($validated['field'], $validated['date']);
+        flash_success('日期已更新');
 
         return redirect()->route('admin.contracts.show', $contract);
     }

@@ -9,8 +9,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 /*
- * 合約期間自「上線日」起算：
- * 簽約時只知道預計交件日 → 存預估起訖日；轉為執行中（上線）時以實際上線日覆寫。
+ * 合約期間依「起算點」計算（上線日／實際交件日／自訂日期）：
+ * 起算日期未記錄前存預估起訖日；在詳情頁記錄起算點日期時以實際日期覆寫。
  * 起訖日錯了會讓「即將到期」提醒與剩餘天數失準，所以公式與覆寫行為都要鎖住。
  */
 
@@ -94,28 +94,6 @@ it('手動填的起訖日優先，不被預估值蓋掉', function () {
     $contract = Contract::where('title', '官網建置')->firstOrFail();
     expect($contract->start_date->toDateString())->toBe('2026-12-01')
         ->and($contract->end_date->toDateString())->toBe('2027-06-30');
-});
-
-it('轉為執行中必須填上線日', function () {
-    $contract = makeTermContract(['term_months' => 12]);
-
-    $this->put(route('admin.contracts.update-status', $contract), ['status' => 'active'])
-        ->assertSessionHasErrors('go_live_date');
-
-    expect($contract->fresh()->status)->toBe('signed');
-});
-
-it('未設期間月數的舊合約上線時只改開始日，保留手填的結束日', function () {
-    $contract = makeTermContract(['start_date' => '2026-10-01', 'end_date' => '2027-09-30']);
-
-    $this->put(route('admin.contracts.update-status', $contract), [
-        'status' => 'active',
-        'go_live_date' => '2026-10-20',
-    ]);
-
-    $contract->refresh();
-    expect($contract->start_date->toDateString())->toBe('2026-10-20')
-        ->and($contract->end_date->toDateString())->toBe('2027-09-30');
 });
 
 it('編輯合約不會改動狀態，避免繞過上線日重算與狀態機', function () {
@@ -207,4 +185,125 @@ it('回填不會覆蓋已記錄的上線日，也不產生異動紀錄', functio
 
     expect($contract->fresh()->go_live_date->toDateString())->toBe('2026-10-18')
         ->and($contract->activities()->count())->toBe($logCount);
+});
+
+/*
+ * 執行中只代表開始執行，上線是另外記錄的日期：開發期間就能轉執行中，上線日填錯或延後也能修正。
+ */
+it('轉為執行中不需要上線日，也不會動到預估起訖日', function () {
+    $contract = makeTermContract(['term_months' => 12, 'start_date' => '2026-11-08', 'end_date' => '2027-11-07']);
+
+    $this->put(route('admin.contracts.update-status', $contract), ['status' => 'active'])
+        ->assertSessionHasNoErrors();
+
+    $contract->refresh();
+    expect($contract->status)->toBe('active')
+        ->and($contract->start_date->toDateString())->toBe('2026-11-08')
+        ->and($contract->end_date->toDateString())->toBe('2027-11-07')
+        ->and($contract->isTermEstimated())->toBeTrue();
+});
+
+it('記錄的上線日是起算點時，以它重算起訖日並記入異動紀錄', function () {
+    $contract = makeTermContract(['status' => 'active', 'term_months' => 12, 'start_date' => '2026-11-08', 'end_date' => '2027-11-07']);
+
+    $this->put(route('admin.contracts.update-milestone-date', $contract), [
+        'field' => 'go_live_date',
+        'date' => '2026-12-15',
+    ])->assertSessionHasNoErrors();
+
+    $contract->refresh();
+    expect($contract->go_live_date->toDateString())->toBe('2026-12-15')
+        ->and($contract->start_date->toDateString())->toBe('2026-12-15')
+        ->and($contract->end_date->toDateString())->toBe('2027-12-14')
+        ->and($contract->isTermEstimated())->toBeFalse();
+
+    // 選擇「直接覆寫」的前提：原本的預估值要能從異動紀錄查回，且日期不能被序列化成 UTC 時間字串
+    $log = $contract->activities()->latest('id')->first();
+    expect($log->properties['old']['start_date'])->toBe('2026-11-08')
+        ->and($log->properties['attributes']['go_live_date'])->toBe('2026-12-15');
+});
+
+it('上線後修改上線日，起訖日跟著重算', function () {
+    $contract = makeTermContract([
+        'status' => 'active', 'term_months' => 12,
+        'go_live_date' => '2026-12-15', 'start_date' => '2026-12-15', 'end_date' => '2027-12-14',
+    ]);
+
+    $this->put(route('admin.contracts.update-milestone-date', $contract), [
+        'field' => 'go_live_date',
+        'date' => '2027-01-10',
+    ])->assertSessionHasNoErrors();
+
+    $contract->refresh();
+    expect($contract->start_date->toDateString())->toBe('2027-01-10')
+        ->and($contract->end_date->toDateString())->toBe('2028-01-09');
+});
+
+it('記錄的日期不是起算點時只存日期，起訖日完全不動', function () {
+    $contract = makeTermContract(['term_anchor' => 'delivery', 'term_months' => 12, 'start_date' => '2026-11-08', 'end_date' => '2027-11-07']);
+
+    $this->put(route('admin.contracts.update-milestone-date', $contract), [
+        'field' => 'go_live_date',
+        'date' => '2026-12-15',
+    ])->assertSessionHasNoErrors();
+
+    $contract->refresh();
+    expect($contract->go_live_date->toDateString())->toBe('2026-12-15')
+        ->and($contract->start_date->toDateString())->toBe('2026-11-08')
+        ->and($contract->end_date->toDateString())->toBe('2027-11-07')
+        ->and($contract->isTermEstimated())->toBeTrue();
+
+    // 起算點是交件日，記錄交件日才重算
+    $this->put(route('admin.contracts.update-milestone-date', $contract), [
+        'field' => 'actual_delivery_date',
+        'date' => '2026-12-01',
+    ]);
+
+    $contract->refresh();
+    expect($contract->start_date->toDateString())->toBe('2026-12-01')
+        ->and($contract->end_date->toDateString())->toBe('2027-11-30');
+});
+
+it('未設期間月數的舊合約記錄上線日時只改開始日，保留手填的結束日', function () {
+    $contract = makeTermContract(['start_date' => '2026-10-01', 'end_date' => '2027-09-30']);
+
+    $this->put(route('admin.contracts.update-milestone-date', $contract), [
+        'field' => 'go_live_date',
+        'date' => '2026-10-20',
+    ]);
+
+    $contract->refresh();
+    expect($contract->start_date->toDateString())->toBe('2026-10-20')
+        ->and($contract->end_date->toDateString())->toBe('2027-09-30');
+});
+
+it('只有已簽署或執行中的合約能記錄上線日', function (string $status) {
+    $contract = makeTermContract(['status' => $status, 'term_months' => 12, 'start_date' => '2026-11-08']);
+
+    $this->put(route('admin.contracts.update-milestone-date', $contract), [
+        'field' => 'go_live_date',
+        'date' => '2026-12-15',
+    ]);
+
+    $contract->refresh();
+    expect($contract->go_live_date)->toBeNull()
+        ->and($contract->start_date->toDateString())->toBe('2026-11-08');
+})->with(['draft', 'sent', 'completed', 'cancelled']);
+
+it('只接受上線日與交件日兩個欄位，不能藉此改其他欄位', function () {
+    $contract = makeTermContract();
+
+    $this->put(route('admin.contracts.update-milestone-date', $contract), [
+        'field' => 'status',
+        'date' => '2026-12-15',
+    ])->assertSessionHasErrors('field');
+
+    expect($contract->fresh()->status)->toBe('signed');
+});
+
+it('model 層也拒絕非里程碑欄位，防止其他呼叫端繞過驗證', function () {
+    $contract = makeTermContract();
+
+    expect(fn () => $contract->recordMilestoneDate('status', '2026-12-15'))
+        ->toThrow(InvalidArgumentException::class);
 });

@@ -336,6 +336,30 @@ class Contract extends Model
         return $this->anchorDate() === null;
     }
 
+    /**
+     * 記錄上線日或實際交件日。只有記錄的正好是起算點時才重算起訖日；
+     * 沒設期間月數的舊合約只改開始日，保留原本手填的結束日。
+     */
+    public function recordMilestoneDate(string $field, string $date): void
+    {
+        // 擋在 model 層：$field 直接當作 update() 的 key，放行任意欄位等於開了大量指派的口
+        if (! in_array($field, self::ANCHOR_DATE_FIELDS, true)) {
+            throw new \InvalidArgumentException("不是里程碑日期欄位：{$field}");
+        }
+
+        $data = [$field => $date];
+
+        if ($field === $this->anchorDateField()) {
+            $termDates = self::termDatesFrom($date, $this->term_months);
+            $data['start_date'] = $termDates['start_date'];
+            if ($termDates['end_date']) {
+                $data['end_date'] = $termDates['end_date'];
+            }
+        }
+
+        $this->update($data);
+    }
+
     /* ===== Status workflow ===== */
 
     /**
